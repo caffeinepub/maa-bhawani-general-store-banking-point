@@ -9,7 +9,7 @@ export default function CallUsButton() {
     >
       <Button
         size="lg"
-        className="rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-all"
+        className="rounded-full h-16 w-16 shadow-lg hover:shadow-xl transition-all active:scale-95"
       >
         <Phone className="h-6 w-6" />
       </Button>

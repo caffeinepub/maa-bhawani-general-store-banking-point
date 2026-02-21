@@ -1,74 +1,105 @@
 {
   "kind": "build_request",
-  "title": "Add shop banner and logo from uploaded images",
+  "title": "Convert web application to mobile app format",
   "projectName": "Maa Bhawani Store",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-13",
-      "text": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "id": "REQ-16",
+      "text": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-last"
         ],
         "quotes": [
-          "Can You Add A Banner Of My Shop And Logo I Am Giving You"
+          "Convert it into a app From Web"
         ]
       },
       "acceptanceCriteria": [
-        "The shop banner image (IMG_20251019_102908.png) is displayed prominently at the top of the homepage",
-        "The banner maintains its aspect ratio and is responsive across different screen sizes",
-        "The banner replaces any existing hero/banner section on the homepage"
+        "Web manifest file is created with app name 'Maa Bhawani General Store & Banking Point'",
+        "Multiple icon sizes are provided (192x192, 512x512 minimum)",
+        "Display mode is set to 'standalone' for app-like experience",
+        "Theme color matches the store's warm earthy color scheme",
+        "Orientation is configured for optimal mobile viewing"
       ]
     },
     {
-      "id": "REQ-14",
-      "text": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "id": "REQ-17",
+      "text": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-last"
         ],
         "quotes": [
-          "Can You Add A Banner Of My Shop And Logo I Am Giving You"
+          "Convert it into a app From Web"
         ]
       },
       "acceptanceCriteria": [
-        "The circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) appears in the header navigation",
-        "The logo is appropriately sized and maintains its circular shape",
-        "The logo links to the homepage when clicked",
-        "The logo is visible on all pages of the application"
+        "Service worker is registered in the main application entry point",
+        "Critical application assets are cached on installation",
+        "App can display cached content when offline",
+        "Users receive installation prompts on supported mobile browsers"
       ]
     },
     {
-      "id": "REQ-15",
-      "text": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames (shop-banner.png and store-logo.png) for easy reference and maintenance",
+      "id": "REQ-18",
+      "text": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-last"
+        ],
+        "quotes": [
+          "Convert it into a app From Web"
         ]
       },
       "acceptanceCriteria": [
-        "Both images are saved in frontend/public/assets directory",
-        "Images are referenced using their static asset paths in the application",
-        "Images load correctly without any broken image links"
+        "All buttons and interactive elements meet minimum touch target size of 44x44px",
+        "Cart drawer supports swipe gestures for opening and closing",
+        "Touch feedback is provided for all interactive elements",
+        "Mobile navigation is optimized for one-handed use"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "text": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-last"
+        ],
+        "quotes": [
+          "Convert it into a app From Web"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Viewport meta tag is configured with width=device-width, initial-scale=1",
+        "Apple mobile web app capable meta tags are added",
+        "Status bar styling is configured for iOS",
+        "Android theme color is set to match app design"
       ]
     }
   ],
   "constraints": [
-    "Use the exact uploaded images without modification or regeneration",
-    "Maintain the existing header and homepage component structure",
-    "Ensure images are optimized for web performance"
+    "Maintain all existing functionality including authentication, cart, ordering, and admin panel",
+    "Preserve the warm, earthy visual design and branding",
+    "Ensure the app remains accessible via web browsers as well as installable as a mobile app",
+    "Do not require native app store deployment - focus on Progressive Web App approach"
   ],
   "nonGoals": [
-    "Modifying the uploaded images in any way",
-    "Changing the overall layout or structure beyond banner and logo replacement",
-    "Adding new branding elements beyond the provided banner and logo"
+    "Native iOS or Android app development",
+    "App store submission and distribution",
+    "Native device features like camera, GPS, or push notifications",
+    "Complete offline functionality for all features"
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "App icon with store logo for mobile devices featuring the shopkeeper illustration and store name, suitable for home screen display (app-icon-192.dim_192x192.png)",
+      "Large app icon with store logo for mobile devices featuring the shopkeeper illustration and store name, optimized for high-resolution displays (app-icon-512.dim_512x512.png)",
+      "Apple touch icon with store logo for iOS devices featuring the shopkeeper illustration and store name (apple-touch-icon.dim_180x180.png)"
+    ],
     "edits": []
   }
 }

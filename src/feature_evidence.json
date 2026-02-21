@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-existing-hero-banner-on-the-homepage-with-the-uploaded-shop-banner-image-img-20251019-102908-png-showing-the-store-interior-logo-aadhar-enabled-payment-system-stationery-availability-and-contact-number",
-      "featureTitle": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "featureId": "feature-configure-the-application-for-mobile-app-deployment-by-adding-progressive-web-app-pwa-capabilities-including-a-web-manifest-file-with-appropriate-app-icons-theme-colors-matching-the-store-s-earthy-palette-display-mode-set-to-standalone-and-orientation-set-to-portrait-include-all-required-icon-sizes-for-ios-and-android",
+      "featureTitle": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
       "files": [
-        "frontend/src/pages/HomePage.tsx"
+        "frontend/index.html",
+        "frontend/public/manifest.json"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,15 +18,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-13"
+        "REQ-16"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-replace-the-store-logo-in-the-header-navigation-with-the-uploaded-circular-logo-image-gemini-generated-image-rjk9furjk9furjk9-png-featuring-the-shopkeeper-illustration-and-maa-bhawani-general-store-text-in-hindi",
-      "featureTitle": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "featureId": "feature-add-a-service-worker-to-enable-offline-functionality-and-app-installation-prompts-the-service-worker-should-cache-critical-assets-html-css-javascript-product-images-and-implement-a-cache-first-strategy-for-static-resources-and-network-first-strategy-for-api-calls",
+      "featureTitle": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
       "files": [
-        "frontend/src/components/Header.tsx"
+        "frontend/public/service-worker.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,7 +38,50 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-14"
+        "REQ-17"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-optimize-the-mobile-experience-by-enhancing-touch-interactions-improving-button-sizes-for-finger-friendly-tap-targets-minimum-44x44px-adding-touch-gestures-for-cart-drawer-and-ensuring-all-interactive-elements-are-easily-accessible-on-mobile-screens",
+      "featureTitle": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
+      "files": [
+        "frontend/src/components/CallUsButton.tsx",
+        "frontend/src/components/CartDrawer.tsx",
+        "frontend/src/components/Header.tsx",
+        "frontend/src/index.css"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-18"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-html-meta-tags-to-include-mobile-specific-viewport-configuration-apple-mobile-web-app-capabilities-and-android-app-configuration-for-proper-mobile-app-behavior-when-installed-on-home-screens",
+      "featureTitle": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
+      "files": [
+        "frontend/index.html"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
       ],
       "confidence": "high"
     }

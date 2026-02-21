@@ -53,14 +53,14 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors min-h-[44px] flex items-center">
               Shop
             </Link>
-            <Link to="/store-details" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <Link to="/store-details" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 min-h-[44px]">
               <Store className="h-4 w-4" />
               Store Info
             </Link>
-            <a href="tel:9708075648" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <a href="tel:9708075648" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 min-h-[44px]">
               <Phone className="h-4 w-4" />
               97080 75648
             </a>
@@ -70,7 +70,7 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative min-h-[44px] min-w-[44px]"
               onClick={() => setCartOpen(true)}
             >
               <ShoppingCart className="h-5 w-5" />
@@ -86,7 +86,7 @@ export default function Header() {
               disabled={disabled}
               variant={isAuthenticated ? 'outline' : 'default'}
               size="sm"
-              className="gap-2"
+              className="gap-2 min-h-[44px] px-4"
             >
               <User className="h-4 w-4" />
               {loginStatus === 'logging-in' ? 'Logging in...' : isAuthenticated ? 'Logout' : 'Login'}

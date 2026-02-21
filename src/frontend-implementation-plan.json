@@ -1,59 +1,99 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add shop banner and logo from uploaded images",
+  "title": "Convert Maa Bhawani Store to Progressive Web App",
   "requirements": [
     {
-      "id": "REQ-13",
-      "summary": "Replace the existing hero banner on the homepage with the uploaded shop banner image showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "id": "REQ-16",
+      "summary": "Configure PWA capabilities with web manifest and app icons",
       "acceptanceCriteria": [
-        "The shop banner image (IMG_20251019_102908.png) is displayed prominently at the top of the homepage",
-        "The banner maintains its aspect ratio and is responsive across different screen sizes",
-        "The banner replaces any existing hero/banner section on the homepage"
+        "Web manifest file is created with app name 'Maa Bhawani General Store & Banking Point'",
+        "Multiple icon sizes are provided (192x192, 512x512 minimum)",
+        "Display mode is set to 'standalone' for app-like experience",
+        "Theme color matches the store's warm earthy color scheme",
+        "Orientation is configured for optimal mobile viewing"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/HomePage.tsx",
+          "path": "frontend/public/manifest.json",
+          "operation": "create",
+          "description": "Create web app manifest with app name 'Maa Bhawani General Store & Banking Point', short_name, description, start_url, display mode 'standalone', orientation 'portrait', theme_color matching the warm earthy palette from index.css (oklch(0.55 0.15 40)), background_color, and icons array referencing the generated app icon images at frontend/public/assets/generated/app-icon-192.dim_192x192.png, frontend/public/assets/generated/app-icon-512.dim_512x512.png, and frontend/public/assets/generated/apple-touch-icon.dim_180x180.png with appropriate sizes and types."
+        },
+        {
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Replace the existing hero banner section with the uploaded shop banner image. Update the hero section to display IMG_20251019_102908.png (referenced as frontend/public/assets/shop-banner.png) as the main banner image. Ensure the image is responsive using appropriate CSS classes (e.g., w-full, object-cover) and maintains aspect ratio across different screen sizes. Remove or replace any existing hero text/content that conflicts with the banner image display."
+          "description": "Add link to manifest.json in the head section and wire the generated app icons: add <link rel=\"manifest\" href=\"/manifest.json\">, <link rel=\"apple-touch-icon\" href=\"/assets/generated/apple-touch-icon.dim_180x180.png\">, and <link rel=\"icon\" type=\"image/png\" sizes=\"192x192\" href=\"/assets/generated/app-icon-192.dim_192x192.png\">."
         }
       ]
     },
     {
-      "id": "REQ-14",
-      "summary": "Replace the store logo in the header navigation with the uploaded circular logo image featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "id": "REQ-17",
+      "summary": "Add service worker for offline functionality and app installation",
       "acceptanceCriteria": [
-        "The circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) appears in the header navigation",
-        "The logo is appropriately sized and maintains its circular shape",
-        "The logo links to the homepage when clicked",
-        "The logo is visible on all pages of the application"
+        "Service worker is registered in the main application entry point",
+        "Critical application assets are cached on installation",
+        "App can display cached content when offline",
+        "Users receive installation prompts on supported mobile browsers"
       ],
       "file_operations": [
+        {
+          "path": "frontend/public/service-worker.js",
+          "operation": "create",
+          "description": "Create service worker implementing cache-first strategy for static assets (HTML, CSS, JS, images including generated images from frontend/public/assets/generated/), network-first strategy for API calls to the backend, install event to cache critical assets, fetch event to serve cached content with network fallback, and activate event to clean old caches."
+        },
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Register the service worker after React app initialization by adding service worker registration code that checks for navigator.serviceWorker support and registers /service-worker.js with error handling and console logging for registration success/failure."
+        }
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "summary": "Optimize mobile experience with touch interactions and gestures",
+      "acceptanceCriteria": [
+        "All buttons and interactive elements meet minimum touch target size of 44x44px",
+        "Cart drawer supports swipe gestures for opening and closing",
+        "Touch feedback is provided for all interactive elements",
+        "Mobile navigation is optimized for one-handed use"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add global CSS rules for touch-friendly interactions: minimum touch target sizes (min-height: 44px, min-width: 44px) for buttons and interactive elements, active state styles with scale transform for touch feedback, and tap-highlight-color settings for better mobile experience."
+        },
+        {
+          "path": "frontend/src/components/CartDrawer.tsx",
+          "operation": "modify",
+          "description": "Add touch gesture support for swipe-to-close functionality by implementing touch event handlers (onTouchStart, onTouchMove, onTouchEnd) that detect horizontal swipe gestures and close the drawer when user swipes right beyond a threshold distance, including visual feedback during the swipe."
+        },
         {
           "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Replace the existing store logo in the header with the uploaded circular logo image. Update the logo image source to reference Gemini_Generated_Image_rjk9furjk9furjk9.png (referenced as frontend/public/assets/store-logo.png). Ensure the logo maintains its circular shape using appropriate CSS (e.g., rounded-full, object-contain) and is sized appropriately for the header (e.g., h-12 w-12 or h-16 w-16). Verify the logo is wrapped in a Link component that navigates to the homepage ('/') when clicked."
+          "description": "Ensure all navigation buttons and the cart button meet minimum 44x44px touch target size by adjusting padding and height values, and optimize mobile navigation layout for one-handed use with larger tap areas."
+        },
+        {
+          "path": "frontend/src/components/CallUsButton.tsx",
+          "operation": "modify",
+          "description": "Ensure the floating call button meets minimum 44x44px touch target size and add touch feedback with active state scaling and appropriate positioning for one-handed mobile use."
         }
       ]
     },
     {
-      "id": "REQ-15",
-      "summary": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames for easy reference and maintenance",
+      "id": "REQ-19",
+      "summary": "Update HTML meta tags for mobile app configuration",
       "acceptanceCriteria": [
-        "Both images are saved in frontend/public/assets directory",
-        "Images are referenced using their static asset paths in the application",
-        "Images load correctly without any broken image links"
+        "Viewport meta tag is configured with width=device-width, initial-scale=1",
+        "Apple mobile web app capable meta tags are added",
+        "Status bar styling is configured for iOS",
+        "Android theme color is set to match app design"
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/shop-banner.png",
-          "operation": "create",
-          "description": "Copy the uploaded IMG_20251019_102908.png file to this location as shop-banner.png. This file serves as the main hero banner for the homepage showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number."
-        },
-        {
-          "path": "frontend/public/assets/store-logo.png",
-          "operation": "create",
-          "description": "Copy the uploaded Gemini_Generated_Image_rjk9furjk9furjk9.png file to this location as store-logo.png. This circular logo image features the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi, and will be used in the header navigation."
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Add mobile-specific meta tags in the head section: verify viewport meta tag includes width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes; add <meta name=\"apple-mobile-web-app-capable\" content=\"yes\">; add <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">; add <meta name=\"apple-mobile-web-app-title\" content=\"Maa Bhawani Store\">; and add <meta name=\"theme-color\" content=\"oklch(0.55 0.15 40)\"> matching the warm earthy theme color from the design system."
         }
       ]
     }

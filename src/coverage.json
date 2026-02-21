@@ -1,57 +1,85 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T02:41:40.061Z",
+  "generatedAt": "2026-02-21T03:07:48.548Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 2,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-13",
-        "summary": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+        "id": "REQ-16",
+        "summary": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/HomePage.tsx"
+          "frontend/public/manifest.json",
+          "frontend/index.html"
         ],
         "matchedFiles": [
-          "frontend/src/pages/HomePage.tsx"
+          "frontend/public/manifest.json",
+          "frontend/index.html"
         ]
       },
       {
-        "id": "REQ-14",
-        "summary": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+        "id": "REQ-17",
+        "summary": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/public/service-worker.js",
+          "frontend/src/main.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/public/service-worker.js"
         ]
       },
       {
-        "id": "REQ-15",
-        "summary": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames (shop-banner.png and store-logo.png) for easy reference and maintenance",
-        "status": "missing",
+        "id": "REQ-18",
+        "summary": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/shop-banner.png",
-          "frontend/public/assets/store-logo.png"
+          "frontend/src/index.css",
+          "frontend/src/components/CartDrawer.tsx",
+          "frontend/src/components/Header.tsx",
+          "frontend/src/components/CallUsButton.tsx"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/index.css",
+          "frontend/src/components/CartDrawer.tsx",
+          "frontend/src/components/Header.tsx",
+          "frontend/src/components/CallUsButton.tsx"
+        ]
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/index.html"
+        ],
+        "matchedFiles": [
+          "frontend/index.html"
+        ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/index.html",
+    "frontend/public/assets/generated/app-icon-192.dim_192x192.png",
+    "frontend/public/assets/generated/app-icon-512.dim_512x512.png",
+    "frontend/public/assets/generated/apple-touch-icon.dim_180x180.png",
+    "frontend/public/manifest.json",
+    "frontend/public/service-worker.js",
+    "frontend/src/components/CallUsButton.tsx",
+    "frontend/src/components/CartDrawer.tsx",
     "frontend/src/components/Header.tsx",
-    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/index.css",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

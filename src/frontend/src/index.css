@@ -91,3 +91,29 @@
         font-feature-settings: "rlig" 1, "calt" 1;
     }
 }
+
+@layer utilities {
+    /* Touch-friendly interactions for mobile */
+    button,
+    a[role="button"],
+    [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Touch feedback */
+    button:active,
+    a[role="button"]:active,
+    [role="button"]:active {
+        transform: scale(0.97);
+        transition: transform 0.1s ease;
+    }
+
+    /* Smooth transitions for touch interactions */
+    button,
+    a[role="button"],
+    [role="button"] {
+        transition: transform 0.1s ease, opacity 0.2s ease;
+    }
+}

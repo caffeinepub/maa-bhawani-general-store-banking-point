@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the hero banner and store logo with the uploaded custom shop images.
+**Goal:** Convert the web application into an installable mobile app using Progressive Web App (PWA) technology.
 
 **Planned changes:**
-- Replace the homepage hero banner with the uploaded shop interior banner image (IMG_20251019_102908.png)
-- Replace the header navigation logo with the uploaded circular store logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png)
-- Store both images as static assets in the frontend with descriptive filenames
+- Add PWA manifest file with app metadata, icons, and mobile configuration
+- Implement service worker for offline functionality and app installation
+- Optimize touch interactions and button sizes for mobile devices
+- Update HTML meta tags for mobile app behavior on iOS and Android
 
-**User-visible outcome:** The homepage displays the actual shop banner showing the store interior, Aadhar payment system, stationery availability, and contact information, while the header shows the circular Maa Bhawani General Store logo across all pages.
+**User-visible outcome:** Users can install the store app on their mobile home screen and use it like a native app with offline support and optimized mobile experience.

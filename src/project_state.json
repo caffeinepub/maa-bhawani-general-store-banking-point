@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 7,
   "summary": "E-commerce storefront for 'Maa Bhawani General Store & Banking Point' - a grocery store with product browsing, cart, ordering, admin panel for product management, Google sign-in with phone verification, mobile recharge facility, delivery fee based on distance, and INR pricing",
   "architectural_notes": [
     "Use INR (₹) for all product pricing",
@@ -14,6 +14,7 @@
   ],
   "known_issues": [],
   "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- App icon with store logo for mobile devices featuring the shopkeeper illustration and store name, suitable for home screen display (app-icon-192.dim_192x192.png)\n- Large app icon with store logo for mobile devices featuring the shopkeeper illustration and store name, optimized for high-resolution displays (app-icon-512.dim_512x512.png)\n- Apple touch icon with store logo for iOS devices featuring the shopkeeper illustration and store name (apple-touch-icon.dim_180x180.png)",
   "existing_features": [
     {
       "id": "feature-create-a-product-grid-displaying-grocery-items-aata-rice-sugar-spices-shampoo-etc-with-product-images-names-and-prices-in-inr-exclude-egg-and-bakery-products",
@@ -126,6 +127,38 @@
         "REQ-14"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-configure-the-application-for-mobile-app-deployment-by-adding-progressive-web-app-pwa-capabilities-including-a-web-manifest-file-with-appropriate-app-icons-theme-colors-matching-the-store-s-earthy-palette-display-mode-set-to-standalone-and-orientation-set-to-portrait-include-all-required-icon-sizes-for-ios-and-android",
+      "title": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-service-worker-to-enable-offline-functionality-and-app-installation-prompts-the-service-worker-should-cache-critical-assets-html-css-javascript-product-images-and-implement-a-cache-first-strategy-for-static-resources-and-network-first-strategy-for-api-calls",
+      "title": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-optimize-the-mobile-experience-by-enhancing-touch-interactions-improving-button-sizes-for-finger-friendly-tap-targets-minimum-44x44px-adding-touch-gestures-for-cart-drawer-and-ensuring-all-interactive-elements-are-easily-accessible-on-mobile-screens",
+      "title": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-html-meta-tags-to-include-mobile-specific-viewport-configuration-apple-mobile-web-app-capabilities-and-android-app-configuration-for-proper-mobile-app-behavior-when-installed-on-home-screens",
+      "title": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -195,6 +228,18 @@
       "reqIds": [
         "REQ-15"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Convert web application to mobile app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add pawankumarray843110@gmail.com as additional admin user",
+      "reqIds": [],
       "status": "pending"
     }
   ],

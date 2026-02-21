@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { useGetCart, useClearCart } from '../hooks/useQueries';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface CartDrawerProps {
   open: boolean;
@@ -16,6 +17,8 @@ export default function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
   const { data: cart = [] } = useGetCart();
   const clearCart = useClearCart();
   const navigate = useNavigate();
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const subtotal = cart.reduce(
     (sum, item) => sum + Number(item.product.priceInRupees) * Number(item.quantity),
@@ -40,9 +43,40 @@ export default function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
     }
   };
 
+  // Swipe gesture handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isRightSwipe) {
+      onOpenChange(false);
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+      <SheetContent 
+        className="w-full sm:max-w-lg flex flex-col"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -92,14 +126,14 @@ export default function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 <span>₹{subtotal}</span>
               </div>
 
-              <Button onClick={handleCheckout} className="w-full" size="lg">
+              <Button onClick={handleCheckout} className="w-full min-h-[48px]" size="lg">
                 Proceed to Checkout
               </Button>
 
               <Button
                 onClick={handleClearCart}
                 variant="outline"
-                className="w-full gap-2"
+                className="w-full gap-2 min-h-[48px]"
                 disabled={clearCart.isPending}
               >
                 <Trash2 className="h-4 w-4" />
