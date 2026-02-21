@@ -1,0 +1,205 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "E-commerce storefront for 'Maa Bhawani General Store & Banking Point' - a grocery store with product browsing, cart, ordering, admin panel for product management, Google sign-in with phone verification, mobile recharge facility, delivery fee based on distance, and INR pricing",
+  "architectural_notes": [
+    "Use INR (₹) for all product pricing",
+    "Product catalog limited to groceries (aata, rice, sugar, spices, shampoo) - no eggs or bakery",
+    "Fetch store details from Google Maps link: https://maps.app.goo.gl/i9v1ukJNWdsgT5gU7",
+    "Store name: 'Maa Bhawani General Store & Banking Point'",
+    "Contact phone: 9142876085",
+    "Authentication requires both Google OAuth and phone number",
+    "Mobile recharge requires: amount, mobile number, operator selection",
+    "Delivery logic: free within 1km, distance-based fee calculated for orders beyond 1km"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-product-grid-displaying-grocery-items-aata-rice-sugar-spices-shampoo-etc-with-product-images-names-and-prices-in-inr-exclude-egg-and-bakery-products",
+      "title": "Create a product grid displaying grocery items (aata, rice, sugar, spices, shampoo, etc.) with product images, names, and prices in INR (₹). Exclude egg and bakery products.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-category-filtering-system-for-grocery-products-allowing-users-to-browse-by-product-categories-grains-spices-personal-care-etc",
+      "title": "Implement category filtering system for grocery products allowing users to browse by product categories (grains, spices, personal care, etc.)",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-shopping-cart-system-that-allows-users-to-add-products-adjust-quantities-view-cart-total-in-and-proceed-to-checkout",
+      "title": "Create a shopping cart system that allows users to add products, adjust quantities, view cart total in ₹, and proceed to checkout",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-google-sign-in-authentication-with-mandatory-phone-number-collection-during-registration-or-first-login",
+      "title": "Implement Google sign-in authentication with mandatory phone number collection during registration or first login",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-order-placement-system-that-collects-customer-details-delivery-address-phone-number-and-submits-orders-for-products-in-the-cart",
+      "title": "Create order placement system that collects customer details (delivery address, phone number) and submits orders for products in the cart",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-store-details-prominently-including-name-maa-bhawani-general-store-banking-point-address-from-google-maps-link-https-maps-app-goo-gl-i9v1ukjnwdsgt5gu7-and-contact-phone-number-9142876085",
+      "title": "Display store details prominently including name 'Maa Bhawani General Store & Banking Point', address from Google Maps link (https://maps.app.goo.gl/i9v1ukJNWdsgT5gU7), and contact phone number 9142876085",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-call-us-support-button-link-prominently-displayed-that-dials-phone-number-9142876085-when-clicked",
+      "title": "Add a 'Call Us' support button/link prominently displayed that dials phone number 9142876085 when clicked",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-mobile-recharge-ordering-system-with-a-banner-section-where-customers-can-order-recharge-packs-by-entering-mobile-number-selecting-operator-telecom-company-and-specifying-recharge-amount",
+      "title": "Create a mobile recharge ordering system with a banner/section where customers can order recharge packs by entering mobile number, selecting operator (telecom company), and specifying recharge amount",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-distance-based-delivery-fee-calculation-free-delivery-up-to-1km-paid-delivery-fee-for-distances-beyond-1km-e-g-2km-requires-payment",
+      "title": "Implement distance-based delivery fee calculation: free delivery up to 1km, paid delivery fee for distances beyond 1km (e.g., 2km requires payment)",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-qr-code-for-online-payment-of-delivery-fees-and-order-amounts-with-clear-instructions-for-customers",
+      "title": "Display QR code for online payment of delivery fees and order amounts with clear instructions for customers",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-panel-accessible-only-to-the-store-owner-for-adding-new-products-name-category-price-in-image-and-removing-existing-products-from-the-inventory",
+      "title": "Create an admin panel accessible only to the store owner for adding new products (name, category, price in ₹, image) and removing existing products from the inventory",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-design-a-professional-visually-cohesive-storefront-with-a-warm-trustworthy-aesthetic-suitable-for-a-local-grocery-store-use-earthy-tones-clear-typography-and-an-organized-layout-that-emphasizes-product-browsing-and-easy-navigation",
+      "title": "Design a professional, visually cohesive storefront with a warm, trustworthy aesthetic suitable for a local grocery store. Use earthy tones, clear typography, and an organized layout that emphasizes product browsing and easy navigation.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-existing-hero-banner-on-the-homepage-with-the-uploaded-shop-banner-image-img-20251019-102908-png-showing-the-store-interior-logo-aadhar-enabled-payment-system-stationery-availability-and-contact-number",
+      "title": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-store-logo-in-the-header-navigation-with-the-uploaded-circular-logo-image-gemini-generated-image-rjk9furjk9furjk9-png-featuring-the-shopkeeper-illustration-and-maa-bhawani-general-store-text-in-hindi",
+      "title": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Product grid with categories and filters for grocery items",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Shopping cart functionality",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Google sign-in with mandatory phone number collection",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Order placement system for listed products",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Admin panel for adding/removing products",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Display store details (name, address, phone: 9142876085)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Mobile recharge ordering system with operator selection",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Distance-based delivery fee (free up to 1km, paid beyond)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "QR code payment integration",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Support/Call Us option with phone number",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames (shop-banner.png and store-logo.png) for easy reference and maintenance",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Maa Bhawani General Store & Banking Point",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

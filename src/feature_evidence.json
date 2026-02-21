@@ -1,0 +1,45 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-replace-the-existing-hero-banner-on-the-homepage-with-the-uploaded-shop-banner-image-img-20251019-102908-png-showing-the-store-interior-logo-aadhar-enabled-payment-system-stationery-availability-and-contact-number",
+      "featureTitle": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "files": [
+        "frontend/src/pages/HomePage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-replace-the-store-logo-in-the-header-navigation-with-the-uploaded-circular-logo-image-gemini-generated-image-rjk9furjk9furjk9-png-featuring-the-shopkeeper-illustration-and-maa-bhawani-general-store-text-in-hindi",
+      "featureTitle": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "files": [
+        "frontend/src/components/Header.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-14"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

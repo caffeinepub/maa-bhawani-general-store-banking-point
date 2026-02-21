@@ -1,2 +1,3 @@
-# maa-bhawani-general-store-banking-point
-Exported from Caffeine project: Maa Bhawani General Store &amp; Banking Point
+## 
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

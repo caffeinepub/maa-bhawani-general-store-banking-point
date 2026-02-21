@@ -1,0 +1,61 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Add shop banner and logo from uploaded images",
+  "requirements": [
+    {
+      "id": "REQ-13",
+      "summary": "Replace the existing hero banner on the homepage with the uploaded shop banner image showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "acceptanceCriteria": [
+        "The shop banner image (IMG_20251019_102908.png) is displayed prominently at the top of the homepage",
+        "The banner maintains its aspect ratio and is responsive across different screen sizes",
+        "The banner replaces any existing hero/banner section on the homepage"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Replace the existing hero banner section with the uploaded shop banner image. Update the hero section to display IMG_20251019_102908.png (referenced as frontend/public/assets/shop-banner.png) as the main banner image. Ensure the image is responsive using appropriate CSS classes (e.g., w-full, object-cover) and maintains aspect ratio across different screen sizes. Remove or replace any existing hero text/content that conflicts with the banner image display."
+        }
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "summary": "Replace the store logo in the header navigation with the uploaded circular logo image featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "acceptanceCriteria": [
+        "The circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) appears in the header navigation",
+        "The logo is appropriately sized and maintains its circular shape",
+        "The logo links to the homepage when clicked",
+        "The logo is visible on all pages of the application"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Replace the existing store logo in the header with the uploaded circular logo image. Update the logo image source to reference Gemini_Generated_Image_rjk9furjk9furjk9.png (referenced as frontend/public/assets/store-logo.png). Ensure the logo maintains its circular shape using appropriate CSS (e.g., rounded-full, object-contain) and is sized appropriately for the header (e.g., h-12 w-12 or h-16 w-16). Verify the logo is wrapped in a Link component that navigates to the homepage ('/') when clicked."
+        }
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "summary": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames for easy reference and maintenance",
+      "acceptanceCriteria": [
+        "Both images are saved in frontend/public/assets directory",
+        "Images are referenced using their static asset paths in the application",
+        "Images load correctly without any broken image links"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/shop-banner.png",
+          "operation": "create",
+          "description": "Copy the uploaded IMG_20251019_102908.png file to this location as shop-banner.png. This file serves as the main hero banner for the homepage showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number."
+        },
+        {
+          "path": "frontend/public/assets/store-logo.png",
+          "operation": "create",
+          "description": "Copy the uploaded Gemini_Generated_Image_rjk9furjk9furjk9.png file to this location as store-logo.png. This circular logo image features the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi, and will be used in the header navigation."
+        }
+      ]
+    }
+  ]
+}

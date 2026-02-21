@@ -1,0 +1,74 @@
+{
+  "kind": "build_request",
+  "title": "Add shop banner and logo from uploaded images",
+  "projectName": "Maa Bhawani Store",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-13",
+      "text": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "Can You Add A Banner Of My Shop And Logo I Am Giving You"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The shop banner image (IMG_20251019_102908.png) is displayed prominently at the top of the homepage",
+        "The banner maintains its aspect ratio and is responsive across different screen sizes",
+        "The banner replaces any existing hero/banner section on the homepage"
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "Can You Add A Banner Of My Shop And Logo I Am Giving You"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) appears in the header navigation",
+        "The logo is appropriately sized and maintains its circular shape",
+        "The logo links to the homepage when clicked",
+        "The logo is visible on all pages of the application"
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames (shop-banner.png and store-logo.png) for easy reference and maintenance",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Both images are saved in frontend/public/assets directory",
+        "Images are referenced using their static asset paths in the application",
+        "Images load correctly without any broken image links"
+      ]
+    }
+  ],
+  "constraints": [
+    "Use the exact uploaded images without modification or regeneration",
+    "Maintain the existing header and homepage component structure",
+    "Ensure images are optimized for web performance"
+  ],
+  "nonGoals": [
+    "Modifying the uploaded images in any way",
+    "Changing the overall layout or structure beyond banner and logo replacement",
+    "Adding new branding elements beyond the provided banner and logo"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}
