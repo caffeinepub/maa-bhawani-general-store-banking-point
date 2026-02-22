@@ -24,10 +24,10 @@ export default function BillTemplate({ bill }: BillTemplateProps) {
       <div className="text-center space-y-2 mb-4">
         <h1 className="text-xl font-bold">Maa Bhawani General Store</h1>
         <h2 className="text-sm font-semibold">& Banking Point</h2>
-        <p className="text-xs">
-          Vill+Post-Bhagatpur, Thana-Bhagatpur
+        <p className="text-xs font-medium">
+          Bardiha Turki - Tarvadih
           <br />
-          Dist-Vaishali, Bihar-844114
+          (Patepur-Vaishali 843110), Bihar
         </p>
         <p className="text-xs font-semibold">Phone: 9142876085</p>
         <p className="text-xs italic border-t border-b border-gray-300 py-1 mt-2">{slogan}</p>

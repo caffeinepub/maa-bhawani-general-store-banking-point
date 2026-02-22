@@ -48,16 +48,25 @@ export const BillItem = IDL.Record({
   'quantity' : IDL.Nat,
   'totalPrice' : IDL.Nat,
 });
+export const PaymentStatus = IDL.Variant({
+  'pending' : IDL.Null,
+  'completed' : IDL.Null,
+  'refunded' : IDL.Null,
+  'failed' : IDL.Null,
+});
 export const Time = IDL.Int;
 export const Bill = IDL.Record({
   'id' : IDL.Nat,
   'customerName' : IDL.Opt(IDL.Text),
+  'paymentStatus' : PaymentStatus,
   'customerPhone' : IDL.Opt(IDL.Text),
   'totalAmount' : IDL.Nat,
   'billNumber' : IDL.Text,
   'timestamp' : Time,
   'generatedByAdmin' : IDL.Principal,
+  'paymentReference' : IDL.Opt(IDL.Text),
   'items' : IDL.Vec(BillItem),
+  'paymentGatewayId' : IDL.Opt(IDL.Text),
 });
 export const Order = IDL.Record({
   'id' : IDL.Nat,
@@ -161,6 +170,11 @@ export const idlService = IDL.Service({
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setShopSlogan' : IDL.Func([IDL.Text], [], []),
   'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'updateBillPaymentStatus' : IDL.Func(
+      [IDL.Nat, PaymentStatus, IDL.Opt(IDL.Text), IDL.Opt(IDL.Text)],
+      [Bill],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -203,16 +217,25 @@ export const idlFactory = ({ IDL }) => {
     'quantity' : IDL.Nat,
     'totalPrice' : IDL.Nat,
   });
+  const PaymentStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'completed' : IDL.Null,
+    'refunded' : IDL.Null,
+    'failed' : IDL.Null,
+  });
   const Time = IDL.Int;
   const Bill = IDL.Record({
     'id' : IDL.Nat,
     'customerName' : IDL.Opt(IDL.Text),
+    'paymentStatus' : PaymentStatus,
     'customerPhone' : IDL.Opt(IDL.Text),
     'totalAmount' : IDL.Nat,
     'billNumber' : IDL.Text,
     'timestamp' : Time,
     'generatedByAdmin' : IDL.Principal,
+    'paymentReference' : IDL.Opt(IDL.Text),
     'items' : IDL.Vec(BillItem),
+    'paymentGatewayId' : IDL.Opt(IDL.Text),
   });
   const Order = IDL.Record({
     'id' : IDL.Nat,
@@ -317,6 +340,11 @@ export const idlFactory = ({ IDL }) => {
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setShopSlogan' : IDL.Func([IDL.Text], [], []),
     'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'updateBillPaymentStatus' : IDL.Func(
+        [IDL.Nat, PaymentStatus, IDL.Opt(IDL.Text), IDL.Opt(IDL.Text)],
+        [Bill],
+        [],
+      ),
   });
 };
 

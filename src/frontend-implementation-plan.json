@@ -1,150 +1,129 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix barcode scanner in admin billing with high-speed library and professional features",
+  "title": "Professional Barcode Scanner Upgrade & Address Correction",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
+      "summary": "Update hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' on all bills",
       "acceptanceCriteria": [
-        "Barcode scanner successfully detects and decodes EAN-13 and UPC barcodes",
-        "Scanner uses one of the specified libraries (QuaggaJS, ZXing, or Html5-QRCode)",
-        "Scanning works reliably with standard retail product barcodes"
+        "Address 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' is printed at the top of every bill",
+        "Address appears on both screen-displayed bills and printed receipts",
+        "Store name is displayed alongside the address"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BarcodeScanner.tsx",
-          "operation": "create",
-          "description": "Create a professional barcode scanner component using QuaggaJS library for high-speed EAN-13 and UPC barcode recognition. Component should integrate with the camera/useCamera hook for camera access and provide callbacks for successful scans and errors. Include proper initialization, cleanup, and continuous scanning support. The component must handle camera permissions gracefully and provide a clear preview area for scanning."
-        },
-        {
-          "path": "frontend/src/pages/BillingPage.tsx",
+          "path": "frontend/src/components/BillTemplate.tsx",
           "operation": "modify",
-          "description": "Replace the existing basic camera-based barcode scanner with the new BarcodeScanner component. Remove manual barcode input camera logic and integrate the high-speed scanner. Ensure the scanner modal displays the BarcodeScanner component with proper dimensions and controls. Wire scanner success callbacks to trigger product lookup and addition to bill items."
-        },
-        {
-          "path": "frontend/package.json",
-          "operation": "modify",
-          "description": "Add QuaggaJS library dependency (@ericblade/quagga2) for high-speed barcode scanning with EAN-13 and UPC support. Include TypeScript type definitions if available."
+          "description": "Replace the hardcoded address constant with 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar'. Ensure the address is displayed prominently at the top of the bill template alongside the store name 'Maa Bhawani General Store'. Verify the address formatting works correctly for both screen display and 80mm thermal printer output."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
+      "summary": "Replace Quagga2 barcode scanner with high-performance zero-latency scanner supporting blurred, tilted, and low-light barcodes",
       "acceptanceCriteria": [
-        "Camera uses auto-focus mode when available",
-        "UI includes a visible Flash/Torch toggle button",
-        "Flash/Torch can be turned on and off during scanning",
-        "Scanner works effectively in low-light environments when flash is enabled"
+        "Barcode detection occurs within milliseconds of barcode entering camera frame",
+        "Scanner successfully reads barcodes that are slightly blurred",
+        "Scanner successfully reads barcodes that are tilted at various angles",
+        "Scanner functions effectively in low-light conditions",
+        "No perceptible lag between barcode presentation and detection"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/BarcodeScanner.tsx",
           "operation": "modify",
-          "description": "Add flash/torch toggle functionality to the BarcodeScanner component. Implement a visible toggle button in the scanner UI that enables/disables the device torch using MediaStreamTrack API. Configure camera constraints to request auto-focus capability when initializing the video stream. Include visual feedback for flash state (icon change or color indication). Handle devices that don't support torch gracefully by hiding or disabling the toggle."
+          "description": "Replace the current Quagga2 barcode scanner implementation with a high-performance scanning solution. Use the camera component's useCamera hook to provide camera access. Integrate a more robust barcode detection library (such as ZXing-based solution or @ericblade/quagga2 with optimized configuration) that supports enhanced decoding algorithms capable of reading blurred, tilted, and low-light barcodes. Configure continuous scanning mode with minimal processing latency. Remove the CDN-based Quagga loading and use npm-installed packages. Verify the camera component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/BillingPage.tsx",
+          "path": "frontend/package.json",
           "operation": "modify",
-          "description": "Ensure the scanner modal layout accommodates the flash toggle button and provides sufficient space for scanner controls. Update camera configuration passed to BarcodeScanner to request auto-focus and environment-facing camera for optimal scanning."
+          "description": "Add dependencies for the new high-performance barcode scanning library (e.g., @ericblade/quagga2 or @zxing/library) to replace the CDN-loaded Quagga2. Ensure compatibility with React 18 and TypeScript."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+      "summary": "Add instant haptic feedback (vibration) and success beep sound on successful barcode scan",
       "acceptanceCriteria": [
-        "Scanned barcode triggers immediate product lookup in the backend",
-        "Product with matching barcode is retrieved with name, price, and GST details",
-        "Product is automatically added to the billing list without user interaction",
-        "Entire flow happens seamlessly after scan recognition"
+        "Phone vibrates immediately when barcode is successfully scanned",
+        "Success beep sound plays immediately when barcode is successfully scanned",
+        "Haptic and audio feedback occur simultaneously",
+        "Feedback triggers only on successful scans, not on failed attempts"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/BillingPage.tsx",
+          "path": "frontend/src/components/BarcodeScanner.tsx",
           "operation": "modify",
-          "description": "Implement automatic product fetch and addition flow in the barcode scan success callback. When BarcodeScanner detects a barcode, immediately call the backend getProductByBarcode method using the existing useQueries hook. Upon successful product retrieval, automatically add the product to billItems state with quantity 1 and calculate prices including GST (18% as per existing logic). Handle the complete flow without requiring manual confirmation or button clicks. Update UI to show loading state during fetch and provide feedback when product is added."
+          "description": "Add haptic feedback using the Vibration API (navigator.vibrate) that triggers immediately upon successful barcode detection. Enhance the existing beep sound functionality to play instantly with the haptic feedback. Ensure both feedback mechanisms trigger simultaneously and only on successful scans. Handle cases where vibration is not supported gracefully. The beep sound asset already exists at frontend/public/beep.mp3."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+      "summary": "Implement auto-quantity increment for duplicate barcode scans instead of showing errors",
       "acceptanceCriteria": [
-        "Camera remains open after a successful scan",
-        "Admin can immediately scan another barcode without reopening the scanner",
-        "Scanner only closes when explicitly dismissed by the admin",
-        "Multiple products can be added in rapid succession"
+        "Scanning the same barcode twice increments quantity to 2 on the existing line item",
+        "Each additional scan of the same barcode continues to increment quantity",
+        "No error messages appear when scanning duplicate barcodes",
+        "No duplicate line items are created for the same product",
+        "Quantity updates are reflected immediately in the bill preview"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BarcodeScanner.tsx",
-          "operation": "modify",
-          "description": "Implement continuous scanning mode in BarcodeScanner component. After a successful barcode detection and callback execution, keep the camera stream active and QuaggaJS detection running instead of stopping. Add a small cooldown period (300-500ms) after each successful scan to prevent duplicate detections of the same barcode. Provide a visible 'Close' or 'Done' button that admin must click to stop scanning and close the camera."
-        },
-        {
           "path": "frontend/src/pages/BillingPage.tsx",
           "operation": "modify",
-          "description": "Update scanner modal to support continuous scanning workflow. Remove automatic modal closure after successful scans. Keep isScannerOpen state true after product additions. Ensure the close button in the modal properly stops the camera and closes the scanner. Update UI to show brief feedback (like a flash or checkmark animation) after each successful scan while keeping scanner active."
+          "description": "Modify the barcode scan handling logic to check if a scanned product already exists in the current bill items. If the product exists, increment its quantity by 1 instead of adding a new line item or showing an error. Update the quantity input field to reflect the new quantity immediately. Ensure the total amount recalculates automatically when quantity is incremented."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+      "summary": "Add professional scanning overlay UI with laser line or square box guide to the camera view",
       "acceptanceCriteria": [
-        "Distinct beep sound plays immediately after successful scan",
-        "Sound provides clear confirmation without being disruptive",
-        "Audio feedback works consistently across scan sessions"
+        "Camera view displays a visible scanning guide (laser line or square box)",
+        "Overlay clearly indicates the optimal barcode placement area",
+        "Overlay does not obstruct camera view or interfere with scanning",
+        "Overlay appears professional and matches the app's design system"
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/beep.mp3",
-          "operation": "create",
-          "description": "Add a short, pleasant beep sound file (MP3 format, ~0.5 seconds duration) to the public assets directory for barcode scan success audio feedback. The sound should be clear and professional, suitable for retail point-of-sale environments."
-        },
-        {
           "path": "frontend/src/components/BarcodeScanner.tsx",
           "operation": "modify",
-          "description": "Add audio feedback capability to BarcodeScanner component. Create an Audio instance referencing the beep sound file at /assets/beep.mp3. Play the beep sound immediately after successful barcode detection and before triggering the onScan callback. Handle audio playback errors gracefully (e.g., if autoplay is blocked). Ensure sound plays consistently for each successful scan in continuous mode."
+          "description": "Add a professional scanning overlay UI component that renders on top of the camera preview. Implement either a horizontal laser line animation or a square box guide that indicates the optimal barcode scanning area. Use CSS positioning (absolute/fixed) to overlay the guide on the video element without obstructing the camera feed. Style the overlay using the app's color palette from frontend/src/index.css to ensure visual consistency. The overlay should be semi-transparent and clearly visible against various backgrounds."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+      "summary": "Ensure bill total syncs with payment gateway for seamless checkout after bill generation",
       "acceptanceCriteria": [
-        "Popup appears when barcode lookup returns no matching product",
-        "Popup displays the exact text 'Product Not Found - Add Manually?'",
-        "Popup provides clear visual feedback and is easy to dismiss",
-        "Scanner remains ready to scan next item after error handling"
+        "Bill total is accurately transmitted to payment gateway",
+        "Payment gateway displays the correct amount from the generated bill",
+        "Checkout flow works seamlessly after bill generation",
+        "No manual entry of payment amount is required"
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BillingPage.tsx",
           "operation": "modify",
-          "description": "Add error handling for barcode lookup failures in the scan callback. When getProductByBarcode returns null (product not found), display a toast notification or alert dialog with the exact message 'Product Not Found - Add Manually?'. Use the existing toast system (react-hot-toast) for consistency. Ensure the error message is brief (2-3 seconds) and doesn't interrupt continuous scanning. Scanner should remain active and ready for the next scan after showing the error."
+          "description": "After generating a bill, ensure the total amount from the Bill object is properly passed to the payment gateway integration. Verify that the updateBillPaymentStatus backend capability is called with the correct payment reference and gateway ID once payment is confirmed. Add any necessary state management to track the bill total and payment status during the checkout flow."
         }
       ]
     },
     {
       "id": "REQ-7",
-      "summary": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+      "summary": "Update camera permission description in app settings to describe professional barcode scanning",
       "acceptanceCriteria": [
-        "Camera permission prompt shows the specified description",
-        "Description complies with app store requirements for permission justification"
+        "Camera permission prompt displays the specified description",
+        "Description accurately reflects the professional barcode scanning functionality",
+        "Text appears when user is first prompted for camera permissions"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BarcodeScanner.tsx",
-          "operation": "modify",
-          "description": "Add a permission explanation UI that displays before requesting camera access. Show an information dialog or banner with the text 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers' when the user first opens the scanner or if permission was previously denied. This ensures users understand why camera access is needed before the browser permission prompt appears."
-        },
-        {
           "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Add camera permission usage description meta tag for PWA compliance. Include <meta name=\"camera-usage-description\" content=\"This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers\" /> to satisfy app store requirements for permission justification when the PWA is installed."
+          "description": "Update the camera usage description meta tag content to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.' This description appears in browser permission prompts and PWA install prompts on mobile devices."
         }
       ]
     }

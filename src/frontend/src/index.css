@@ -3,153 +3,136 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --radius: 0.75rem;
-        
-        /* Warm, earthy palette for grocery store */
-        --background: 0.98 0.01 40;
-        --foreground: 0.25 0.02 30;
-        
-        --card: 1 0 0;
-        --card-foreground: 0.25 0.02 30;
-        
-        --popover: 1 0 0;
-        --popover-foreground: 0.25 0.02 30;
-        
-        /* Warm brown primary */
-        --primary: 0.45 0.12 45;
-        --primary-foreground: 0.98 0.01 40;
-        
-        /* Soft cream secondary */
-        --secondary: 0.95 0.02 50;
-        --secondary-foreground: 0.35 0.02 35;
-        
-        --muted: 0.94 0.02 45;
-        --muted-foreground: 0.50 0.02 35;
-        
-        /* Warm orange accent */
-        --accent: 0.70 0.15 50;
-        --accent-foreground: 0.98 0.01 40;
-        
-        --destructive: 0.55 0.22 25;
-        --destructive-foreground: 0.98 0.01 40;
-        
-        --border: 0.88 0.02 45;
-        --input: 0.88 0.02 45;
-        --ring: 0.45 0.12 45;
-        
-        --chart-1: 0.65 0.18 120;
-        --chart-2: 0.70 0.15 50;
-        --chart-3: 0.55 0.12 30;
-        --chart-4: 0.75 0.10 80;
-        --chart-5: 0.60 0.14 160;
-    }
+  :root {
+    /* Warm earthy color palette for grocery store */
+    --background: oklch(98% 0.01 85);
+    --foreground: oklch(25% 0.02 85);
+    --card: oklch(100% 0 0);
+    --card-foreground: oklch(25% 0.02 85);
+    --popover: oklch(100% 0 0);
+    --popover-foreground: oklch(25% 0.02 85);
+    --primary: oklch(55% 0.15 45);
+    --primary-foreground: oklch(98% 0.01 85);
+    --secondary: oklch(85% 0.05 85);
+    --secondary-foreground: oklch(25% 0.02 85);
+    --muted: oklch(92% 0.02 85);
+    --muted-foreground: oklch(50% 0.02 85);
+    --accent: oklch(75% 0.12 65);
+    --accent-foreground: oklch(25% 0.02 85);
+    --destructive: oklch(55% 0.22 25);
+    --destructive-foreground: oklch(98% 0.01 85);
+    --border: oklch(88% 0.02 85);
+    --input: oklch(88% 0.02 85);
+    --ring: oklch(55% 0.15 45);
+    --radius: 0.5rem;
+    --success: oklch(60% 0.15 145);
+    --warning: oklch(70% 0.15 75);
+  }
 
-    .dark {
-        --background: 0.20 0.02 30;
-        --foreground: 0.95 0.01 40;
-        
-        --card: 0.25 0.02 30;
-        --card-foreground: 0.95 0.01 40;
-        
-        --popover: 0.22 0.02 30;
-        --popover-foreground: 0.95 0.01 40;
-        
-        /* Lighter brown for dark mode */
-        --primary: 0.65 0.12 45;
-        --primary-foreground: 0.20 0.02 30;
-        
-        --secondary: 0.30 0.02 35;
-        --secondary-foreground: 0.95 0.01 40;
-        
-        --muted: 0.32 0.02 35;
-        --muted-foreground: 0.70 0.02 40;
-        
-        --accent: 0.75 0.15 50;
-        --accent-foreground: 0.20 0.02 30;
-        
-        --destructive: 0.60 0.22 25;
-        --destructive-foreground: 0.95 0.01 40;
-        
-        --border: 0.35 0.02 35;
-        --input: 0.35 0.02 35;
-        --ring: 0.65 0.12 45;
-        
-        --chart-1: 0.70 0.18 120;
-        --chart-2: 0.75 0.15 50;
-        --chart-3: 0.60 0.12 30;
-        --chart-4: 0.80 0.10 80;
-        --chart-5: 0.65 0.14 160;
-    }
-
-    * {
-        @apply border-border;
-    }
-    
-    body {
-        @apply bg-background text-foreground;
-        font-feature-settings: "rlig" 1, "calt" 1;
-    }
+  .dark {
+    --background: oklch(20% 0.02 85);
+    --foreground: oklch(95% 0.01 85);
+    --card: oklch(22% 0.02 85);
+    --card-foreground: oklch(95% 0.01 85);
+    --popover: oklch(22% 0.02 85);
+    --popover-foreground: oklch(95% 0.01 85);
+    --primary: oklch(65% 0.15 45);
+    --primary-foreground: oklch(20% 0.02 85);
+    --secondary: oklch(30% 0.05 85);
+    --secondary-foreground: oklch(95% 0.01 85);
+    --muted: oklch(28% 0.02 85);
+    --muted-foreground: oklch(70% 0.02 85);
+    --accent: oklch(40% 0.12 65);
+    --accent-foreground: oklch(95% 0.01 85);
+    --destructive: oklch(55% 0.22 25);
+    --destructive-foreground: oklch(95% 0.01 85);
+    --border: oklch(32% 0.02 85);
+    --input: oklch(32% 0.02 85);
+    --ring: oklch(65% 0.15 45);
+    --success: oklch(60% 0.15 145);
+    --warning: oklch(70% 0.15 75);
+  }
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Touch-friendly utilities */
 @layer utilities {
-    /* Touch-friendly interactions for mobile */
-    button,
-    a[role="button"],
-    [role="button"] {
-        min-height: 44px;
-        min-width: 44px;
-        -webkit-tap-highlight-color: transparent;
-    }
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
 
-    /* Touch feedback */
-    button:active,
-    a[role="button"]:active,
-    [role="button"]:active {
-        transform: scale(0.97);
-        transition: transform 0.1s ease;
-    }
-
-    /* Smooth transitions for touch interactions */
-    button,
-    a[role="button"],
-    [role="button"] {
-        transition: transform 0.1s ease, opacity 0.2s ease;
-    }
+  .touch-target-lg {
+    min-width: 64px;
+    min-height: 64px;
+  }
 }
 
-/* Print styles for bills */
+/* Print styles for thermal printer (80mm width) */
 @media print {
-    body * {
-        visibility: hidden;
-    }
-    
-    .bill-template,
-    .bill-template * {
-        visibility: visible;
-    }
-    
-    .bill-template {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 80mm;
-        margin: 0;
-        padding: 10mm;
-        background: white;
-    }
-    
-    .no-print,
-    header,
-    footer,
-    nav,
-    button,
-    .no-print * {
-        display: none !important;
-    }
-    
-    @page {
-        size: 80mm auto;
-        margin: 0;
-    }
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+  }
+
+  .bill-template {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 80mm !important;
+    margin: 0 !important;
+    padding: 5mm !important;
+  }
+}
+
+/* Laser line animation for barcode scanner */
+@keyframes scan-line {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
 }

@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-22T03:20:15.880Z",
+  "generatedAt": "2026-02-22T03:37:26.622Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,71 +12,63 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
+        "summary": "Update the hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' and ensure it appears at the top of every generated bill/invoice along with the store name",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
-          "frontend/src/pages/BillingPage.tsx",
-          "frontend/package.json"
+          "frontend/src/components/BillTemplate.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
-          "frontend/src/pages/BillingPage.tsx"
+          "frontend/src/components/BillTemplate.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
+        "summary": "Replace the current Quagga2 barcode scanner with a zero-latency, high-performance scanner that uses enhanced decoding algorithms capable of reading barcodes even when blurred, tilted, or in low-light conditions",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/BarcodeScanner.tsx",
-          "frontend/src/pages/BillingPage.tsx"
+          "frontend/package.json"
         ],
         "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
-          "frontend/src/pages/BillingPage.tsx"
+          "frontend/src/components/BarcodeScanner.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+        "summary": "Add haptic feedback (phone vibration) and a success beep sound that triggers instantly upon successful barcode scan",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/BillingPage.tsx"
+          "frontend/src/components/BarcodeScanner.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/BillingPage.tsx"
+          "frontend/src/components/BarcodeScanner.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+        "summary": "Implement auto-quantity increment functionality so that scanning the same barcode multiple times automatically increases the quantity (e.g., Qty: 2) in the bill instead of showing an error or adding duplicate line items",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
           "frontend/src/pages/BillingPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
           "frontend/src/pages/BillingPage.tsx"
         ]
       },
       {
         "id": "REQ-5",
-        "summary": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+        "summary": "Add a professional scanning overlay UI to the camera view with either a laser line or square box guide so the admin knows exactly where to point the barcode for optimal scanning",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/beep.mp3",
           "frontend/src/components/BarcodeScanner.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/beep.mp3",
           "frontend/src/components/BarcodeScanner.tsx"
         ]
       },
       {
         "id": "REQ-6",
-        "summary": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+        "summary": "Ensure the final bill total is synced with the payment gateway for seamless checkout after barcode scanning is complete and the bill is generated",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/BillingPage.tsx"
@@ -87,14 +79,12 @@
       },
       {
         "id": "REQ-7",
-        "summary": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+        "summary": "Update the camera permission description in the app settings to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.'",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
           "frontend/index.html"
         ],
         "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
           "frontend/index.html"
         ]
       }
@@ -102,17 +92,20 @@
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/index.html",
-    "frontend/public/assets/beep.mp3",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
     "frontend/src/components/BarcodeScanner.tsx",
+    "frontend/src/components/BillTemplate.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
+    "frontend/src/index.css",
+    "frontend/src/pages/AdminSettingsPage.tsx",
     "frontend/src/pages/BillingPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

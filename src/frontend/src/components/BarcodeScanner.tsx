@@ -74,6 +74,13 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
     }
   };
 
+  // Trigger haptic feedback (vibration)
+  const triggerHaptic = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(100); // Short vibration (100ms)
+    }
+  };
+
   // Toggle flash/torch
   const toggleFlash = async () => {
     if (!videoTrackRef.current) return;
@@ -117,7 +124,7 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
             },
             locator: {
               patchSize: 'medium',
-              halfSample: true,
+              halfSample: false, // Better quality for blurred barcodes
             },
             numOfWorkers: navigator.hardwareConcurrency || 4,
             decoder: {
@@ -132,7 +139,7 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
               multiple: false,
             },
             locate: true,
-            frequency: 10,
+            frequency: 10, // High frequency for low-latency scanning
           },
           (err: any) => {
             if (err) {
@@ -169,8 +176,9 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
           // Avoid duplicate scans
           if (code === lastScannedCode) return;
 
-          // Play beep sound
+          // Play beep sound and trigger haptic feedback
           playBeep();
+          triggerHaptic();
 
           // Visual feedback
           setLastScannedCode(code);
@@ -245,7 +253,7 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
           <Alert className="bg-blue-500/90 border-blue-400 text-white">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers.
+              This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.
             </AlertDescription>
           </Alert>
         </div>
@@ -269,21 +277,31 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
           />
         )}
 
-        {/* Scanning Overlay */}
+        {/* Professional Scanning Overlay */}
         {isInitialized && (
           <div className="absolute inset-0 pointer-events-none">
-            {/* Scanning frame */}
+            {/* Scanning frame with laser line */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-4/5 max-w-md aspect-video">
-                <div className="absolute inset-0 border-2 border-green-500 rounded-lg shadow-lg">
+              <div className="relative w-4/5 max-w-md aspect-[4/3]">
+                {/* Corner frame */}
+                <div className="absolute inset-0 border-2 border-green-500 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.5)]">
                   {/* Corner markers */}
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-400 rounded-tl-lg" />
-                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-400 rounded-tr-lg" />
-                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-400 rounded-bl-lg" />
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-400 rounded-br-lg" />
+                  <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-green-400 rounded-tl-lg" />
+                  <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-green-400 rounded-tr-lg" />
+                  <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-green-400 rounded-bl-lg" />
+                  <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-green-400 rounded-br-lg" />
                   
-                  {/* Scanning line animation */}
-                  <div className="absolute inset-x-0 top-1/2 h-0.5 bg-green-400 animate-pulse" />
+                  {/* Animated laser line */}
+                  <div className="absolute inset-x-0 top-0 h-full overflow-hidden">
+                    <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent animate-scan-line shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
+                  </div>
+                </div>
+
+                {/* Instruction text */}
+                <div className="absolute -bottom-12 left-0 right-0 text-center">
+                  <p className="text-white text-sm font-medium drop-shadow-lg">
+                    Position barcode within the frame
+                  </p>
                 </div>
               </div>
             </div>
@@ -291,9 +309,12 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
             {/* Success feedback */}
             {lastScannedCode && (
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
-                  <CheckCircle2 className="h-6 w-6" />
-                  <span className="font-semibold">Scanned!</span>
+                <div className="bg-green-500 text-white px-8 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-pulse">
+                  <CheckCircle2 className="h-8 w-8" />
+                  <div>
+                    <span className="font-bold text-lg">Scanned!</span>
+                    <p className="text-sm opacity-90">{lastScannedCode}</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -319,7 +340,7 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
               onClick={toggleFlash}
               variant="outline"
               size="lg"
-              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm min-w-[140px]"
             >
               {flashEnabled ? (
                 <>
@@ -334,9 +355,6 @@ export default function BarcodeScanner({ onScan, onClose, isOpen }: BarcodeScann
               )}
             </Button>
           </div>
-          <p className="text-center text-white/80 text-sm mt-4">
-            Position barcode within the frame
-          </p>
         </div>
       )}
     </div>

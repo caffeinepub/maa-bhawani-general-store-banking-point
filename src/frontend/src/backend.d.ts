@@ -38,12 +38,15 @@ export interface Order {
 export interface Bill {
     id: bigint;
     customerName?: string;
+    paymentStatus: PaymentStatus;
     customerPhone?: string;
     totalAmount: bigint;
     billNumber: string;
     timestamp: Time;
     generatedByAdmin: Principal;
+    paymentReference?: string;
     items: Array<BillItem>;
+    paymentGatewayId?: string;
 }
 export interface RechargeOrder {
     id: bigint;
@@ -69,6 +72,12 @@ export interface Product {
 }
 export interface UserProfile {
     name: string;
+}
+export enum PaymentStatus {
+    pending = "pending",
+    completed = "completed",
+    refunded = "refunded",
+    failed = "failed"
 }
 export enum UserRole {
     admin = "admin",
@@ -105,4 +114,5 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
+    updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;
 }

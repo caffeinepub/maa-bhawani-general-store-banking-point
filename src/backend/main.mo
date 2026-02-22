@@ -14,7 +14,9 @@ import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   // state (initialized once at the start on system-level)
   include MixinStorage();
@@ -186,6 +188,9 @@ actor {
     items : [BillItem];
     totalAmount : Nat;
     generatedByAdmin : Principal;
+    paymentStatus : PaymentStatus;
+    paymentReference : ?Text;
+    paymentGatewayId : ?Text;
   };
 
   public type BillItem = {
@@ -194,6 +199,13 @@ actor {
     quantity : Nat;
     pricePerUnit : Nat;
     totalPrice : Nat;
+  };
+
+  public type PaymentStatus = {
+    #pending;
+    #completed;
+    #failed;
+    #refunded;
   };
 
   let bills = Map.empty<Nat, Bill>();
@@ -236,11 +248,11 @@ actor {
     products.remove(productId);
   };
 
-  public query func getAllProducts() : async [Product] {
+  public query ({ caller }) func getAllProducts() : async [Product] {
     products.values().toArray().sort();
   };
 
-  public query func getProductByBarcode(barcode : Text) : async ?Product {
+  public query ({ caller }) func getProductByBarcode(barcode : Text) : async ?Product {
     products.values().find(func(product) { product.barcode == barcode });
   };
 
@@ -513,7 +525,12 @@ actor {
   };
 
   // Bill Generation (Admin only)
-  public shared ({ caller }) func generateBill(customerName : ?Text, customerPhone : ?Text, items : [BillItem], totalAmount : Nat) : async Bill {
+  public shared ({ caller }) func generateBill(
+    customerName : ?Text,
+    customerPhone : ?Text,
+    items : [BillItem],
+    totalAmount : Nat,
+  ) : async Bill {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can generate bills");
     };
@@ -529,12 +546,42 @@ actor {
       items;
       totalAmount;
       generatedByAdmin = caller;
+      paymentStatus = #pending;
+      paymentReference = null;
+      paymentGatewayId = null;
     };
 
     bills.add(nextBillId, bill);
     nextBillId += 1;
 
     bill;
+  };
+
+  // Update bill payment status (Admin only)
+  public shared ({ caller }) func updateBillPaymentStatus(
+    billId : Nat,
+    paymentStatus : PaymentStatus,
+    paymentReference : ?Text,
+    paymentGatewayId : ?Text,
+  ) : async Bill {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can update payment status");
+    };
+
+    let oldBill = switch (bills.get(billId)) {
+      case (null) { Runtime.trap("Bill not found") };
+      case (?bill) { bill };
+    };
+
+    let updatedBill : Bill = {
+      oldBill with
+      paymentStatus;
+      paymentReference;
+      paymentGatewayId;
+    };
+    bills.add(billId, updatedBill);
+
+    updatedBill;
   };
 
   public query ({ caller }) func getAllBills() : async [Bill] {

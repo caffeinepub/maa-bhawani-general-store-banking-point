@@ -78,12 +78,13 @@ export default function BillingPage() {
     const existingItem = billItems.find(item => item.product.id === product.id);
     
     if (existingItem) {
+      // Auto-increment quantity for duplicate scans
       setBillItems(billItems.map(item =>
         item.product.id === product.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
-      toast.success(`Increased ${product.name} quantity`);
+      toast.success(`Increased ${product.name} quantity to ${existingItem.quantity + 1}`);
     } else {
       setBillItems([...billItems, { product, quantity: 1 }]);
       toast.success(`Added ${product.name} to bill`);
@@ -94,23 +95,29 @@ export default function BillingPage() {
     setBillItems(billItems.map(item => {
       if (item.product.id === productId) {
         const newQuantity = item.quantity + delta;
-        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+        if (newQuantity <= 0) {
+          return item;
+        }
+        return { ...item, quantity: newQuantity };
       }
       return item;
-    }).filter(item => item.quantity > 0));
+    }));
   };
 
   const removeItem = (productId: bigint) => {
     setBillItems(billItems.filter(item => item.product.id !== productId));
+    toast.success('Item removed from bill');
   };
 
   const calculateTotal = () => {
-    return billItems.reduce((sum, item) => sum + Number(item.product.priceInRupees) * item.quantity, 0);
+    return billItems.reduce((total, item) => {
+      return total + Number(item.product.priceInRupees) * item.quantity;
+    }, 0);
   };
 
   const handleGenerateBill = async () => {
     if (billItems.length === 0) {
-      toast.error('Please add at least one item to the bill');
+      toast.error('Please add items to the bill');
       return;
     }
 
@@ -135,61 +142,35 @@ export default function BillingPage() {
       setGeneratedBill(bill);
       toast.success('Bill generated successfully!');
       
-      // Close scanner if open
-      if (isScannerOpen) {
-        setIsScannerOpen(false);
-      }
+      // Clear the form
+      setBillItems([]);
+      setCustomerName('');
+      setCustomerPhone('');
     } catch (error: any) {
+      console.error('Error generating bill:', error);
       toast.error(error.message || 'Failed to generate bill');
     }
   };
 
   const handlePrint = () => {
-    window.print();
+    if (printRef.current) {
+      window.print();
+    }
   };
 
-  const handleNewBill = () => {
+  const handleCloseBillPreview = () => {
     setGeneratedBill(null);
-    setBillItems([]);
-    setCustomerName('');
-    setCustomerPhone('');
   };
-
-  if (generatedBill) {
-    return (
-      <AdminGuard>
-        <div className="space-y-6">
-          <div className="flex justify-between items-center no-print">
-            <h1 className="text-3xl font-bold">Bill Generated</h1>
-            <div className="flex gap-2">
-              <Button onClick={handlePrint} className="gap-2">
-                <Printer className="h-4 w-4" />
-                Print Bill
-              </Button>
-              <Button onClick={handleNewBill} variant="outline">
-                New Bill
-              </Button>
-            </div>
-          </div>
-
-          <div ref={printRef}>
-            <BillTemplate bill={generatedBill} />
-          </div>
-        </div>
-      </AdminGuard>
-    );
-  }
 
   return (
     <AdminGuard>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Generate Bill</h1>
-          <p className="text-muted-foreground">Scan product barcodes to create professional bills</p>
-        </div>
+      <div className="container mx-auto p-4 max-w-6xl">
+        <h1 className="text-3xl font-bold mb-6">Billing</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - Scanning & Input */}
           <div className="space-y-6">
+            {/* Scan Mode Selection */}
             <Card>
               <CardHeader>
                 <CardTitle>Scan Products</CardTitle>
@@ -197,22 +178,20 @@ export default function BillingPage() {
               <CardContent className="space-y-4">
                 <div className="flex gap-2">
                   <Button
-                    onClick={scanMode === 'camera' ? handleStopCamera : handleStartCamera}
+                    onClick={handleStartCamera}
                     variant={scanMode === 'camera' ? 'default' : 'outline'}
-                    className="gap-2 flex-1"
+                    className="flex-1"
+                    disabled={isScannerOpen}
                   >
-                    <Camera className="h-4 w-4" />
-                    {scanMode === 'camera' ? 'Stop Scanner' : 'Barcode Scanner'}
+                    <Camera className="h-4 w-4 mr-2" />
+                    Camera Scan
                   </Button>
                   <Button
-                    onClick={() => {
-                      if (scanMode === 'camera') handleStopCamera();
-                      setScanMode('manual');
-                    }}
+                    onClick={() => setScanMode('manual')}
                     variant={scanMode === 'manual' ? 'default' : 'outline'}
-                    className="gap-2 flex-1"
+                    className="flex-1"
                   >
-                    <Keyboard className="h-4 w-4" />
+                    <Keyboard className="h-4 w-4 mr-2" />
                     Manual Entry
                   </Button>
                 </div>
@@ -223,7 +202,6 @@ export default function BillingPage() {
                     <div className="flex gap-2">
                       <Input
                         id="barcode"
-                        placeholder="Scan or type barcode"
                         value={manualBarcode}
                         onChange={(e) => setManualBarcode(e.target.value)}
                         onKeyDown={(e) => {
@@ -231,15 +209,28 @@ export default function BillingPage() {
                             handleManualBarcodeSubmit();
                           }
                         }}
-                        autoFocus
+                        placeholder="Scan or type barcode"
+                        className="flex-1"
                       />
                       <Button onClick={handleManualBarcodeSubmit}>Add</Button>
                     </div>
                   </div>
                 )}
+
+                {scanMode === 'camera' && isScannerOpen && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Camera is active. Scan barcodes to add products.
+                    </p>
+                    <Button onClick={handleStopCamera} variant="destructive">
+                      Stop Camera
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
+            {/* Customer Details */}
             <Card>
               <CardHeader>
                 <CardTitle>Customer Details (Optional)</CardTitle>
@@ -249,148 +240,168 @@ export default function BillingPage() {
                   <Label htmlFor="customerName">Customer Name</Label>
                   <Input
                     id="customerName"
-                    placeholder="Enter customer name"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Enter customer name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="customerPhone">Phone Number</Label>
                   <Input
                     id="customerPhone"
-                    placeholder="Enter phone number"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="Enter phone number"
                   />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Bill Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {billItems.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No items added yet</p>
-              ) : (
-                <div className="space-y-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead className="text-center">Qty</TableHead>
-                        <TableHead className="text-right">Price</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                        <TableHead></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {billItems.map((item) => (
-                        <TableRow key={Number(item.product.id)}>
-                          <TableCell className="font-medium">{item.product.name}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center justify-center gap-2">
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                className="h-8 w-8"
-                                onClick={() => updateQuantity(item.product.id, -1)}
-                              >
-                                <Minus className="h-3 w-3" />
-                              </Button>
-                              <span className="w-8 text-center">{item.quantity}</span>
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                className="h-8 w-8"
-                                onClick={() => updateQuantity(item.product.id, 1)}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">₹{Number(item.product.priceInRupees)}</TableCell>
-                          <TableCell className="text-right font-semibold">
-                            ₹{Number(item.product.priceInRupees) * item.quantity}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8"
-                              onClick={() => removeItem(item.product.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </TableCell>
+          {/* Right Column - Bill Items */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Bill Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {billItems.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No items added yet. Scan or enter barcodes to add products.
+                  </p>
+                ) : (
+                  <>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead className="text-center">Qty</TableHead>
+                          <TableHead className="text-right">Price</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
+                          <TableHead></TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {billItems.map((item) => (
+                          <TableRow key={item.product.id.toString()}>
+                            <TableCell className="font-medium">
+                              {item.product.name}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-8 w-8"
+                                  onClick={() => updateQuantity(item.product.id, -1)}
+                                  disabled={item.quantity <= 1}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                                <span className="w-8 text-center">{item.quantity}</span>
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-8 w-8"
+                                  onClick={() => updateQuantity(item.product.id, 1)}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              ₹{Number(item.product.priceInRupees)}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              ₹{Number(item.product.priceInRupees) * item.quantity}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => removeItem(item.product.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
 
-                  <div className="border-t pt-4 space-y-2">
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total Amount:</span>
-                      <span>₹{calculateTotal()}</span>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex justify-between items-center text-lg font-bold">
+                        <span>Total:</span>
+                        <span>₹{calculateTotal()}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  <Button
-                    onClick={handleGenerateBill}
-                    disabled={generateBill.isPending}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {generateBill.isPending ? 'Generating...' : 'Generate Bill'}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <Button
+                      onClick={handleGenerateBill}
+                      className="w-full mt-4"
+                      size="lg"
+                      disabled={generateBill.isPending}
+                    >
+                      {generateBill.isPending ? 'Generating...' : 'Generate Bill'}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
 
-      {/* Barcode Scanner Modal */}
-      <BarcodeScanner
-        isOpen={isScannerOpen}
-        onScan={handleBarcodeScanned}
-        onClose={handleStopCamera}
-      />
+        {/* Barcode Scanner Modal */}
+        <BarcodeScanner
+          isOpen={isScannerOpen}
+          onScan={handleBarcodeScanned}
+          onClose={handleStopCamera}
+        />
 
-      {/* Product Not Found Dialog */}
-      <Dialog open={showNotFoundDialog} onOpenChange={setShowNotFoundDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Product Not Found</DialogTitle>
-            <DialogDescription>
-              No product found with barcode: <strong>{notFoundBarcode}</strong>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Would you like to add this product manually to the inventory?
-            </p>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setShowNotFoundDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowNotFoundDialog(false);
-                  toast.info('Please add the product from the Products tab');
-                }}
-              >
-                Add Manually
+        {/* Product Not Found Dialog */}
+        <Dialog open={showNotFoundDialog} onOpenChange={setShowNotFoundDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Product Not Found</DialogTitle>
+              <DialogDescription>
+                No product found with barcode: <strong>{notFoundBarcode}</strong>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                This product is not in the system. Please add it to the inventory first.
+              </p>
+              <Button onClick={() => setShowNotFoundDialog(false)} className="w-full">
+                Close
               </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bill Preview Dialog */}
+        <Dialog open={!!generatedBill} onOpenChange={handleCloseBillPreview}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Bill Generated</DialogTitle>
+              <DialogDescription>
+                Bill #{generatedBill?.billNumber} has been created successfully.
+              </DialogDescription>
+            </DialogHeader>
+            <div ref={printRef} className="print-area">
+              {generatedBill && <BillTemplate bill={generatedBill} />}
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handlePrint} className="flex-1">
+                <Printer className="h-4 w-4 mr-2" />
+                Print Bill
+              </Button>
+              <Button onClick={handleCloseBillPreview} variant="outline" className="flex-1">
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </AdminGuard>
   );
 }

@@ -1,68 +1,69 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Admin panel billing application with barcode scanning for product entry",
+  "summary": "Point-of-sale (POS) app with professional barcode scanning for Bardiha Turki store in Bihar",
   "architectural_notes": [
-    "Barcode scanning library: QuaggaJS, ZXing, or Html5-QRCode for EAN-13/UPC support",
-    "Camera API with auto-focus and torch/flash control",
-    "Database schema includes product barcode, name, price, and GST fields"
+    "POS system with barcode scanning and billing",
+    "Store location: Bardiha Turki, Bihar",
+    "Requires low-latency barcode scanning library (Dynamsoft/Scandit-like)",
+    "Payment gateway integration for checkout"
   ],
   "known_issues": [
-    "Current barcode scanner opens camera but fails to recognize/scan barcodes"
+    "Current barcode scanner is slow and frequently fails"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-integrate-a-high-speed-barcode-scanning-library-quaggajs-zxing-or-html5-qrcode-into-the-admin-billing-page-to-reliably-recognize-standard-retail-barcodes-including-ean-13-and-upc-formats",
-      "title": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
+      "id": "feature-update-the-hardcoded-billing-address-to-bardiha-turki-tarvadih-patepur-vaishali-843110-bihar-and-ensure-it-appears-at-the-top-of-every-generated-bill-invoice-along-with-the-store-name",
+      "title": "Update the hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' and ensure it appears at the top of every generated bill/invoice along with the store name",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-enable-auto-focus-for-the-camera-and-add-a-flash-torch-toggle-button-within-the-scanner-ui-to-support-scanning-in-low-light-conditions",
-      "title": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
+      "id": "feature-replace-the-current-quagga2-barcode-scanner-with-a-zero-latency-high-performance-scanner-that-uses-enhanced-decoding-algorithms-capable-of-reading-barcodes-even-when-blurred-tilted-or-in-low-light-conditions",
+      "title": "Replace the current Quagga2 barcode scanner with a zero-latency, high-performance scanner that uses enhanced decoding algorithms capable of reading barcodes even when blurred, tilted, or in low-light conditions",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-instant-product-fetch-when-a-barcode-is-successfully-scanned-automatically-fetch-the-product-name-price-and-gst-details-from-the-database-and-add-it-to-the-billing-list-without-requiring-any-manual-clicks",
-      "title": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+      "id": "feature-add-haptic-feedback-phone-vibration-and-a-success-beep-sound-that-triggers-instantly-upon-successful-barcode-scan",
+      "title": "Add haptic feedback (phone vibration) and a success beep sound that triggers instantly upon successful barcode scan",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-enable-continuous-scanning-mode-that-allows-the-admin-to-scan-multiple-items-one-after-another-without-closing-the-camera-after-each-scan",
-      "title": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+      "id": "feature-implement-auto-quantity-increment-functionality-so-that-scanning-the-same-barcode-multiple-times-automatically-increases-the-quantity-e-g-qty-2-in-the-bill-instead-of-showing-an-error-or-adding-duplicate-line-items",
+      "title": "Implement auto-quantity increment functionality so that scanning the same barcode multiple times automatically increases the quantity (e.g., Qty: 2) in the bill instead of showing an error or adding duplicate line items",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-beep-sound-notification-that-plays-when-a-barcode-is-successfully-scanned-to-provide-audio-feedback-to-the-admin",
-      "title": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+      "id": "feature-add-a-professional-scanning-overlay-ui-to-the-camera-view-with-either-a-laser-line-or-square-box-guide-so-the-admin-knows-exactly-where-to-point-the-barcode-for-optimal-scanning",
+      "title": "Add a professional scanning overlay UI to the camera view with either a laser line or square box guide so the admin knows exactly where to point the barcode for optimal scanning",
       "reqIds": [
         "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-error-handling-that-shows-a-quick-popup-with-the-message-product-not-found-add-manually-when-a-scanned-barcode-is-not-found-in-the-database",
-      "title": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+      "id": "feature-ensure-the-final-bill-total-is-synced-with-the-payment-gateway-for-seamless-checkout-after-barcode-scanning-is-complete-and-the-bill-is-generated",
+      "title": "Ensure the final bill total is synced with the payment gateway for seamless checkout after barcode scanning is complete and the bill is generated",
       "reqIds": [
         "REQ-6"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-camera-permission-request-description-to-this-app-requires-camera-access-for-the-admin-billing-panel-to-scan-product-barcodes-ensuring-fast-and-error-free-billing-for-customers",
-      "title": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+      "id": "feature-update-the-camera-permission-description-in-the-app-settings-to-this-app-uses-the-camera-to-provide-a-high-speed-professional-barcode-scanning-experience-for-instant-billing-and-inventory-management",
+      "title": "Update the camera permission description in the app settings to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.'",
       "reqIds": [
         "REQ-7"
       ],
@@ -72,48 +73,49 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix barcode scanner with high-speed library (QuaggaJS/ZXing/Html5-QRCode) for EAN-13/UPC",
+      "summary": "Update billing address to: Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Add auto-focus and flash/torch toggle to scanner UI",
+      "summary": "Implement zero-latency barcode scanner with enhanced decoder for blurred/tilted/low-light barcodes",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Auto-fetch product name, price, GST from database after scan",
+      "summary": "Add haptic feedback and success beep sound on successful barcode scan",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Enable continuous scanning mode without closing camera",
+      "summary": "Auto-increment quantity when same barcode scanned multiple times",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Add beep sound notification on successful scan",
+      "summary": "Add professional scanning overlay UI (laser line or square box) to camera view",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-6",
-      "summary": "Show 'Product Not Found - Add Manually?' popup for missing barcodes",
+      "summary": "Sync final bill total with payment gateway for seamless checkout",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-7",
-      "summary": "Update camera permission description for app store compliance",
+      "summary": "Update camera permission description to mention high-speed barcode scanning",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix barcode scanner in admin billing with high-speed library and professional features",
+  "gameProjectType": "none",
+  "projectName": "Maa Bhawani General Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

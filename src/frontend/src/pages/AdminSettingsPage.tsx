@@ -10,6 +10,7 @@ import { useGetShopSlogan, useSetShopSlogan } from '../hooks/useQueries';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
+import { PaymentStatus } from '../backend';
 
 export default function AdminSettingsPage() {
   const navigate = useNavigate();
@@ -59,6 +60,9 @@ export default function AdminSettingsPage() {
     ],
     totalAmount: BigInt(250),
     generatedByAdmin: { toText: () => 'admin' } as any,
+    paymentStatus: PaymentStatus.pending,
+    paymentReference: undefined,
+    paymentGatewayId: undefined,
   };
 
   return (
@@ -123,8 +127,8 @@ export default function AdminSettingsPage() {
                 <div>
                   <p className="font-semibold">Address:</p>
                   <p className="text-muted-foreground">
-                    Vill+Post-Bhagatpur, Thana-Bhagatpur<br />
-                    Dist-Vaishali, Bihar-844114
+                    Bardiha Turki - Tarvadih<br />
+                    (Patepur-Vaishali 843110), Bihar
                   </p>
                 </div>
                 <Separator />
@@ -145,7 +149,7 @@ export default function AdminSettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="border rounded-lg p-4 bg-gray-50">
-                <BillTemplate bill={{ ...mockBill }} />
+                <BillTemplate bill={mockBill} />
               </div>
             </CardContent>
           </Card>

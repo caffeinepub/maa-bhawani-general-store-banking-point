@@ -14,12 +14,15 @@ export interface AuthResult { 'message' : string, 'success' : boolean }
 export interface Bill {
   'id' : bigint,
   'customerName' : [] | [string],
+  'paymentStatus' : PaymentStatus,
   'customerPhone' : [] | [string],
   'totalAmount' : bigint,
   'billNumber' : string,
   'timestamp' : Time,
   'generatedByAdmin' : Principal,
+  'paymentReference' : [] | [string],
   'items' : Array<BillItem>,
+  'paymentGatewayId' : [] | [string],
 }
 export interface BillItem {
   'productId' : bigint,
@@ -39,6 +42,10 @@ export interface Order {
   'products' : Array<Product>,
   'totalPrice' : bigint,
 }
+export type PaymentStatus = { 'pending' : null } |
+  { 'completed' : null } |
+  { 'refunded' : null } |
+  { 'failed' : null };
 export interface Product {
   'id' : bigint,
   'name' : string,
@@ -122,6 +129,10 @@ export interface _SERVICE {
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setShopSlogan' : ActorMethod<[string], undefined>,
   'toggleProductExclusion' : ActorMethod<[bigint], boolean>,
+  'updateBillPaymentStatus' : ActorMethod<
+    [bigint, PaymentStatus, [] | [string], [] | [string]],
+    Bill
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];
