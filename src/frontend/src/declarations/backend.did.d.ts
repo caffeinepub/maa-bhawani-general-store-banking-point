@@ -100,7 +100,6 @@ export interface _SERVICE {
     [[] | [string], [] | [string], Array<BillItem>, bigint],
     Bill
   >,
-  'getAdminCredentials' : ActorMethod<[], [string, string]>,
   'getAllBills' : ActorMethod<[], Array<Bill>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,
@@ -120,6 +119,7 @@ export interface _SERVICE {
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setShopSlogan' : ActorMethod<[string], undefined>,
   'toggleProductExclusion' : ActorMethod<[bigint], boolean>,
+  'verifyAdmin' : ActorMethod<[string, string], AuthResult>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

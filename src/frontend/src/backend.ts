@@ -173,7 +173,6 @@ export interface backendInterface {
     changeAdminPassword(oldPassword: string, newPassword: string): Promise<boolean>;
     clearCart(): Promise<void>;
     generateBill(customerName: string | null, customerPhone: string | null, items: Array<BillItem>, totalAmount: bigint): Promise<Bill>;
-    getAdminCredentials(): Promise<[string, string]>;
     getAllBills(): Promise<Array<Bill>>;
     getAllOrders(): Promise<Array<Order>>;
     getAllProducts(): Promise<Array<Product>>;
@@ -193,6 +192,7 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
+    verifyAdmin(providedId: string, providedPassword: string): Promise<AuthResult>;
 }
 import type { Bill as _Bill, BillItem as _BillItem, CartItem as _CartItem, ExternalBlob as _ExternalBlob, Order as _Order, Product as _Product, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -405,26 +405,6 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.generateBill(to_candid_opt_n11(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n11(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
             return from_candid_Bill_n12(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getAdminCredentials(): Promise<[string, string]> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAdminCredentials();
-                return [
-                    result[0],
-                    result[1]
-                ];
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAdminCredentials();
-            return [
-                result[0],
-                result[1]
-            ];
         }
     }
     async getAllBills(): Promise<Array<Bill>> {
@@ -690,6 +670,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.toggleProductExclusion(arg0);
+            return result;
+        }
+    }
+    async verifyAdmin(arg0: string, arg1: string): Promise<AuthResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyAdmin(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyAdmin(arg0, arg1);
             return result;
         }
     }

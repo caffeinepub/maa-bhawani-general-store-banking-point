@@ -42,11 +42,12 @@ export default function AdminGuard({ children }: AdminGuardProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy principal:', err);
+      console.error('[AdminGuard] Failed to copy principal:', err);
     }
   };
 
   const handleShowLogin = () => {
+    console.log('[AdminGuard] Opening admin login dialog');
     setShowLoginDialog(true);
     setLoginError(null);
     setAdminId('');
@@ -54,23 +55,35 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   };
 
   const handleSubmitLogin = async () => {
+    console.log('[AdminGuard] Submitting admin login');
+    
     if (!adminId.trim() || !adminPassword.trim()) {
       setLoginError('Both Admin ID and Password are required');
       return;
     }
 
+    if (!actor) {
+      setLoginError('Backend connection not available. Please refresh the page.');
+      return;
+    }
+
     try {
       setLoginError(null);
+      console.log('[AdminGuard] Calling authenticate with ID:', adminId.trim());
+      
       const result = await authenticateMutation.mutateAsync({
         adminId: adminId.trim(),
         adminPassword: adminPassword.trim(),
       });
       
+      console.log('[AdminGuard] Authentication result:', result);
+      
       if (result.success) {
-        // Success - close dialog and refetch admin status
+        console.log('[AdminGuard] Authentication successful, closing dialog and refetching admin status');
         setShowLoginDialog(false);
         await refetch();
       } else {
+        console.error('[AdminGuard] Authentication failed:', result.message);
         setLoginError(result.message || 'Authentication failed');
       }
     } catch (error: any) {
@@ -83,6 +96,8 @@ export default function AdminGuard({ children }: AdminGuardProps) {
           errorMessage = 'You must be logged in with Internet Identity first.';
         } else if (error.message.includes('Invalid')) {
           errorMessage = 'Invalid Admin ID or Password.';
+        } else if (error.message.includes('Unauthorized')) {
+          errorMessage = 'Invalid Admin ID or Password.';
         } else {
           errorMessage = error.message;
         }
@@ -94,6 +109,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
 
   // Check if user is not authenticated
   if (!identity && !identityInitializing) {
+    console.log('[AdminGuard] User not authenticated with Internet Identity');
     return (
       <div className="container mx-auto px-4 py-12">
         <Alert variant="destructive">
@@ -111,6 +127,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   const isLoading = identityInitializing || actorFetching || adminCheckLoading;
   
   if (isLoading) {
+    console.log('[AdminGuard] Loading state - identityInitializing:', identityInitializing, 'actorFetching:', actorFetching, 'adminCheckLoading:', adminCheckLoading);
     return (
       <div className="container mx-auto px-4 py-12 space-y-4">
         <div className="flex items-center gap-3 text-muted-foreground">
@@ -133,9 +150,12 @@ export default function AdminGuard({ children }: AdminGuardProps) {
           <AlertTitle>Error Checking Admin Status</AlertTitle>
           <AlertDescription className="space-y-3">
             <p>There was an error verifying your admin privileges. This could be due to a network issue or backend error.</p>
-            <p className="text-sm font-mono bg-destructive/10 p-2 rounded">
-              {adminCheckError.message || 'Unknown error'}
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm font-semibold">Error details:</p>
+              <pre className="text-xs font-mono bg-destructive/10 p-2 rounded overflow-auto">
+                {adminCheckError.message || 'Unknown error'}
+              </pre>
+            </div>
             <Button onClick={() => refetch()} variant="outline" size="sm" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Retry
@@ -148,6 +168,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
 
   // Check if user is not an admin
   if (isAdmin === false) {
+    console.log('[AdminGuard] User is not an admin');
     const principalId = identity?.getPrincipal().toString() || '';
     
     return (
@@ -236,6 +257,11 @@ export default function AdminGuard({ children }: AdminGuardProps) {
                   onChange={(e) => setAdminId(e.target.value)}
                   disabled={authenticateMutation.isPending}
                   autoComplete="username"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && adminId.trim() && adminPassword.trim()) {
+                      handleSubmitLogin();
+                    }
+                  }}
                 />
               </div>
 
@@ -249,6 +275,11 @@ export default function AdminGuard({ children }: AdminGuardProps) {
                   onChange={(e) => setAdminPassword(e.target.value)}
                   disabled={authenticateMutation.isPending}
                   autoComplete="current-password"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && adminId.trim() && adminPassword.trim()) {
+                      handleSubmitLogin();
+                    }
+                  }}
                 />
               </div>
 
@@ -290,5 +321,6 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   }
 
   // User is authenticated and is an admin
+  console.log('[AdminGuard] User is authenticated as admin, rendering children');
   return <>{children}</>;
 }

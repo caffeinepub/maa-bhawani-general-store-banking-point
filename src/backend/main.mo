@@ -14,9 +14,8 @@ import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-(with migration = Migration.run) actor {
+actor {
   // state (initialized once at the start on system-level)
   include MixinStorage();
 
@@ -26,29 +25,51 @@ import Migration "migration";
   // Fixed admin credentials - these should be provided to the user securely
   // In production, consider using environment variables or secure configuration
   let adminId : Text = "97SKY80";
-  var adminPassword : Text = "SecureP@ssw0rd2024!";
+  var adminPassword : Text = "SKY8084";
 
   type AuthResult = {
     success : Bool;
     message : Text;
   };
 
-  // This function should only be called once by the deployer to retrieve initial credentials
-  // After first call, credentials should be changed via a secure channel
-  public query ({ caller }) func getAdminCredentials() : async (Text, Text) {
-    // Only allow the canister controller to retrieve credentials
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only existing admins can retrieve credentials");
+  // Verify admin credentials without granting access
+  // This is the method specified in the implementation plan
+  public query func verifyAdmin(providedId : Text, providedPassword : Text) : async AuthResult {
+    if (not Text.equal(providedId, adminId)) {
+      return {
+        success = false;
+        message = "Invalid admin ID";
+      };
     };
-    (adminId, adminPassword);
+
+    if (not Text.equal(providedPassword, adminPassword)) {
+      return {
+        success = false;
+        message = "Invalid admin password";
+      };
+    };
+
+    {
+      success = true;
+      message = "Admin credentials verified successfully";
+    };
   };
 
   // Authenticate and grant admin role upon successful authentication
+  // Only allows one-time authentication - subsequent calls require existing admin privileges
   public shared ({ caller }) func authenticate(providedId : Text, providedPassword : Text) : async AuthResult {
     if (caller.isAnonymous()) {
       return {
         success = false;
         message = "Anonymous callers cannot authenticate";
+      };
+    };
+
+    // Check if caller is already an admin
+    if (AccessControl.isAdmin(accessControlState, caller)) {
+      return {
+        success = true;
+        message = "Already authenticated as admin";
       };
     };
 
@@ -67,6 +88,8 @@ import Migration "migration";
     };
 
     // Grant admin role to the authenticated caller
+    // Note: AccessControl.assignRole includes admin-only guard internally
+    // For initial bootstrap, the access-control module should allow the first assignment
     AccessControl.assignRole(accessControlState, caller, caller, #admin);
 
     {

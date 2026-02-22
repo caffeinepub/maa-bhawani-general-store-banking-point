@@ -1,4 +1,50 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-debug-and-resolve-the-error-occurring-when-navigating-to-admin-route-investigate-the-adminguard-component-s-authentication-flow-ensure-proper-internet-identity-integration-and-verify-the-admin-credentials-validation-against-the-backend-actor",
+      "featureTitle": "Debug and resolve the error occurring when navigating to /admin route. Investigate the AdminGuard component's authentication flow, ensure proper Internet Identity integration, and verify the admin credentials validation against the backend actor.",
+      "files": [
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-error-boundary-or-error-handling-to-the-adminpage-component-to-catch-and-display-specific-error-messages-instead-of-generic-error-states-helping-identify-the-root-cause-of-authentication-or-routing-failures",
+      "featureTitle": "Add error boundary or error handling to the AdminPage component to catch and display specific error messages instead of generic error states, helping identify the root cause of authentication or routing failures.",
+      "files": [
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/components/ErrorBoundary.tsx",
+        "frontend/src/pages/AdminPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

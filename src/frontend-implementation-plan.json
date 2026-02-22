@@ -1,6 +1,55 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Update Admin ID to 97SKY80 - Frontend Plan",
-  "requirements": []
+  "title": "Fix Admin Panel Authentication Error",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Debug and resolve the error occurring when navigating to /admin route by fixing the AdminGuard authentication flow to use the correct verifyAdmin backend method",
+      "acceptanceCriteria": [
+        "The /admin route loads without errors",
+        "Admin authentication dialog appears correctly",
+        "Login with ID: 97SKY80 and password: SKY8084 works successfully",
+        "Admin panel displays after successful authentication"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Fix the authentication logic to use actor.verifyAdmin instead of actor.authenticate. Update the handleAdminLogin function to call verifyAdmin with the provided ID and password, and properly handle the AuthResult response structure. Add console logging for debugging authentication flow and response structure. Ensure the component correctly checks authentication state before rendering the admin dialog or children."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a useVerifyAdmin mutation hook that calls actor.verifyAdmin(adminId, password) and returns the AuthResult. This provides a reusable, type-safe way to verify admin credentials with proper error handling and loading states."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Add error boundary and improved error handling to AdminPage component to display specific error messages instead of generic error states",
+      "acceptanceCriteria": [
+        "Clear error messages are displayed when authentication fails",
+        "Error boundary prevents entire app crash if AdminPage encounters errors",
+        "Console logs provide debugging information for troubleshooting"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ErrorBoundary.tsx",
+          "operation": "create",
+          "description": "Create a React error boundary component that catches errors from child components. Display a user-friendly error message with details about what went wrong. Include a retry button that resets the error state. Log error details to the console for debugging. Use the authorization component's error handling patterns for consistency."
+        },
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "Wrap the AdminPage content with the ErrorBoundary component. Add console.error logging for any caught errors in useQuery/useMutation callbacks. Improve error message display in the UI to show specific error text instead of generic 'Failed to load' messages. Add null checks for actor availability before rendering data-dependent components."
+        },
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Add detailed error logging when authentication fails. Display the error message from AuthResult in the UI when login fails. Add console logs for the authentication flow: when dialog opens, when credentials are submitted, and what response is received. Ensure error states are cleared when the user retries authentication."
+        }
+      ]
+    }
+  ]
 }

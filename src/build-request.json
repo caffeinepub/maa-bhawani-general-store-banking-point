@@ -1,35 +1,66 @@
 {
   "kind": "build_request",
-  "title": "Update admin ID to 97SKY80",
-  "priority": "normal",
+  "title": "Fix Admin Panel error when accessing /admin route",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Change the admin login ID from the current value to '97SKY80' in the backend authentication system",
-      "target": "backend",
+      "text": "Debug and resolve the error occurring when navigating to /admin route. Investigate the AdminGuard component's authentication flow, ensure proper Internet Identity integration, and verify the admin credentials validation against the backend actor.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-8"
         ],
         "quotes": [
-          "Make Id :- 97SKY80"
+          "I am facing the problem of an Error occurred on Admin Panel when I am Searching By /admin"
         ]
       },
       "acceptanceCriteria": [
-        "Admin can log in using ID '97SKY80' with the existing password",
-        "Previous admin ID no longer works for authentication",
-        "Admin authentication flow remains unchanged otherwise"
+        "The /admin route loads without errors",
+        "Admin authentication dialog appears correctly",
+        "Login with ID: 97SKY80 and password: SKY8084 works successfully",
+        "Admin panel displays after successful authentication"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add error boundary or error handling to the AdminPage component to catch and display specific error messages instead of generic error states, helping identify the root cause of authentication or routing failures.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Clear error messages are displayed when authentication fails",
+        "Error boundary prevents entire app crash if AdminPage encounters errors",
+        "Console logs provide debugging information for troubleshooting"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Verify that the backend actor's verifyAdmin method is properly accessible and returns expected responses when called with the correct admin credentials (ID: 97SKY80, password: SKY8084).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ]
+      },
+      "acceptanceCriteria": [
+        "verifyAdmin method accepts the correct admin ID and password",
+        "Method returns true for valid credentials and false for invalid ones",
+        "No backend errors are thrown during admin verification"
       ]
     }
   ],
   "constraints": [
-    "Maintain existing password unchanged",
-    "Do not modify the authentication flow or AdminGuard component"
+    "Preserve existing admin credentials (ID: 97SKY80, password: SKY8084)",
+    "Do not modify the Internet Identity integration hooks (useInternetIdentity.ts, useActor.ts)"
   ],
   "nonGoals": [
-    "Changing the admin password",
-    "Adding new admin users",
-    "Modifying the login UI"
+    "Adding new admin features or functionality",
+    "Redesigning the admin panel UI",
+    "Changing the authentication mechanism"
   ],
   "imageRequirements": {
     "required": [],

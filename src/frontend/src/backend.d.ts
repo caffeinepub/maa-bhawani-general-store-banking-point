@@ -80,7 +80,6 @@ export interface backendInterface {
     changeAdminPassword(oldPassword: string, newPassword: string): Promise<boolean>;
     clearCart(): Promise<void>;
     generateBill(customerName: string | null, customerPhone: string | null, items: Array<BillItem>, totalAmount: bigint): Promise<Bill>;
-    getAdminCredentials(): Promise<[string, string]>;
     getAllBills(): Promise<Array<Bill>>;
     getAllOrders(): Promise<Array<Order>>;
     getAllProducts(): Promise<Array<Product>>;
@@ -100,4 +99,5 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
+    verifyAdmin(providedId: string, providedPassword: string): Promise<AuthResult>;
 }

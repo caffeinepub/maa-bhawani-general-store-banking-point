@@ -128,6 +128,7 @@ export function useGetAllOrders() {
       try {
         return await actor.getAllOrders();
       } catch (error) {
+        console.error('[useGetAllOrders] Error fetching orders:', error);
         return [];
       }
     },
@@ -169,6 +170,7 @@ export function useGetAllRechargeOrders() {
       try {
         return await actor.getAllRechargeOrders();
       } catch (error) {
+        console.error('[useGetAllRechargeOrders] Error fetching recharge orders:', error);
         return [];
       }
     },
@@ -244,7 +246,7 @@ export function useIsCallerAdmin() {
         return result;
       } catch (error) {
         console.error('[useIsCallerAdmin] Error checking admin status:', error);
-        return false;
+        throw error;
       }
     },
     enabled: !!actor && !actorFetching && !!identity && !isInitializing,
@@ -267,14 +269,20 @@ export function useAuthenticateAdmin() {
   return useMutation({
     mutationFn: async ({ adminId, adminPassword }: { adminId: string; adminPassword: string }) => {
       if (!actor) throw new Error('Actor not available');
+      
+      console.log('[useAuthenticateAdmin] Calling authenticate method');
       const result = await actor.authenticate(adminId, adminPassword);
+      console.log('[useAuthenticateAdmin] Authenticate result:', result);
+      
       return result;
     },
-    onSuccess: (result: AuthResult) => {
-      if (result.success) {
-        // Invalidate admin status to trigger re-check
-        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
-      }
+    onSuccess: (result) => {
+      console.log('[useAuthenticateAdmin] Authentication successful, invalidating admin queries');
+      // Invalidate admin status queries to refetch
+      queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+    },
+    onError: (error) => {
+      console.error('[useAuthenticateAdmin] Authentication failed:', error);
     },
   });
 }
@@ -315,6 +323,7 @@ export function useGetAllBills() {
       try {
         return await actor.getAllBills();
       } catch (error) {
+        console.error('[useGetAllBills] Error fetching bills:', error);
         return [];
       }
     },
@@ -330,7 +339,7 @@ export function useGetShopSlogan() {
     queryKey: ['shopSlogan'],
     queryFn: async () => {
       if (!actor) return 'Welcome to our shop!';
-      return await actor.getShopSlogan();
+      return actor.getShopSlogan();
     },
     enabled: !!actor && !isFetching,
   });
@@ -347,6 +356,39 @@ export function useSetShopSlogan() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopSlogan'] });
+    },
+  });
+}
+
+// Excluded Products
+export function useGetExcludedProducts() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<bigint[]>({
+    queryKey: ['excludedProducts'],
+    queryFn: async () => {
+      if (!actor) return [];
+      try {
+        return await actor.getExcludedProducts();
+      } catch (error) {
+        return [];
+      }
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useToggleProductExclusion() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return await actor.toggleProductExclusion(productId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['excludedProducts'] });
     },
   });
 }

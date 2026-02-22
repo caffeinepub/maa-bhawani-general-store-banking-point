@@ -120,7 +120,6 @@ export const idlService = IDL.Service({
       [Bill],
       [],
     ),
-  'getAdminCredentials' : IDL.Func([], [IDL.Text, IDL.Text], ['query']),
   'getAllBills' : IDL.Func([], [IDL.Vec(Bill)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
@@ -148,6 +147,7 @@ export const idlService = IDL.Service({
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setShopSlogan' : IDL.Func([IDL.Text], [], []),
   'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'verifyAdmin' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], ['query']),
 });
 
 export const idlInitArgs = [];
@@ -259,7 +259,6 @@ export const idlFactory = ({ IDL }) => {
         [Bill],
         [],
       ),
-    'getAdminCredentials' : IDL.Func([], [IDL.Text, IDL.Text], ['query']),
     'getAllBills' : IDL.Func([], [IDL.Vec(Bill)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
@@ -291,6 +290,7 @@ export const idlFactory = ({ IDL }) => {
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setShopSlogan' : IDL.Func([IDL.Text], [], []),
     'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'verifyAdmin' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], ['query']),
   });
 };
 
