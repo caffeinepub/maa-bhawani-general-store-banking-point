@@ -1,41 +1,119 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Admin panel billing application with barcode scanning for product entry",
+  "architectural_notes": [
+    "Barcode scanning library: QuaggaJS, ZXing, or Html5-QRCode for EAN-13/UPC support",
+    "Camera API with auto-focus and torch/flash control",
+    "Database schema includes product barcode, name, price, and GST fields"
+  ],
   "known_issues": [
-    "Error occurring on Admin Panel when accessing via /admin route"
+    "Current barcode scanner opens camera but fails to recognize/scan barcodes"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-debug-and-resolve-the-error-occurring-when-navigating-to-admin-route-investigate-the-adminguard-component-s-authentication-flow-ensure-proper-internet-identity-integration-and-verify-the-admin-credentials-validation-against-the-backend-actor",
-      "title": "Debug and resolve the error occurring when navigating to /admin route. Investigate the AdminGuard component's authentication flow, ensure proper Internet Identity integration, and verify the admin credentials validation against the backend actor.",
+      "id": "feature-integrate-a-high-speed-barcode-scanning-library-quaggajs-zxing-or-html5-qrcode-into-the-admin-billing-page-to-reliably-recognize-standard-retail-barcodes-including-ean-13-and-upc-formats",
+      "title": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-error-boundary-or-error-handling-to-the-adminpage-component-to-catch-and-display-specific-error-messages-instead-of-generic-error-states-helping-identify-the-root-cause-of-authentication-or-routing-failures",
-      "title": "Add error boundary or error handling to the AdminPage component to catch and display specific error messages instead of generic error states, helping identify the root cause of authentication or routing failures.",
+      "id": "feature-enable-auto-focus-for-the-camera-and-add-a-flash-torch-toggle-button-within-the-scanner-ui-to-support-scanning-in-low-light-conditions",
+      "title": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-instant-product-fetch-when-a-barcode-is-successfully-scanned-automatically-fetch-the-product-name-price-and-gst-details-from-the-database-and-add-it-to-the-billing-list-without-requiring-any-manual-clicks",
+      "title": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enable-continuous-scanning-mode-that-allows-the-admin-to-scan-multiple-items-one-after-another-without-closing-the-camera-after-each-scan",
+      "title": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-beep-sound-notification-that-plays-when-a-barcode-is-successfully-scanned-to-provide-audio-feedback-to-the-admin",
+      "title": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-error-handling-that-shows-a-quick-popup-with-the-message-product-not-found-add-manually-when-a-scanned-barcode-is-not-found-in-the-database",
+      "title": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-camera-permission-request-description-to-this-app-requires-camera-access-for-the-admin-billing-panel-to-scan-product-barcodes-ensuring-fast-and-error-free-billing-for-customers",
+      "title": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+      "reqIds": [
+        "REQ-7"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
+      "id": "AR-1",
+      "summary": "Fix barcode scanner with high-speed library (QuaggaJS/ZXing/Html5-QRCode) for EAN-13/UPC",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add auto-focus and flash/torch toggle to scanner UI",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
       "id": "AR-3",
-      "summary": "Verify that the backend actor's verifyAdmin method is properly accessible and returns expected responses when called with the correct admin credentials (ID: 97SKY80, password: SKY8084).",
-      "reqIds": [
-        "REQ-3"
-      ],
+      "summary": "Auto-fetch product name, price, GST from database after scan",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Enable continuous scanning mode without closing camera",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add beep sound notification on successful scan",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Show 'Product Not Found - Add Manually?' popup for missing barcodes",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Update camera permission description for app store compliance",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix Admin Panel error when accessing /admin route",
+  "projectName": "Fix barcode scanner in admin billing with high-speed library and professional features",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

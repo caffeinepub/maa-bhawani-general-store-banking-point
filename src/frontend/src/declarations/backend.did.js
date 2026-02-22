@@ -20,6 +20,18 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const Product = IDL.Record({
+  'id' : IDL.Nat,
+  'name' : IDL.Text,
+  'barcode' : IDL.Text,
+  'category' : IDL.Text,
+  'image' : ExternalBlob,
+  'priceInRupees' : IDL.Nat,
+});
+export const ProductWithAction = IDL.Record({
+  'action' : IDL.Text,
+  'product' : Product,
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -46,14 +58,6 @@ export const Bill = IDL.Record({
   'timestamp' : Time,
   'generatedByAdmin' : IDL.Principal,
   'items' : IDL.Vec(BillItem),
-});
-export const Product = IDL.Record({
-  'id' : IDL.Nat,
-  'name' : IDL.Text,
-  'barcode' : IDL.Text,
-  'category' : IDL.Text,
-  'image' : ExternalBlob,
-  'priceInRupees' : IDL.Nat,
 });
 export const Order = IDL.Record({
   'id' : IDL.Nat,
@@ -109,6 +113,11 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'addProductByBarcode' : IDL.Func(
+      [IDL.Text, IDL.Nat],
+      [ProductWithAction],
+      [],
+    ),
   'addToCart' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
@@ -129,6 +138,11 @@ export const idlService = IDL.Service({
   'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
   'getExcludedProducts' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
   'getProductByBarcode' : IDL.Func([IDL.Text], [IDL.Opt(Product)], ['query']),
+  'getProductByBarcodeWithAction' : IDL.Func(
+      [IDL.Text],
+      [ProductWithAction],
+      ['query'],
+    ),
   'getShopSlogan' : IDL.Func([], [IDL.Text], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -147,7 +161,6 @@ export const idlService = IDL.Service({
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setShopSlogan' : IDL.Func([IDL.Text], [], []),
   'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
-  'verifyAdmin' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], ['query']),
 });
 
 export const idlInitArgs = [];
@@ -165,6 +178,18 @@ export const idlFactory = ({ IDL }) => {
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const Product = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'barcode' : IDL.Text,
+    'category' : IDL.Text,
+    'image' : ExternalBlob,
+    'priceInRupees' : IDL.Nat,
+  });
+  const ProductWithAction = IDL.Record({
+    'action' : IDL.Text,
+    'product' : Product,
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -188,14 +213,6 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : Time,
     'generatedByAdmin' : IDL.Principal,
     'items' : IDL.Vec(BillItem),
-  });
-  const Product = IDL.Record({
-    'id' : IDL.Nat,
-    'name' : IDL.Text,
-    'barcode' : IDL.Text,
-    'category' : IDL.Text,
-    'image' : ExternalBlob,
-    'priceInRupees' : IDL.Nat,
   });
   const Order = IDL.Record({
     'id' : IDL.Nat,
@@ -248,6 +265,11 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'addProductByBarcode' : IDL.Func(
+        [IDL.Text, IDL.Nat],
+        [ProductWithAction],
+        [],
+      ),
     'addToCart' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
@@ -268,6 +290,11 @@ export const idlFactory = ({ IDL }) => {
     'getCart' : IDL.Func([], [IDL.Vec(CartItem)], ['query']),
     'getExcludedProducts' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
     'getProductByBarcode' : IDL.Func([IDL.Text], [IDL.Opt(Product)], ['query']),
+    'getProductByBarcodeWithAction' : IDL.Func(
+        [IDL.Text],
+        [ProductWithAction],
+        ['query'],
+      ),
     'getShopSlogan' : IDL.Func([], [IDL.Text], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
@@ -290,7 +317,6 @@ export const idlFactory = ({ IDL }) => {
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setShopSlogan' : IDL.Func([IDL.Text], [], []),
     'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
-    'verifyAdmin' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], ['query']),
   });
 };
 

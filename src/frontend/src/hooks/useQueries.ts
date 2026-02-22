@@ -221,7 +221,7 @@ export function useRemoveProduct() {
   });
 }
 
-// Admin Check
+// Admin Check - FIXED: Using isAdmin() instead of isCallerAdmin()
 export function useIsCallerAdmin() {
   const { actor, isFetching: actorFetching } = useActor();
   const { identity, isInitializing } = useInternetIdentity();
@@ -241,7 +241,8 @@ export function useIsCallerAdmin() {
       console.log('[useIsCallerAdmin] Checking admin status for principal:', identity.getPrincipal().toString());
       
       try {
-        const result = await actor.isCallerAdmin();
+        // FIXED: Call isAdmin() instead of isCallerAdmin()
+        const result = await actor.isAdmin();
         console.log('[useIsCallerAdmin] Admin check result:', result);
         return result;
       } catch (error) {
@@ -270,19 +271,29 @@ export function useAuthenticateAdmin() {
     mutationFn: async ({ adminId, adminPassword }: { adminId: string; adminPassword: string }) => {
       if (!actor) throw new Error('Actor not available');
       
-      console.log('[useAuthenticateAdmin] Calling authenticate method');
+      console.log('[useAuthenticateAdmin] Calling authenticate with ID:', adminId);
+      console.log('[useAuthenticateAdmin] Password length:', adminPassword.length);
+      
       const result = await actor.authenticate(adminId, adminPassword);
-      console.log('[useAuthenticateAdmin] Authenticate result:', result);
+      
+      console.log('[useAuthenticateAdmin] Raw result from backend:', JSON.stringify(result));
+      console.log('[useAuthenticateAdmin] Result success:', result.success);
+      console.log('[useAuthenticateAdmin] Result message:', result.message);
       
       return result;
     },
     onSuccess: (result) => {
-      console.log('[useAuthenticateAdmin] Authentication successful, invalidating admin queries');
-      // Invalidate admin status queries to refetch
-      queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      console.log('[useAuthenticateAdmin] Mutation onSuccess called with result:', result);
+      if (result.success) {
+        console.log('[useAuthenticateAdmin] Authentication successful, invalidating admin queries');
+        // Invalidate admin status queries to refetch
+        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      } else {
+        console.log('[useAuthenticateAdmin] Authentication failed:', result.message);
+      }
     },
     onError: (error) => {
-      console.error('[useAuthenticateAdmin] Authentication failed:', error);
+      console.error('[useAuthenticateAdmin] Mutation onError called:', error);
     },
   });
 }

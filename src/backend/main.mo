@@ -32,36 +32,13 @@ actor {
     message : Text;
   };
 
-  // Verify admin credentials without granting access
-  // This is the method specified in the implementation plan
-  public query func verifyAdmin(providedId : Text, providedPassword : Text) : async AuthResult {
-    if (not Text.equal(providedId, adminId)) {
-      return {
-        success = false;
-        message = "Invalid admin ID";
-      };
-    };
-
-    if (not Text.equal(providedPassword, adminPassword)) {
-      return {
-        success = false;
-        message = "Invalid admin password";
-      };
-    };
-
-    {
-      success = true;
-      message = "Admin credentials verified successfully";
-    };
-  };
-
   // Authenticate and grant admin role upon successful authentication
   // Only allows one-time authentication - subsequent calls require existing admin privileges
   public shared ({ caller }) func authenticate(providedId : Text, providedPassword : Text) : async AuthResult {
     if (caller.isAnonymous()) {
       return {
         success = false;
-        message = "Anonymous callers cannot authenticate";
+        message = "Authentication failed";
       };
     };
 
@@ -73,17 +50,11 @@ actor {
       };
     };
 
-    if (not Text.equal(providedId, adminId)) {
+    // Verify credentials - use generic error message to prevent information leakage
+    if (not Text.equal(providedId, adminId) or not Text.equal(providedPassword, adminPassword)) {
       return {
         success = false;
-        message = "Invalid admin ID";
-      };
-    };
-
-    if (not Text.equal(providedPassword, adminPassword)) {
-      return {
-        success = false;
-        message = "Invalid admin password";
+        message = "Authentication failed";
       };
     };
 
@@ -273,6 +244,11 @@ actor {
     products.values().find(func(product) { product.barcode == barcode });
   };
 
+  public type ProductWithAction = {
+    product : Product;
+    action : Text;
+  };
+
   // Cart Management (User only)
   public shared ({ caller }) func addToCart(productId : Nat, quantity : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
@@ -332,6 +308,88 @@ actor {
     };
 
     carts.add(caller, cart);
+  };
+
+  // New function to add product to cart by barcode
+  public shared ({ caller }) func addProductByBarcode(barcode : Text, quantity : Nat) : async ProductWithAction {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Only users can add products to cart");
+    };
+
+    if (quantity <= 0) {
+      Runtime.trap("Quantity must be greater than 0");
+    };
+
+    let product = switch (products.values().find(func(product) { product.barcode == barcode })) {
+      case (null) { Runtime.trap("Product not found") };
+      case (?p) { p };
+    };
+
+    if (excludedProducts.contains(product.id)) {
+      Runtime.trap("This product is currently not available for purchase");
+    };
+
+    let cart = switch (carts.get(caller)) {
+      case (null) { List.empty<CartItem>() };
+      case (?c) { c };
+    };
+
+    let existingItemIndex = cart.findIndex(
+      func(item) { item.product.id == product.id }
+    );
+
+    switch (existingItemIndex) {
+      case (null) {
+        let newItem : CartItem = {
+          product;
+          quantity;
+        };
+        cart.add(newItem);
+      };
+      case (?index) {
+        let itemsIter = cart.values();
+        let itemsArray = itemsIter.toArray();
+        if (index < itemsArray.size()) {
+          let updatedItem : CartItem = {
+            product;
+            quantity = itemsArray[index].quantity + quantity;
+          };
+          let newItemsArray = Array.tabulate(
+            itemsArray.size(),
+            func(i) {
+              if (i == index) { updatedItem } else { itemsArray[i] };
+            },
+          );
+          cart.clear();
+          cart.addAll(newItemsArray.values());
+        } else {
+          Runtime.trap("Invalid cart item index");
+        };
+      };
+    };
+
+    carts.add(caller, cart);
+
+    {
+      product;
+      action = "added-to-cart";
+    };
+  };
+
+  // New function to get product info by barcode with action
+  public query ({ caller }) func getProductByBarcodeWithAction(barcode : Text) : async ProductWithAction {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Only users can fetch products");
+    };
+
+    switch (products.values().find(func(product) { product.barcode == barcode })) {
+      case (null) {
+        Runtime.trap("Product not found");
+      };
+      case (?product) {
+        { product; action = "fetch-only" };
+      };
+    };
   };
 
   public query ({ caller }) func getCart() : async [CartItem] {

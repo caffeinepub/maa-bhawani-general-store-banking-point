@@ -1,66 +1,149 @@
 {
   "kind": "build_request",
-  "title": "Fix Admin Panel error when accessing /admin route",
+  "title": "Fix barcode scanner in admin billing with high-speed library and professional features",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Debug and resolve the error occurring when navigating to /admin route. Investigate the AdminGuard component's authentication flow, ensure proper Internet Identity integration, and verify the admin credentials validation against the backend actor.",
+      "text": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "I am facing the problem of an Error occurred on Admin Panel when I am Searching By /admin"
+          "Integrate High-Speed Barcode Library: Use a powerful scanning library (like QuaggaJS, ZXing, or Html5-QRCode) to ensure the camera can instantly recognize standard retail barcodes (EAN-13, UPC, etc.)"
         ]
       },
       "acceptanceCriteria": [
-        "The /admin route loads without errors",
-        "Admin authentication dialog appears correctly",
-        "Login with ID: 97SKY80 and password: SKY8084 works successfully",
-        "Admin panel displays after successful authentication"
+        "Barcode scanner successfully detects and decodes EAN-13 and UPC barcodes",
+        "Scanner uses one of the specified libraries (QuaggaJS, ZXing, or Html5-QRCode)",
+        "Scanning works reliably with standard retail product barcodes"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add error boundary or error handling to the AdminPage component to catch and display specific error messages instead of generic error states, helping identify the root cause of authentication or routing failures.",
+      "text": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
+        ],
+        "quotes": [
+          "Auto-Focus & Flash Support: Enable auto-focus and provide a 'Flash/Torch' toggle button within the scanner UI to help scanning in low-light conditions"
         ]
       },
       "acceptanceCriteria": [
-        "Clear error messages are displayed when authentication fails",
-        "Error boundary prevents entire app crash if AdminPage encounters errors",
-        "Console logs provide debugging information for troubleshooting"
+        "Camera uses auto-focus mode when available",
+        "UI includes a visible Flash/Torch toggle button",
+        "Flash/Torch can be turned on and off during scanning",
+        "Scanner works effectively in low-light environments when flash is enabled"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Verify that the backend actor's verifyAdmin method is properly accessible and returns expected responses when called with the correct admin credentials (ID: 97SKY80, password: SKY8084).",
-      "target": "backend",
+      "text": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
+        ],
+        "quotes": [
+          "Instant Product Fetch: As soon as a barcode is scanned, the app should automatically fetch the product name, price, and GST details from the database and add it to the billing list without any manual clicks"
         ]
       },
       "acceptanceCriteria": [
-        "verifyAdmin method accepts the correct admin ID and password",
-        "Method returns true for valid credentials and false for invalid ones",
-        "No backend errors are thrown during admin verification"
+        "Scanned barcode triggers immediate product lookup in the backend",
+        "Product with matching barcode is retrieved with name, price, and GST details",
+        "Product is automatically added to the billing list without user interaction",
+        "Entire flow happens seamlessly after scan recognition"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Continuous Scanning Mode: Allow the admin to scan multiple items one after another without closing the camera after every single scan"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Camera remains open after a successful scan",
+        "Admin can immediately scan another barcode without reopening the scanner",
+        "Scanner only closes when explicitly dismissed by the admin",
+        "Multiple products can be added in rapid succession"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Beep Sound on Success: Add a 'Beep' sound notification once a barcode is successfully scanned to give feedback to the admin"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Distinct beep sound plays immediately after successful scan",
+        "Sound provides clear confirmation without being disruptive",
+        "Audio feedback works consistently across scan sessions"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Error Handling: If a barcode is not found in the database, show a quick popup 'Product Not Found - Add Manually?'"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Popup appears when barcode lookup returns no matching product",
+        "Popup displays the exact text 'Product Not Found - Add Manually?'",
+        "Popup provides clear visual feedback and is easy to dismiss",
+        "Scanner remains ready to scan next item after error handling"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Camera Access Description: \"This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers.\""
+        ]
+      },
+      "acceptanceCriteria": [
+        "Camera permission prompt shows the specified description",
+        "Description complies with app store requirements for permission justification"
       ]
     }
   ],
   "constraints": [
-    "Preserve existing admin credentials (ID: 97SKY80, password: SKY8084)",
-    "Do not modify the Internet Identity integration hooks (useInternetIdentity.ts, useActor.ts)"
+    "Use one of the specified barcode libraries: QuaggaJS, ZXing, or Html5-QRCode",
+    "Scanner must support EAN-13 and UPC barcode formats",
+    "Product lookup must use existing backend product data with barcode field",
+    "Maintain compatibility with existing billing flow in BillingPage.tsx"
   ],
   "nonGoals": [
-    "Adding new admin features or functionality",
-    "Redesigning the admin panel UI",
-    "Changing the authentication mechanism"
+    "Adding new product fields or modifying product schema",
+    "Implementing manual barcode entry enhancements beyond existing functionality",
+    "Supporting QR codes or non-retail barcode formats",
+    "Creating a separate handheld scanner device integration"
   ],
   "imageRequirements": {
     "required": [],

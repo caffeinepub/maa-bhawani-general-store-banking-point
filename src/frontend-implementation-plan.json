@@ -1,53 +1,150 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Admin Panel Authentication Error",
+  "title": "Fix barcode scanner in admin billing with high-speed library and professional features",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Debug and resolve the error occurring when navigating to /admin route by fixing the AdminGuard authentication flow to use the correct verifyAdmin backend method",
+      "summary": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
       "acceptanceCriteria": [
-        "The /admin route loads without errors",
-        "Admin authentication dialog appears correctly",
-        "Login with ID: 97SKY80 and password: SKY8084 works successfully",
-        "Admin panel displays after successful authentication"
+        "Barcode scanner successfully detects and decodes EAN-13 and UPC barcodes",
+        "Scanner uses one of the specified libraries (QuaggaJS, ZXing, or Html5-QRCode)",
+        "Scanning works reliably with standard retail product barcodes"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminGuard.tsx",
-          "operation": "modify",
-          "description": "Fix the authentication logic to use actor.verifyAdmin instead of actor.authenticate. Update the handleAdminLogin function to call verifyAdmin with the provided ID and password, and properly handle the AuthResult response structure. Add console logging for debugging authentication flow and response structure. Ensure the component correctly checks authentication state before rendering the admin dialog or children."
+          "path": "frontend/src/components/BarcodeScanner.tsx",
+          "operation": "create",
+          "description": "Create a professional barcode scanner component using QuaggaJS library for high-speed EAN-13 and UPC barcode recognition. Component should integrate with the camera/useCamera hook for camera access and provide callbacks for successful scans and errors. Include proper initialization, cleanup, and continuous scanning support. The component must handle camera permissions gracefully and provide a clear preview area for scanning."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/pages/BillingPage.tsx",
           "operation": "modify",
-          "description": "Add a useVerifyAdmin mutation hook that calls actor.verifyAdmin(adminId, password) and returns the AuthResult. This provides a reusable, type-safe way to verify admin credentials with proper error handling and loading states."
+          "description": "Replace the existing basic camera-based barcode scanner with the new BarcodeScanner component. Remove manual barcode input camera logic and integrate the high-speed scanner. Ensure the scanner modal displays the BarcodeScanner component with proper dimensions and controls. Wire scanner success callbacks to trigger product lookup and addition to bill items."
+        },
+        {
+          "path": "frontend/package.json",
+          "operation": "modify",
+          "description": "Add QuaggaJS library dependency (@ericblade/quagga2) for high-speed barcode scanning with EAN-13 and UPC support. Include TypeScript type definitions if available."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add error boundary and improved error handling to AdminPage component to display specific error messages instead of generic error states",
+      "summary": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
       "acceptanceCriteria": [
-        "Clear error messages are displayed when authentication fails",
-        "Error boundary prevents entire app crash if AdminPage encounters errors",
-        "Console logs provide debugging information for troubleshooting"
+        "Camera uses auto-focus mode when available",
+        "UI includes a visible Flash/Torch toggle button",
+        "Flash/Torch can be turned on and off during scanning",
+        "Scanner works effectively in low-light environments when flash is enabled"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ErrorBoundary.tsx",
+          "path": "frontend/src/components/BarcodeScanner.tsx",
+          "operation": "modify",
+          "description": "Add flash/torch toggle functionality to the BarcodeScanner component. Implement a visible toggle button in the scanner UI that enables/disables the device torch using MediaStreamTrack API. Configure camera constraints to request auto-focus capability when initializing the video stream. Include visual feedback for flash state (icon change or color indication). Handle devices that don't support torch gracefully by hiding or disabling the toggle."
+        },
+        {
+          "path": "frontend/src/pages/BillingPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the scanner modal layout accommodates the flash toggle button and provides sufficient space for scanner controls. Update camera configuration passed to BarcodeScanner to request auto-focus and environment-facing camera for optimal scanning."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+      "acceptanceCriteria": [
+        "Scanned barcode triggers immediate product lookup in the backend",
+        "Product with matching barcode is retrieved with name, price, and GST details",
+        "Product is automatically added to the billing list without user interaction",
+        "Entire flow happens seamlessly after scan recognition"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/BillingPage.tsx",
+          "operation": "modify",
+          "description": "Implement automatic product fetch and addition flow in the barcode scan success callback. When BarcodeScanner detects a barcode, immediately call the backend getProductByBarcode method using the existing useQueries hook. Upon successful product retrieval, automatically add the product to billItems state with quantity 1 and calculate prices including GST (18% as per existing logic). Handle the complete flow without requiring manual confirmation or button clicks. Update UI to show loading state during fetch and provide feedback when product is added."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+      "acceptanceCriteria": [
+        "Camera remains open after a successful scan",
+        "Admin can immediately scan another barcode without reopening the scanner",
+        "Scanner only closes when explicitly dismissed by the admin",
+        "Multiple products can be added in rapid succession"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/BarcodeScanner.tsx",
+          "operation": "modify",
+          "description": "Implement continuous scanning mode in BarcodeScanner component. After a successful barcode detection and callback execution, keep the camera stream active and QuaggaJS detection running instead of stopping. Add a small cooldown period (300-500ms) after each successful scan to prevent duplicate detections of the same barcode. Provide a visible 'Close' or 'Done' button that admin must click to stop scanning and close the camera."
+        },
+        {
+          "path": "frontend/src/pages/BillingPage.tsx",
+          "operation": "modify",
+          "description": "Update scanner modal to support continuous scanning workflow. Remove automatic modal closure after successful scans. Keep isScannerOpen state true after product additions. Ensure the close button in the modal properly stops the camera and closes the scanner. Update UI to show brief feedback (like a flash or checkmark animation) after each successful scan while keeping scanner active."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+      "acceptanceCriteria": [
+        "Distinct beep sound plays immediately after successful scan",
+        "Sound provides clear confirmation without being disruptive",
+        "Audio feedback works consistently across scan sessions"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/beep.mp3",
           "operation": "create",
-          "description": "Create a React error boundary component that catches errors from child components. Display a user-friendly error message with details about what went wrong. Include a retry button that resets the error state. Log error details to the console for debugging. Use the authorization component's error handling patterns for consistency."
+          "description": "Add a short, pleasant beep sound file (MP3 format, ~0.5 seconds duration) to the public assets directory for barcode scan success audio feedback. The sound should be clear and professional, suitable for retail point-of-sale environments."
         },
         {
-          "path": "frontend/src/pages/AdminPage.tsx",
+          "path": "frontend/src/components/BarcodeScanner.tsx",
           "operation": "modify",
-          "description": "Wrap the AdminPage content with the ErrorBoundary component. Add console.error logging for any caught errors in useQuery/useMutation callbacks. Improve error message display in the UI to show specific error text instead of generic 'Failed to load' messages. Add null checks for actor availability before rendering data-dependent components."
+          "description": "Add audio feedback capability to BarcodeScanner component. Create an Audio instance referencing the beep sound file at /assets/beep.mp3. Play the beep sound immediately after successful barcode detection and before triggering the onScan callback. Handle audio playback errors gracefully (e.g., if autoplay is blocked). Ensure sound plays consistently for each successful scan in continuous mode."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+      "acceptanceCriteria": [
+        "Popup appears when barcode lookup returns no matching product",
+        "Popup displays the exact text 'Product Not Found - Add Manually?'",
+        "Popup provides clear visual feedback and is easy to dismiss",
+        "Scanner remains ready to scan next item after error handling"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/BillingPage.tsx",
+          "operation": "modify",
+          "description": "Add error handling for barcode lookup failures in the scan callback. When getProductByBarcode returns null (product not found), display a toast notification or alert dialog with the exact message 'Product Not Found - Add Manually?'. Use the existing toast system (react-hot-toast) for consistency. Ensure the error message is brief (2-3 seconds) and doesn't interrupt continuous scanning. Scanner should remain active and ready for the next scan after showing the error."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+      "acceptanceCriteria": [
+        "Camera permission prompt shows the specified description",
+        "Description complies with app store requirements for permission justification"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/BarcodeScanner.tsx",
+          "operation": "modify",
+          "description": "Add a permission explanation UI that displays before requesting camera access. Show an information dialog or banner with the text 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers' when the user first opens the scanner or if permission was previously denied. This ensures users understand why camera access is needed before the browser permission prompt appears."
         },
         {
-          "path": "frontend/src/components/AdminGuard.tsx",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Add detailed error logging when authentication fails. Display the error message from AuthResult in the UI when login fails. Add console logs for the authentication flow: when dialog opens, when credentials are submitted, and what response is received. Ensure error states are cleared when the user retries authentication."
+          "description": "Add camera permission usage description meta tag for PWA compliance. Include <meta name=\"camera-usage-description\" content=\"This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers\" /> to satisfy app store requirements for permission justification when the PWA is installed."
         }
       ]
     }

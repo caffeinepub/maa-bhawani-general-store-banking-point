@@ -22,6 +22,10 @@ export interface BillItem {
     totalPrice: bigint;
 }
 export type Time = bigint;
+export interface ProductWithAction {
+    action: string;
+    product: Product;
+}
 export interface Order {
     id: bigint;
     customerName: string;
@@ -73,6 +77,7 @@ export enum UserRole {
 }
 export interface backendInterface {
     addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string): Promise<void>;
+    addProductByBarcode(barcode: string, quantity: bigint): Promise<ProductWithAction>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     authenticate(providedId: string, providedPassword: string): Promise<AuthResult>;
@@ -89,6 +94,7 @@ export interface backendInterface {
     getCart(): Promise<Array<CartItem>>;
     getExcludedProducts(): Promise<Array<bigint>>;
     getProductByBarcode(barcode: string): Promise<Product | null>;
+    getProductByBarcodeWithAction(barcode: string): Promise<ProductWithAction>;
     getShopSlogan(): Promise<string>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isAdmin(): Promise<boolean>;
@@ -99,5 +105,4 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
-    verifyAdmin(providedId: string, providedPassword: string): Promise<AuthResult>;
 }

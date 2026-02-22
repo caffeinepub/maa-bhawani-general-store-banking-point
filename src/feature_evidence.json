@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-debug-and-resolve-the-error-occurring-when-navigating-to-admin-route-investigate-the-adminguard-component-s-authentication-flow-ensure-proper-internet-identity-integration-and-verify-the-admin-credentials-validation-against-the-backend-actor",
-      "featureTitle": "Debug and resolve the error occurring when navigating to /admin route. Investigate the AdminGuard component's authentication flow, ensure proper Internet Identity integration, and verify the admin credentials validation against the backend actor.",
+      "featureId": "feature-integrate-a-high-speed-barcode-scanning-library-quaggajs-zxing-or-html5-qrcode-into-the-admin-billing-page-to-reliably-recognize-standard-retail-barcodes-including-ean-13-and-upc-formats",
+      "featureTitle": "Integrate a high-speed barcode scanning library (QuaggaJS, ZXing, or Html5-QRCode) into the admin billing page to reliably recognize standard retail barcodes including EAN-13 and UPC formats",
       "files": [
-        "frontend/src/components/AdminGuard.tsx",
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/components/BarcodeScanner.tsx",
+        "frontend/src/pages/BillingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,12 +24,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-error-boundary-or-error-handling-to-the-adminpage-component-to-catch-and-display-specific-error-messages-instead-of-generic-error-states-helping-identify-the-root-cause-of-authentication-or-routing-failures",
-      "featureTitle": "Add error boundary or error handling to the AdminPage component to catch and display specific error messages instead of generic error states, helping identify the root cause of authentication or routing failures.",
+      "featureId": "feature-enable-auto-focus-for-the-camera-and-add-a-flash-torch-toggle-button-within-the-scanner-ui-to-support-scanning-in-low-light-conditions",
+      "featureTitle": "Enable auto-focus for the camera and add a Flash/Torch toggle button within the scanner UI to support scanning in low-light conditions",
       "files": [
-        "frontend/src/components/AdminGuard.tsx",
-        "frontend/src/components/ErrorBoundary.tsx",
-        "frontend/src/pages/AdminPage.tsx"
+        "frontend/src/components/BarcodeScanner.tsx",
+        "frontend/src/pages/BillingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,6 +42,113 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-instant-product-fetch-when-a-barcode-is-successfully-scanned-automatically-fetch-the-product-name-price-and-gst-details-from-the-database-and-add-it-to-the-billing-list-without-requiring-any-manual-clicks",
+      "featureTitle": "Implement instant product fetch: when a barcode is successfully scanned, automatically fetch the product name, price, and GST details from the database and add it to the billing list without requiring any manual clicks",
+      "files": [
+        "frontend/src/pages/BillingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-enable-continuous-scanning-mode-that-allows-the-admin-to-scan-multiple-items-one-after-another-without-closing-the-camera-after-each-scan",
+      "featureTitle": "Enable continuous scanning mode that allows the admin to scan multiple items one after another without closing the camera after each scan",
+      "files": [
+        "frontend/src/components/BarcodeScanner.tsx",
+        "frontend/src/pages/BillingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-beep-sound-notification-that-plays-when-a-barcode-is-successfully-scanned-to-provide-audio-feedback-to-the-admin",
+      "featureTitle": "Add a beep sound notification that plays when a barcode is successfully scanned to provide audio feedback to the admin",
+      "files": [
+        "frontend/src/components/BarcodeScanner.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-error-handling-that-shows-a-quick-popup-with-the-message-product-not-found-add-manually-when-a-scanned-barcode-is-not-found-in-the-database",
+      "featureTitle": "Implement error handling that shows a quick popup with the message 'Product Not Found - Add Manually?' when a scanned barcode is not found in the database",
+      "files": [
+        "frontend/src/pages/BillingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-camera-permission-request-description-to-this-app-requires-camera-access-for-the-admin-billing-panel-to-scan-product-barcodes-ensuring-fast-and-error-free-billing-for-customers",
+      "featureTitle": "Update camera permission request description to: 'This app requires camera access for the Admin Billing Panel to scan product barcodes, ensuring fast and error-free billing for customers'",
+      "files": [
+        "frontend/index.html",
+        "frontend/src/components/BarcodeScanner.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
       ],
       "confidence": "high"
     }

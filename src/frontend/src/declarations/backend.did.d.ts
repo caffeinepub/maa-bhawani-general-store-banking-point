@@ -47,6 +47,7 @@ export interface Product {
   'image' : ExternalBlob,
   'priceInRupees' : bigint,
 }
+export interface ProductWithAction { 'action' : string, 'product' : Product }
 export interface RechargeOrder {
   'id' : bigint,
   'rechargeAmount' : bigint,
@@ -90,6 +91,7 @@ export interface _SERVICE {
     [string, string, bigint, ExternalBlob, string],
     undefined
   >,
+  'addProductByBarcode' : ActorMethod<[string, bigint], ProductWithAction>,
   'addToCart' : ActorMethod<[bigint, bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'authenticate' : ActorMethod<[string, string], AuthResult>,
@@ -109,6 +111,7 @@ export interface _SERVICE {
   'getCart' : ActorMethod<[], Array<CartItem>>,
   'getExcludedProducts' : ActorMethod<[], Array<bigint>>,
   'getProductByBarcode' : ActorMethod<[string], [] | [Product]>,
+  'getProductByBarcodeWithAction' : ActorMethod<[string], ProductWithAction>,
   'getShopSlogan' : ActorMethod<[], string>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isAdmin' : ActorMethod<[], boolean>,
@@ -119,7 +122,6 @@ export interface _SERVICE {
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setShopSlogan' : ActorMethod<[string], undefined>,
   'toggleProductExclusion' : ActorMethod<[bigint], boolean>,
-  'verifyAdmin' : ActorMethod<[string, string], AuthResult>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

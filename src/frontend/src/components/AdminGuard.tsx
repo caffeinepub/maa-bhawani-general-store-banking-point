@@ -55,56 +55,89 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   };
 
   const handleSubmitLogin = async () => {
-    console.log('[AdminGuard] Submitting admin login');
+    console.log('[AdminGuard] ========== ADMIN LOGIN ATTEMPT ==========');
+    console.log('[AdminGuard] Timestamp:', new Date().toISOString());
     
     if (!adminId.trim() || !adminPassword.trim()) {
+      console.log('[AdminGuard] Validation failed: Empty credentials');
       setLoginError('Both Admin ID and Password are required');
       return;
     }
 
     if (!actor) {
+      console.log('[AdminGuard] Actor not available');
       setLoginError('Backend connection not available. Please refresh the page.');
       return;
     }
 
+    const trimmedId = adminId.trim();
+    const trimmedPassword = adminPassword.trim();
+
+    console.log('[AdminGuard] Credentials being sent:');
+    console.log('  - Admin ID:', trimmedId);
+    console.log('  - Password length:', trimmedPassword.length);
+    console.log('  - Password first char:', trimmedPassword.charAt(0));
+    console.log('  - Password last char:', trimmedPassword.charAt(trimmedPassword.length - 1));
+
     try {
       setLoginError(null);
-      console.log('[AdminGuard] Calling authenticate with ID:', adminId.trim());
       
+      console.log('[AdminGuard] Calling authenticateMutation.mutateAsync...');
       const result = await authenticateMutation.mutateAsync({
-        adminId: adminId.trim(),
-        adminPassword: adminPassword.trim(),
+        adminId: trimmedId,
+        adminPassword: trimmedPassword,
       });
       
-      console.log('[AdminGuard] Authentication result:', result);
+      console.log('[AdminGuard] ========== AUTHENTICATION RESULT ==========');
+      console.log('[AdminGuard] Full result object:', JSON.stringify(result, null, 2));
+      console.log('[AdminGuard] result.success:', result.success);
+      console.log('[AdminGuard] result.message:', result.message);
+      console.log('[AdminGuard] typeof result.success:', typeof result.success);
       
-      if (result.success) {
-        console.log('[AdminGuard] Authentication successful, closing dialog and refetching admin status');
+      if (result.success === true) {
+        console.log('[AdminGuard] ✅ Authentication SUCCESSFUL');
+        console.log('[AdminGuard] Closing dialog and refetching admin status...');
         setShowLoginDialog(false);
-        await refetch();
+        setAdminId('');
+        setAdminPassword('');
+        
+        // Wait a moment before refetching to ensure backend state is updated
+        setTimeout(async () => {
+          console.log('[AdminGuard] Refetching admin status...');
+          await refetch();
+          console.log('[AdminGuard] Admin status refetched');
+        }, 500);
       } else {
-        console.error('[AdminGuard] Authentication failed:', result.message);
-        setLoginError(result.message || 'Authentication failed');
+        console.log('[AdminGuard] ❌ Authentication FAILED');
+        console.error('[AdminGuard] Failure message:', result.message);
+        setLoginError(result.message || 'Invalid Admin ID or Password');
       }
     } catch (error: any) {
-      console.error('[AdminGuard] Authentication error:', error);
+      console.log('[AdminGuard] ========== AUTHENTICATION ERROR ==========');
+      console.error('[AdminGuard] Exception caught:', error);
+      console.error('[AdminGuard] Error type:', typeof error);
+      console.error('[AdminGuard] Error message:', error?.message);
+      console.error('[AdminGuard] Error stack:', error?.stack);
       
       // Parse error message
       let errorMessage = 'Failed to authenticate. Please check your credentials and try again.';
       if (error.message) {
-        if (error.message.includes('Anonymous')) {
+        if (error.message.includes('Anonymous') || error.message.includes('anonymous')) {
           errorMessage = 'You must be logged in with Internet Identity first.';
-        } else if (error.message.includes('Invalid')) {
-          errorMessage = 'Invalid Admin ID or Password.';
-        } else if (error.message.includes('Unauthorized')) {
+        } else if (error.message.includes('Authentication failed')) {
+          errorMessage = 'Invalid Admin ID or Password. Please check your credentials.';
+        } else if (error.message.includes('Invalid') || error.message.includes('Unauthorized')) {
           errorMessage = 'Invalid Admin ID or Password.';
         } else {
           errorMessage = error.message;
         }
       }
       
+      console.log('[AdminGuard] Setting error message:', errorMessage);
       setLoginError(errorMessage);
     }
+    
+    console.log('[AdminGuard] ========== LOGIN ATTEMPT COMPLETE ==========');
   };
 
   // Check if user is not authenticated
@@ -168,7 +201,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
 
   // Check if user is not an admin
   if (isAdmin === false) {
-    console.log('[AdminGuard] User is not an admin');
+    console.log('[AdminGuard] User is not an admin, showing access denied screen');
     const principalId = identity?.getPrincipal().toString() || '';
     
     return (
@@ -321,6 +354,6 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   }
 
   // User is authenticated and is an admin
-  console.log('[AdminGuard] User is authenticated as admin, rendering children');
+  console.log('[AdminGuard] ✅ User is authenticated as admin, rendering children');
   return <>{children}</>;
 }

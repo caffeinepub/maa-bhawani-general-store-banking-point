@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AdminGuard from '../components/AdminGuard';
 import BillTemplate from '../components/BillTemplate';
-import { useCamera } from '../camera/useCamera';
+import BarcodeScanner from '../components/BarcodeScanner';
 import { useGetAllProducts, useGenerateBill } from '../hooks/useQueries';
-import { Camera, Keyboard, Plus, Minus, Trash2, Printer, AlertCircle } from 'lucide-react';
+import { Camera, Keyboard, Plus, Minus, Trash2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BillItem, Product } from '../backend';
 
@@ -20,42 +20,40 @@ interface BillLineItem {
 
 export default function BillingPage() {
   const [scanMode, setScanMode] = useState<'camera' | 'manual'>('manual');
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
   const [billItems, setBillItems] = useState<BillLineItem[]>([]);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [generatedBill, setGeneratedBill] = useState<any>(null);
+  const [showNotFoundDialog, setShowNotFoundDialog] = useState(false);
+  const [notFoundBarcode, setNotFoundBarcode] = useState('');
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: products = [] } = useGetAllProducts();
   const generateBill = useGenerateBill();
 
-  const {
-    isActive,
-    isSupported,
-    error: cameraError,
-    isLoading: cameraLoading,
-    startCamera,
-    stopCamera,
-    capturePhoto,
-    videoRef,
-    canvasRef,
-  } = useCamera({
-    facingMode: 'environment',
-    quality: 0.9,
-  });
-
-  const handleStartCamera = async () => {
+  const handleStartCamera = () => {
     setScanMode('camera');
-    const success = await startCamera();
-    if (!success) {
-      toast.error('Failed to start camera');
-    }
+    setIsScannerOpen(true);
   };
 
-  const handleStopCamera = async () => {
-    await stopCamera();
+  const handleStopCamera = () => {
+    setIsScannerOpen(false);
     setScanMode('manual');
+  };
+
+  const handleBarcodeScanned = (barcode: string) => {
+    const product = products.find(p => p.barcode === barcode);
+    
+    if (!product) {
+      setNotFoundBarcode(barcode);
+      setShowNotFoundDialog(true);
+      toast.error('Product not found');
+      return;
+    }
+
+    addProductToBill(product);
   };
 
   const handleManualBarcodeSubmit = () => {
@@ -66,7 +64,9 @@ export default function BillingPage() {
 
     const product = products.find(p => p.barcode === manualBarcode.trim());
     if (!product) {
-      toast.error('Product not found with this barcode');
+      setNotFoundBarcode(manualBarcode.trim());
+      setShowNotFoundDialog(true);
+      setManualBarcode('');
       return;
     }
 
@@ -83,11 +83,11 @@ export default function BillingPage() {
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
+      toast.success(`Increased ${product.name} quantity`);
     } else {
       setBillItems([...billItems, { product, quantity: 1 }]);
+      toast.success(`Added ${product.name} to bill`);
     }
-    
-    toast.success(`Added ${product.name} to bill`);
   };
 
   const updateQuantity = (productId: bigint, delta: number) => {
@@ -134,6 +134,11 @@ export default function BillingPage() {
 
       setGeneratedBill(bill);
       toast.success('Bill generated successfully!');
+      
+      // Close scanner if open
+      if (isScannerOpen) {
+        setIsScannerOpen(false);
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to generate bill');
     }
@@ -194,11 +199,10 @@ export default function BillingPage() {
                   <Button
                     onClick={scanMode === 'camera' ? handleStopCamera : handleStartCamera}
                     variant={scanMode === 'camera' ? 'default' : 'outline'}
-                    className="gap-2"
-                    disabled={isSupported === false || cameraLoading}
+                    className="gap-2 flex-1"
                   >
                     <Camera className="h-4 w-4" />
-                    {scanMode === 'camera' ? 'Stop Camera' : 'Use Camera'}
+                    {scanMode === 'camera' ? 'Stop Scanner' : 'Barcode Scanner'}
                   </Button>
                   <Button
                     onClick={() => {
@@ -206,50 +210,12 @@ export default function BillingPage() {
                       setScanMode('manual');
                     }}
                     variant={scanMode === 'manual' ? 'default' : 'outline'}
-                    className="gap-2"
+                    className="gap-2 flex-1"
                   >
                     <Keyboard className="h-4 w-4" />
                     Manual Entry
                   </Button>
                 </div>
-
-                {isSupported === false && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Camera is not supported on this device
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {cameraError && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {cameraError.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {scanMode === 'camera' && (
-                  <div className="space-y-4">
-                    <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-                      <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <canvas ref={canvasRef} className="hidden" />
-                    <Alert>
-                      <AlertDescription>
-                        Note: Camera scanning requires manual barcode recognition. Use manual entry for faster billing.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                )}
 
                 {scanMode === 'manual' && (
                   <div className="space-y-2">
@@ -265,6 +231,7 @@ export default function BillingPage() {
                             handleManualBarcodeSubmit();
                           }
                         }}
+                        autoFocus
                       />
                       <Button onClick={handleManualBarcodeSubmit}>Add</Button>
                     </div>
@@ -384,6 +351,46 @@ export default function BillingPage() {
           </Card>
         </div>
       </div>
+
+      {/* Barcode Scanner Modal */}
+      <BarcodeScanner
+        isOpen={isScannerOpen}
+        onScan={handleBarcodeScanned}
+        onClose={handleStopCamera}
+      />
+
+      {/* Product Not Found Dialog */}
+      <Dialog open={showNotFoundDialog} onOpenChange={setShowNotFoundDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Product Not Found</DialogTitle>
+            <DialogDescription>
+              No product found with barcode: <strong>{notFoundBarcode}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Would you like to add this product manually to the inventory?
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowNotFoundDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowNotFoundDialog(false);
+                  toast.info('Please add the product from the Products tab');
+                }}
+              >
+                Add Manually
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminGuard>
   );
 }

@@ -1,6 +1,6 @@
 {
   "frontend/src/App.tsx": "Main application component with TanStack Router setup including new routes for billing (/admin/billing) and settings (/admin/settings) pages.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations with enhanced error logging in useIsCallerAdmin and useAuthenticateAdmin, plus improved error handling for admin authentication flow.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations with fixed useIsCallerAdmin to call the correct isAdmin() method and enhanced logging in useAuthenticateAdmin for debugging authentication flow.",
   "frontend/src/hooks/useUserProfile.ts": "Custom hooks for managing user profile data including fetching and saving caller user profile with proper loading states to prevent modal flash.",
   "frontend/src/components/Layout.tsx": "Main layout wrapper component that provides consistent structure with Header, Footer, and CallUsButton across all pages.",
   "frontend/src/components/Header.tsx": "Responsive header with touch-optimized navigation buttons meeting 44px minimum touch target requirements.",
@@ -14,7 +14,7 @@
   "frontend/src/components/MobileRechargeSection.tsx": "Banner and form for mobile recharge orders with operator selection and amount input.",
   "frontend/src/components/DeliveryFeeInfo.tsx": "Alert component explaining the delivery fee policy (free within 1km, ₹20/km beyond).",
   "frontend/src/components/PaymentQRCode.tsx": "Payment QR code display with amount and step-by-step payment instructions.",
-  "frontend/src/components/AdminGuard.tsx": "Authorization wrapper component that verifies admin access with enhanced error logging, admin login dialog for authentication using ID and password, and improved error handling with detailed console logs for debugging authentication flow.",
+  "frontend/src/components/AdminGuard.tsx": "Authorization wrapper component that verifies admin access with comprehensive error logging throughout the authentication flow, including detailed console logs showing credentials being sent, backend responses, and authentication results for debugging.",
   "frontend/src/components/AdminProductForm.tsx": "Form for adding new products with image upload, barcode input field (optional), duplicate barcode validation, and progress tracking.",
   "frontend/src/components/AdminProductList.tsx": "Table displaying all products with images and delete functionality with confirmation dialog.",
   "frontend/src/pages/HomePage.tsx": "Landing page displaying the uploaded shop banner image prominently at the top, followed by mobile recharge section and product grid for browsing groceries.",
@@ -24,13 +24,15 @@
   "frontend/src/pages/AdminPage.tsx": "Admin dashboard wrapped with ErrorBoundary displaying tabs for product management, orders, recharge orders, and bill history with error logging for all data queries.",
   "frontend/src/index.css": "Global styles with warm earthy OKLCH color palette, touch-friendly CSS utilities, and print-optimized styles for thermal printer (80mm width) bill printing.",
   "frontend/tailwind.config.js": "Tailwind configuration with custom warm color tokens, typography, and design system for consistent grocery store aesthetic.",
-  "frontend/index.html": "HTML entry point with PWA meta tags for mobile app configuration, manifest link, and app icon references for iOS and Android.",
+  "frontend/index.html": "HTML entry point with PWA meta tags, camera permission usage description for app store compliance, and mobile app configuration.",
   "frontend/public/manifest.json": "Web app manifest defining app name, icons, display mode, theme colors, and PWA configuration for installable app experience.",
   "frontend/public/service-worker.js": "Service worker implementing cache-first strategy for static assets and network-first for API calls with offline support.",
   "frontend/src/main.tsx": "Application entry point with React initialization and service worker registration for PWA functionality.",
-  "frontend/src/pages/BillingPage.tsx": "Professional billing interface with camera-based barcode scanning (with manual fallback), real-time bill item management, quantity adjustments, and bill generation with customer details.",
+  "frontend/src/pages/BillingPage.tsx": "Professional billing interface with integrated high-speed barcode scanner, automatic product lookup and addition, continuous scanning support, manual barcode entry fallback, and product not found dialog with manual addition option.",
   "frontend/src/components/BillTemplate.tsx": "Professional bill template component displaying shop details (Maa Bhawani General Store), customizable slogan, itemized products table, and formatted for 80mm thermal printer.",
   "frontend/src/components/BillHistoryTable.tsx": "Table component displaying bill history with search functionality, date/time formatting, bill preview dialog, reprint capability, and CSV export feature.",
   "frontend/src/pages/AdminSettingsPage.tsx": "Admin settings page for customizing shop slogan with real-time bill preview and shop information display.",
-  "frontend/src/components/ErrorBoundary.tsx": "React error boundary component that catches and displays errors from child components with detailed error messages, stack traces, and retry functionality."
+  "frontend/src/components/ErrorBoundary.tsx": "React error boundary component that catches and displays errors from child components with detailed error messages, stack traces, and retry functionality.",
+  "frontend/src/components/BarcodeScanner.tsx": "Professional barcode scanner component loading QuaggaJS from CDN with continuous scanning mode, flash/torch toggle, beep sound feedback, auto-focus support, and visual scanning overlay with success animations.",
+  "frontend/package.json": "Package configuration with @ericblade/quagga2 library added for high-speed barcode scanning with EAN-13 and UPC support."
 }
