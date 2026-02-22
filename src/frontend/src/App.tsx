@@ -5,6 +5,8 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import StoreDetailsPage from './pages/StoreDetailsPage';
 import AdminPage from './pages/AdminPage';
+import BillingPage from './pages/BillingPage';
+import AdminSettingsPage from './pages/AdminSettingsPage';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -44,12 +46,26 @@ const adminRoute = createRoute({
   component: AdminPage,
 });
 
+const billingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/billing',
+  component: BillingPage,
+});
+
+const adminSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/settings',
+  component: AdminSettingsPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   checkoutRoute,
   orderConfirmationRoute,
   storeDetailsRoute,
   adminRoute,
+  billingRoute,
+  adminSettingsRoute,
 ]);
 
 const router = createRouter({ routeTree });

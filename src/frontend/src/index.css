@@ -117,3 +117,39 @@
         transition: transform 0.1s ease, opacity 0.2s ease;
     }
 }
+
+/* Print styles for bills */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    .bill-template,
+    .bill-template * {
+        visibility: visible;
+    }
+    
+    .bill-template {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        margin: 0;
+        padding: 10mm;
+        background: white;
+    }
+    
+    .no-print,
+    header,
+    footer,
+    nav,
+    button,
+    .no-print * {
+        display: none !important;
+    }
+    
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+}

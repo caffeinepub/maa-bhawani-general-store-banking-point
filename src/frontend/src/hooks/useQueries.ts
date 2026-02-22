@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Product, CartItem, Order, RechargeOrder } from '../backend';
+import { useInternetIdentity } from './useInternetIdentity';
+import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem } from '../backend';
 import { ExternalBlob } from '../backend';
 
 // Products
@@ -14,6 +15,19 @@ export function useGetAllProducts() {
       return actor.getAllProducts();
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetProductByBarcode(barcode: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Product | null>({
+    queryKey: ['product', barcode],
+    queryFn: async () => {
+      if (!actor || !barcode) return null;
+      return actor.getProductByBarcode(barcode);
+    },
+    enabled: !!actor && !isFetching && !!barcode,
   });
 }
 
@@ -173,14 +187,16 @@ export function useAddProduct() {
       category,
       priceInRupees,
       image,
+      barcode,
     }: {
       name: string;
       category: string;
       priceInRupees: bigint;
       image: ExternalBlob;
+      barcode: string;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.addProduct(name, category, priceInRupees, image);
+      await actor.addProduct(name, category, priceInRupees, image, barcode);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -205,18 +221,112 @@ export function useRemoveProduct() {
 
 // Admin Check
 export function useIsCallerAdmin() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching: actorFetching } = useActor();
+  const { identity, isInitializing } = useInternetIdentity();
 
-  return useQuery<boolean>({
-    queryKey: ['isAdmin'],
+  const query = useQuery<boolean>({
+    queryKey: ['isAdmin', identity?.getPrincipal().toString()],
     queryFn: async () => {
-      if (!actor) return false;
+      if (!actor) {
+        console.log('[useIsCallerAdmin] Actor not available');
+        return false;
+      }
+      if (!identity) {
+        console.log('[useIsCallerAdmin] Identity not available');
+        return false;
+      }
+      
+      console.log('[useIsCallerAdmin] Checking admin status for principal:', identity.getPrincipal().toString());
+      
       try {
-        return await actor.isCallerAdmin();
+        const result = await actor.isCallerAdmin();
+        console.log('[useIsCallerAdmin] Admin check result:', result);
+        return result;
       } catch (error) {
+        console.error('[useIsCallerAdmin] Error checking admin status:', error);
         return false;
       }
     },
+    enabled: !!actor && !actorFetching && !!identity && !isInitializing,
+    retry: 2,
+    retryDelay: 1000,
+  });
+
+  return {
+    ...query,
+    // Ensure loading state reflects all dependencies
+    isLoading: actorFetching || isInitializing || query.isLoading,
+  };
+}
+
+// Bills
+export function useGenerateBill() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      customerName,
+      customerPhone,
+      items,
+      totalAmount,
+    }: {
+      customerName: string | null;
+      customerPhone: string | null;
+      items: BillItem[];
+      totalAmount: bigint;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return await actor.generateBill(customerName, customerPhone, items, totalAmount);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bills'] });
+    },
+  });
+}
+
+export function useGetAllBills() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Bill[]>({
+    queryKey: ['bills'],
+    queryFn: async () => {
+      if (!actor) return [];
+      try {
+        return await actor.getAllBills();
+      } catch (error) {
+        return [];
+      }
+    },
     enabled: !!actor && !isFetching,
+  });
+}
+
+// Shop Slogan
+export function useGetShopSlogan() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string>({
+    queryKey: ['shopSlogan'],
+    queryFn: async () => {
+      if (!actor) return 'Welcome to our shop!';
+      return await actor.getShopSlogan();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetShopSlogan() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (slogan: string) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.setShopSlogan(slogan);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopSlogan'] });
+    },
   });
 }

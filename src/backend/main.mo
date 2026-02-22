@@ -6,6 +6,8 @@ import List "mo:core/List";
 import Text "mo:core/Text";
 import Array "mo:core/Array";
 import Principal "mo:core/Principal";
+import Time "mo:core/Time";
+import Set "mo:core/Set";
 import CoreOrder "mo:core/Order";
 
 import AccessControl "authorization/access-control";
@@ -17,6 +19,38 @@ actor {
   // Include components
   include MixinStorage();
 
+  // Authorization
+  let accessControlState = AccessControl.initState();
+  include MixinAuthorization(accessControlState);
+
+  // User Profile
+  public type UserProfile = {
+    name : Text;
+  };
+
+  let userProfiles = Map.empty<Principal, UserProfile>();
+
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
   // Product definitions
   public type Product = {
     id : Nat;
@@ -24,6 +58,7 @@ actor {
     category : Text;
     priceInRupees : Nat;
     image : Storage.ExternalBlob;
+    barcode : Text;
   };
 
   module Product {
@@ -43,6 +78,7 @@ actor {
     phoneNumber : Text;
     products : [Product];
     totalPrice : Nat;
+    timestamp : Time.Time;
   };
 
   module OrderComparison {
@@ -76,13 +112,43 @@ actor {
   // Pricing Constants
   let deliveryFeePerKm = 20; // Fixed fee per km beyond 1km
 
-  // Authorization
-  let accessControlState = AccessControl.initState();
-  include MixinAuthorization(accessControlState);
+  // Bill definitions
+  public type Bill = {
+    id : Nat;
+    billNumber : Text;
+    timestamp : Time.Time;
+    customerName : ?Text;
+    customerPhone : ?Text;
+    items : [BillItem];
+    totalAmount : Nat;
+    generatedByAdmin : Principal;
+  };
+
+  public type BillItem = {
+    productId : Nat;
+    productName : Text;
+    quantity : Nat;
+    pricePerUnit : Nat;
+    totalPrice : Nat;
+  };
+
+  let bills = Map.empty<Nat, Bill>();
+  var nextBillId = 0;
+
+  // Shop Slogan
+  var shopSlogan : Text = "Welcome to our shop!";
+
+  // Exclusion List for admin toggling
+  var excludedProducts = Set.empty<Nat>();
+
+  // Admin Check Function
+  public query ({ caller }) func isAdmin() : async Bool {
+    AccessControl.isAdmin(accessControlState, caller);
+  };
 
   // Product Management (Admin only)
-  public shared ({ caller }) func addProduct(name : Text, category : Text, priceInRupees : Nat, image : Storage.ExternalBlob) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+  public shared ({ caller }) func addProduct(name : Text, category : Text, priceInRupees : Nat, image : Storage.ExternalBlob, barcode : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can add products");
     };
 
@@ -92,31 +158,40 @@ actor {
       category;
       priceInRupees;
       image;
+      barcode;
     };
     products.add(nextProductId, product);
     nextProductId += 1;
   };
 
   public shared ({ caller }) func removeProduct(productId : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can remove products");
     };
 
     products.remove(productId);
   };
 
-  public query ({ caller }) func getAllProducts() : async [Product] {
+  public query func getAllProducts() : async [Product] {
     products.values().toArray().sort();
+  };
+
+  public query func getProductByBarcode(barcode : Text) : async ?Product {
+    products.values().find(func(product) { product.barcode == barcode });
   };
 
   // Cart Management (User only)
   public shared ({ caller }) func addToCart(productId : Nat, quantity : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can add to cart");
     };
 
     if (quantity <= 0) {
       Runtime.trap("Quantity must be greater than 0");
+    };
+
+    if (excludedProducts.contains(productId)) {
+      Runtime.trap("This product is currently not available for purchase");
     };
 
     let product = switch (products.get(productId)) {
@@ -167,7 +242,7 @@ actor {
   };
 
   public query ({ caller }) func getCart() : async [CartItem] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can view cart");
     };
 
@@ -178,7 +253,7 @@ actor {
   };
 
   public shared ({ caller }) func clearCart() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can clear cart");
     };
 
@@ -186,7 +261,7 @@ actor {
   };
 
   public shared ({ caller }) func calculateTotalPrice(distanceInKm : Nat) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can calculate total price");
     };
 
@@ -201,7 +276,7 @@ actor {
     };
 
     if (distanceInKm > 1) {
-      let additionalDistance = distanceInKm - 1;
+      let additionalDistance = distanceInKm - 1 : Nat;
       totalPrice += (additionalDistance * deliveryFeePerKm);
     };
 
@@ -210,7 +285,7 @@ actor {
 
   // Order Placement (User only)
   public shared ({ caller }) func placeOrder(customerName : Text, deliveryAddress : Text, phoneNumber : Text, distanceInKm : Nat) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can place orders");
     };
 
@@ -237,6 +312,7 @@ actor {
       phoneNumber;
       products = productsArray;
       totalPrice;
+      timestamp = Time.now();
     };
     orders.add(nextOrderId, order);
 
@@ -248,7 +324,7 @@ actor {
 
   // Mobile Recharge (User only)
   public shared ({ caller }) func placeRechargeOrder(mobileNumber : Text, operator : Text, rechargeAmount : Nat) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can place recharge orders");
     };
 
@@ -271,7 +347,7 @@ actor {
 
   // Query all orders (Admin only)
   public query ({ caller }) func getAllOrders() : async [Order] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can view orders");
     };
     orders.values().toArray().sort(OrderComparison.compareByTotalPrice);
@@ -279,9 +355,76 @@ actor {
 
   // Query all recharge orders (Admin only)
   public query ({ caller }) func getAllRechargeOrders() : async [RechargeOrder] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can view recharge orders");
     };
     rechargeOrders.values().toArray();
+  };
+
+  // Bill Generation (Admin only)
+  public shared ({ caller }) func generateBill(customerName : ?Text, customerPhone : ?Text, items : [BillItem], totalAmount : Nat) : async Bill {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can generate bills");
+    };
+
+    let billNumber = nextBillId.toText();
+
+    let bill : Bill = {
+      id = nextBillId;
+      billNumber;
+      timestamp = Time.now();
+      customerName;
+      customerPhone;
+      items;
+      totalAmount;
+      generatedByAdmin = caller;
+    };
+
+    bills.add(nextBillId, bill);
+    nextBillId += 1;
+
+    bill;
+  };
+
+  public query ({ caller }) func getAllBills() : async [Bill] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view bills");
+    };
+    bills.values().toArray();
+  };
+
+  // Shop Slogan Management (Admin only)
+  public shared ({ caller }) func setShopSlogan(slogan : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can set shop slogan");
+    };
+
+    shopSlogan := slogan;
+  };
+
+  public query func getShopSlogan() : async Text {
+    shopSlogan;
+  };
+
+  // Exclusion List for Admins
+  public shared ({ caller }) func toggleProductExclusion(productId : Nat) : async Bool {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can toggle exclusions");
+    };
+
+    if (excludedProducts.contains(productId)) {
+      excludedProducts.remove(productId);
+      false;
+    } else {
+      excludedProducts.add(productId);
+      true;
+    };
+  };
+
+  public query ({ caller }) func getExcludedProducts() : async [Nat] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view excluded products");
+    };
+    excludedProducts.toArray();
   };
 };

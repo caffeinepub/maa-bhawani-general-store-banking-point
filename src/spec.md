@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Convert the web application into an installable mobile app using Progressive Web App (PWA) technology.
+**Goal:** Fix the admin panel access issue to allow authorized administrators to access the admin dashboard.
 
 **Planned changes:**
-- Add PWA manifest file with app metadata, icons, and mobile configuration
-- Implement service worker for offline functionality and app installation
-- Optimize touch interactions and button sizes for mobile devices
-- Update HTML meta tags for mobile app behavior on iOS and Android
+- Debug and fix authentication flow in AdminGuard component
+- Verify admin authorization checks in backend actor's isAdmin method
+- Add error logging and user-friendly error messages to diagnose access failures
+- Ensure proper error handling for unauthenticated and non-admin users
 
-**User-visible outcome:** Users can install the store app on their mobile home screen and use it like a native app with offline support and optimized mobile experience.
+**User-visible outcome:** Authorized admin users can successfully access the admin panel at /admin route, with clear error messages displayed when access is denied due to authentication or authorization failures.

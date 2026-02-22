@@ -1,85 +1,60 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T03:07:48.548Z",
+  "generatedAt": "2026-02-22T01:16:44.775Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-16",
-        "summary": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
+        "id": "REQ-1",
+        "summary": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/manifest.json",
-          "frontend/index.html"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/public/manifest.json",
-          "frontend/index.html"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
-        "id": "REQ-17",
-        "summary": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/service-worker.js",
-          "frontend/src/main.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/public/service-worker.js"
-        ]
+        "id": "REQ-2",
+        "summary": "Verify that the backend isAdmin method correctly identifies admin principals and returns proper authorization status",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
-        "id": "REQ-18",
-        "summary": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
+        "id": "REQ-3",
+        "summary": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/CallUsButton.tsx"
+          "frontend/src/components/AdminGuard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/components/Header.tsx",
-          "frontend/src/components/CallUsButton.tsx"
-        ]
-      },
-      {
-        "id": "REQ-19",
-        "summary": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/index.html"
-        ],
-        "matchedFiles": [
-          "frontend/index.html"
+          "frontend/src/components/AdminGuard.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/public/assets/generated/app-icon-192.dim_192x192.png",
-    "frontend/public/assets/generated/app-icon-512.dim_512x512.png",
-    "frontend/public/assets/generated/apple-touch-icon.dim_180x180.png",
-    "frontend/public/manifest.json",
-    "frontend/public/service-worker.js",
-    "frontend/src/components/CallUsButton.tsx",
-    "frontend/src/components/CartDrawer.tsx",
-    "frontend/src/components/Header.tsx",
-    "frontend/src/index.css",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

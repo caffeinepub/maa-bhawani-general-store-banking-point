@@ -1,162 +1,32 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "E-commerce storefront for 'Maa Bhawani General Store & Banking Point' - a grocery store with product browsing, cart, ordering, admin panel for product management, Google sign-in with phone verification, mobile recharge facility, delivery fee based on distance, and INR pricing",
+  "projectStateVersion": 3,
+  "summary": "E-commerce grocery store app with barcode scanning, portfolio management, flexible quantity input for loose items (Rice, Sugar, Oil, Spices) with dynamic pricing, mobile OTP sign-in, GPS location detection, and admin panel",
   "architectural_notes": [
-    "Use INR (₹) for all product pricing",
-    "Product catalog limited to groceries (aata, rice, sugar, spices, shampoo) - no eggs or bakery",
-    "Fetch store details from Google Maps link: https://maps.app.goo.gl/i9v1ukJNWdsgT5gU7",
-    "Store name: 'Maa Bhawani General Store & Banking Point'",
-    "Contact phone: 9142876085",
-    "Authentication requires both Google OAuth and phone number",
-    "Mobile recharge requires: amount, mobile number, operator selection",
-    "Delivery logic: free within 1km, distance-based fee calculated for orders beyond 1km"
+    "App deployed on Internet Computer blockchain at .icp0.io URL",
+    "Uses barcode scanning for inventory management",
+    "Dynamic pricing calculation based on per-gram/per-kg rates"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- App icon with store logo for mobile devices featuring the shopkeeper illustration and store name, suitable for home screen display (app-icon-192.dim_192x192.png)\n- Large app icon with store logo for mobile devices featuring the shopkeeper illustration and store name, optimized for high-resolution displays (app-icon-512.dim_512x512.png)\n- Apple touch icon with store logo for iOS devices featuring the shopkeeper illustration and store name (apple-touch-icon.dim_180x180.png)",
+  "known_issues": [
+    "Admin panel currently inaccessible",
+    "Payment gateway integration encountered build errors",
+    "OTP sign-in and location features caused previous build failures"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-create-a-product-grid-displaying-grocery-items-aata-rice-sugar-spices-shampoo-etc-with-product-images-names-and-prices-in-inr-exclude-egg-and-bakery-products",
-      "title": "Create a product grid displaying grocery items (aata, rice, sugar, spices, shampoo, etc.) with product images, names, and prices in INR (₹). Exclude egg and bakery products.",
+      "id": "feature-debug-and-fix-the-admin-panel-access-issue-by-verifying-the-authentication-flow-in-adminguard-component-and-ensuring-proper-admin-authorization-checks-in-the-backend-actor-s-isadmin-method",
+      "title": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-category-filtering-system-for-grocery-products-allowing-users-to-browse-by-product-categories-grains-spices-personal-care-etc",
-      "title": "Implement category filtering system for grocery products allowing users to browse by product categories (grains, spices, personal care, etc.)",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-a-shopping-cart-system-that-allows-users-to-add-products-adjust-quantities-view-cart-total-in-and-proceed-to-checkout",
-      "title": "Create a shopping cart system that allows users to add products, adjust quantities, view cart total in ₹, and proceed to checkout",
+      "id": "feature-add-error-logging-and-user-friendly-error-messages-to-adminguard-to-help-diagnose-access-issues-when-authentication-or-authorization-fails",
+      "title": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-google-sign-in-authentication-with-mandatory-phone-number-collection-during-registration-or-first-login",
-      "title": "Implement Google sign-in authentication with mandatory phone number collection during registration or first login",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-order-placement-system-that-collects-customer-details-delivery-address-phone-number-and-submits-orders-for-products-in-the-cart",
-      "title": "Create order placement system that collects customer details (delivery address, phone number) and submits orders for products in the cart",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-display-store-details-prominently-including-name-maa-bhawani-general-store-banking-point-address-from-google-maps-link-https-maps-app-goo-gl-i9v1ukjnwdsgt5gu7-and-contact-phone-number-9142876085",
-      "title": "Display store details prominently including name 'Maa Bhawani General Store & Banking Point', address from Google Maps link (https://maps.app.goo.gl/i9v1ukJNWdsgT5gU7), and contact phone number 9142876085",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-call-us-support-button-link-prominently-displayed-that-dials-phone-number-9142876085-when-clicked",
-      "title": "Add a 'Call Us' support button/link prominently displayed that dials phone number 9142876085 when clicked",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-a-mobile-recharge-ordering-system-with-a-banner-section-where-customers-can-order-recharge-packs-by-entering-mobile-number-selecting-operator-telecom-company-and-specifying-recharge-amount",
-      "title": "Create a mobile recharge ordering system with a banner/section where customers can order recharge packs by entering mobile number, selecting operator (telecom company), and specifying recharge amount",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-distance-based-delivery-fee-calculation-free-delivery-up-to-1km-paid-delivery-fee-for-distances-beyond-1km-e-g-2km-requires-payment",
-      "title": "Implement distance-based delivery fee calculation: free delivery up to 1km, paid delivery fee for distances beyond 1km (e.g., 2km requires payment)",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-display-qr-code-for-online-payment-of-delivery-fees-and-order-amounts-with-clear-instructions-for-customers",
-      "title": "Display QR code for online payment of delivery fees and order amounts with clear instructions for customers",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-an-admin-panel-accessible-only-to-the-store-owner-for-adding-new-products-name-category-price-in-image-and-removing-existing-products-from-the-inventory",
-      "title": "Create an admin panel accessible only to the store owner for adding new products (name, category, price in ₹, image) and removing existing products from the inventory",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-design-a-professional-visually-cohesive-storefront-with-a-warm-trustworthy-aesthetic-suitable-for-a-local-grocery-store-use-earthy-tones-clear-typography-and-an-organized-layout-that-emphasizes-product-browsing-and-easy-navigation",
-      "title": "Design a professional, visually cohesive storefront with a warm, trustworthy aesthetic suitable for a local grocery store. Use earthy tones, clear typography, and an organized layout that emphasizes product browsing and easy navigation.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-existing-hero-banner-on-the-homepage-with-the-uploaded-shop-banner-image-img-20251019-102908-png-showing-the-store-interior-logo-aadhar-enabled-payment-system-stationery-availability-and-contact-number",
-      "title": "Replace the existing hero banner on the homepage with the uploaded shop banner image (IMG_20251019_102908.png) showing the store interior, logo, Aadhar enabled payment system, stationery availability, and contact number",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-store-logo-in-the-header-navigation-with-the-uploaded-circular-logo-image-gemini-generated-image-rjk9furjk9furjk9-png-featuring-the-shopkeeper-illustration-and-maa-bhawani-general-store-text-in-hindi",
-      "title": "Replace the store logo in the header navigation with the uploaded circular logo image (Gemini_Generated_Image_rjk9furjk9furjk9.png) featuring the shopkeeper illustration and 'Maa Bhawani General Store' text in Hindi",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-configure-the-application-for-mobile-app-deployment-by-adding-progressive-web-app-pwa-capabilities-including-a-web-manifest-file-with-appropriate-app-icons-theme-colors-matching-the-store-s-earthy-palette-display-mode-set-to-standalone-and-orientation-set-to-portrait-include-all-required-icon-sizes-for-ios-and-android",
-      "title": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-service-worker-to-enable-offline-functionality-and-app-installation-prompts-the-service-worker-should-cache-critical-assets-html-css-javascript-product-images-and-implement-a-cache-first-strategy-for-static-resources-and-network-first-strategy-for-api-calls",
-      "title": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-optimize-the-mobile-experience-by-enhancing-touch-interactions-improving-button-sizes-for-finger-friendly-tap-targets-minimum-44x44px-adding-touch-gestures-for-cart-drawer-and-ensuring-all-interactive-elements-are-easily-accessible-on-mobile-screens",
-      "title": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-html-meta-tags-to-include-mobile-specific-viewport-configuration-apple-mobile-web-app-capabilities-and-android-app-configuration-for-proper-mobile-app-behavior-when-installed-on-home-screens",
-      "title": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
-      "reqIds": [
-        "REQ-19"
       ],
       "version": 1
     }
@@ -164,87 +34,38 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Product grid with categories and filters for grocery items",
+      "summary": "Flexible quantity input for loose items (Rice, Sugar, Oil, Spices) with custom text box, unit selection (g/kg), and dynamic pricing",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Shopping cart functionality",
+      "summary": "Payment gateway integration with UPI (Google Pay, PhonePe) and Cash on Delivery (COD) option",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Google sign-in with mandatory phone number collection",
+      "summary": "Mobile OTP sign-in and Flipkart-style GPS location detection for delivery address",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Order placement system for listed products",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Admin panel for adding/removing products",
+      "summary": "Fix admin panel access issue",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-6",
-      "summary": "Display store details (name, address, phone: 9142876085)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Mobile recharge ordering system with operator selection",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Distance-based delivery fee (free up to 1km, paid beyond)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "QR code payment integration",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Support/Call Us option with phone number",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Store both uploaded images as static assets in the frontend/public/assets directory with descriptive filenames (shop-banner.png and store-logo.png) for easy reference and maintenance",
+      "summary": "Verify that the backend isAdmin method correctly identifies admin principals and returns proper authorization status",
       "reqIds": [
-        "REQ-15"
+        "REQ-2"
       ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Convert web application to mobile app",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Add pawankumarray843110@gmail.com as additional admin user",
-      "reqIds": [],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Maa Bhawani General Store & Banking Point",
+  "projectName": "Maa Bhawani General Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { useAddProduct } from '../hooks/useQueries';
+import { useAddProduct, useGetAllProducts } from '../hooks/useQueries';
 import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
 
@@ -15,15 +15,17 @@ export default function AdminProductForm() {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
+  const [barcode, setBarcode] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const addProduct = useAddProduct();
+  const { data: products = [] } = useGetAllProducts();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !category || !price || !imageFile) {
-      toast.error('Please fill all fields and select an image');
+      toast.error('Please fill all required fields and select an image');
       return;
     }
 
@@ -31,6 +33,15 @@ export default function AdminProductForm() {
     if (isNaN(priceInRupees) || priceInRupees <= 0) {
       toast.error('Please enter a valid price');
       return;
+    }
+
+    // Check for duplicate barcode if provided
+    if (barcode.trim()) {
+      const existingProduct = products.find(p => p.barcode === barcode.trim());
+      if (existingProduct) {
+        toast.error('A product with this barcode already exists');
+        return;
+      }
     }
 
     try {
@@ -45,12 +56,14 @@ export default function AdminProductForm() {
         category,
         priceInRupees: BigInt(priceInRupees),
         image: blob,
+        barcode: barcode.trim(),
       });
 
       toast.success('Product added successfully!');
       setName('');
       setCategory('');
       setPrice('');
+      setBarcode('');
       setImageFile(null);
       setUploadProgress(0);
     } catch (error: any) {
@@ -68,7 +81,7 @@ export default function AdminProductForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Product Name</Label>
+              <Label htmlFor="name">Product Name *</Label>
               <Input
                 id="name"
                 placeholder="e.g., Aashirvaad Atta 5kg"
@@ -79,7 +92,7 @@ export default function AdminProductForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">Category *</Label>
               <Select value={category} onValueChange={setCategory} required>
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select category" />
@@ -95,7 +108,7 @@ export default function AdminProductForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Price (₹)</Label>
+              <Label htmlFor="price">Price (₹) *</Label>
               <Input
                 id="price"
                 type="number"
@@ -108,7 +121,17 @@ export default function AdminProductForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Product Image</Label>
+              <Label htmlFor="barcode">Barcode (Optional)</Label>
+              <Input
+                id="barcode"
+                placeholder="Enter barcode"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="image">Product Image *</Label>
               <Input
                 id="image"
                 type="file"

@@ -14,6 +14,22 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface Product {
+    id: bigint;
+    name: string;
+    barcode: string;
+    category: string;
+    image: ExternalBlob;
+    priceInRupees: bigint;
+}
+export interface BillItem {
+    productId: bigint;
+    productName: string;
+    pricePerUnit: bigint;
+    quantity: bigint;
+    totalPrice: bigint;
+}
+export type Time = bigint;
 export interface RechargeOrder {
     id: bigint;
     rechargeAmount: bigint;
@@ -24,20 +40,27 @@ export interface CartItem {
     quantity: bigint;
     product: Product;
 }
+export interface Bill {
+    id: bigint;
+    customerName?: string;
+    customerPhone?: string;
+    totalAmount: bigint;
+    billNumber: string;
+    timestamp: Time;
+    generatedByAdmin: Principal;
+    items: Array<BillItem>;
+}
 export interface Order {
     id: bigint;
     customerName: string;
     deliveryAddress: string;
+    timestamp: Time;
     phoneNumber: string;
     products: Array<Product>;
     totalPrice: bigint;
 }
-export interface Product {
-    id: bigint;
+export interface UserProfile {
     name: string;
-    category: string;
-    image: ExternalBlob;
-    priceInRupees: bigint;
 }
 export enum UserRole {
     admin = "admin",
@@ -45,18 +68,29 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob): Promise<void>;
+    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string): Promise<void>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     calculateTotalPrice(distanceInKm: bigint): Promise<bigint>;
     clearCart(): Promise<void>;
+    generateBill(customerName: string | null, customerPhone: string | null, items: Array<BillItem>, totalAmount: bigint): Promise<Bill>;
+    getAllBills(): Promise<Array<Bill>>;
     getAllOrders(): Promise<Array<Order>>;
     getAllProducts(): Promise<Array<Product>>;
     getAllRechargeOrders(): Promise<Array<RechargeOrder>>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCart(): Promise<Array<CartItem>>;
+    getExcludedProducts(): Promise<Array<bigint>>;
+    getProductByBarcode(barcode: string): Promise<Product | null>;
+    getShopSlogan(): Promise<string>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
+    isAdmin(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     placeOrder(customerName: string, deliveryAddress: string, phoneNumber: string, distanceInKm: bigint): Promise<bigint>;
     placeRechargeOrder(mobileNumber: string, operator: string, rechargeAmount: bigint): Promise<bigint>;
     removeProduct(productId: bigint): Promise<void>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setShopSlogan(slogan: string): Promise<void>;
+    toggleProductExclusion(productId: bigint): Promise<boolean>;
 }

@@ -1,99 +1,44 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Convert Maa Bhawani Store to Progressive Web App",
+  "title": "Fix Admin Panel Access Issue",
   "requirements": [
     {
-      "id": "REQ-16",
-      "summary": "Configure PWA capabilities with web manifest and app icons",
+      "id": "REQ-1",
+      "summary": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks",
       "acceptanceCriteria": [
-        "Web manifest file is created with app name 'Maa Bhawani General Store & Banking Point'",
-        "Multiple icon sizes are provided (192x192, 512x512 minimum)",
-        "Display mode is set to 'standalone' for app-like experience",
-        "Theme color matches the store's warm earthy color scheme",
-        "Orientation is configured for optimal mobile viewing"
+        "Authenticated users with admin privileges can successfully access /admin route",
+        "AdminGuard component correctly validates both authentication state and admin status",
+        "Clear error messages displayed for unauthenticated users and non-admin users",
+        "Admin panel loads without errors and displays dashboard statistics and management tabs"
       ],
       "file_operations": [
         {
-          "path": "frontend/public/manifest.json",
-          "operation": "create",
-          "description": "Create web app manifest with app name 'Maa Bhawani General Store & Banking Point', short_name, description, start_url, display mode 'standalone', orientation 'portrait', theme_color matching the warm earthy palette from index.css (oklch(0.55 0.15 40)), background_color, and icons array referencing the generated app icon images at frontend/public/assets/generated/app-icon-192.dim_192x192.png, frontend/public/assets/generated/app-icon-512.dim_512x512.png, and frontend/public/assets/generated/apple-touch-icon.dim_180x180.png with appropriate sizes and types."
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Fix the AdminGuard component to properly check both authentication state and admin status. Ensure the component waits for the actor to be initialized before checking admin status. Add proper loading state handling while authentication and admin checks are in progress. Verify that the component correctly uses the authorization component's isCallerAdmin backend method through the useActor hook and React Query. Add console logging for debugging authentication state and admin check results."
         },
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add link to manifest.json in the head section and wire the generated app icons: add <link rel=\"manifest\" href=\"/manifest.json\">, <link rel=\"apple-touch-icon\" href=\"/assets/generated/apple-touch-icon.dim_180x180.png\">, and <link rel=\"icon\" type=\"image/png\" sizes=\"192x192\" href=\"/assets/generated/app-icon-192.dim_192x192.png\">."
+          "description": "Verify and fix the useIsCallerAdmin query hook to properly handle the enabled state based on actor availability and authentication. Ensure the query is only enabled when the actor is initialized and the user is authenticated. Add proper error handling and retry logic for authorization failures. Ensure the query key is unique and properly invalidated on identity changes."
         }
       ]
     },
     {
-      "id": "REQ-17",
-      "summary": "Add service worker for offline functionality and app installation",
+      "id": "REQ-3",
+      "summary": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
       "acceptanceCriteria": [
-        "Service worker is registered in the main application entry point",
-        "Critical application assets are cached on installation",
-        "App can display cached content when offline",
-        "Users receive installation prompts on supported mobile browsers"
+        "Console logs display detailed authentication state when admin access is denied",
+        "Users see clear instructions on how to gain admin access (e.g., 'Please contact the store owner')",
+        "Loading state is properly handled while checking admin status",
+        "Network errors are caught and displayed with retry options"
       ],
       "file_operations": [
         {
-          "path": "frontend/public/service-worker.js",
-          "operation": "create",
-          "description": "Create service worker implementing cache-first strategy for static assets (HTML, CSS, JS, images including generated images from frontend/public/assets/generated/), network-first strategy for API calls to the backend, install event to cache critical assets, fetch event to serve cached content with network fallback, and activate event to clean old caches."
-        },
-        {
-          "path": "frontend/src/main.tsx",
+          "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Register the service worker after React app initialization by adding service worker registration code that checks for navigator.serviceWorker support and registers /service-worker.js with error handling and console logging for registration success/failure."
-        }
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "summary": "Optimize mobile experience with touch interactions and gestures",
-      "acceptanceCriteria": [
-        "All buttons and interactive elements meet minimum touch target size of 44x44px",
-        "Cart drawer supports swipe gestures for opening and closing",
-        "Touch feedback is provided for all interactive elements",
-        "Mobile navigation is optimized for one-handed use"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add global CSS rules for touch-friendly interactions: minimum touch target sizes (min-height: 44px, min-width: 44px) for buttons and interactive elements, active state styles with scale transform for touch feedback, and tap-highlight-color settings for better mobile experience."
-        },
-        {
-          "path": "frontend/src/components/CartDrawer.tsx",
-          "operation": "modify",
-          "description": "Add touch gesture support for swipe-to-close functionality by implementing touch event handlers (onTouchStart, onTouchMove, onTouchEnd) that detect horizontal swipe gestures and close the drawer when user swipes right beyond a threshold distance, including visual feedback during the swipe."
-        },
-        {
-          "path": "frontend/src/components/Header.tsx",
-          "operation": "modify",
-          "description": "Ensure all navigation buttons and the cart button meet minimum 44x44px touch target size by adjusting padding and height values, and optimize mobile navigation layout for one-handed use with larger tap areas."
-        },
-        {
-          "path": "frontend/src/components/CallUsButton.tsx",
-          "operation": "modify",
-          "description": "Ensure the floating call button meets minimum 44x44px touch target size and add touch feedback with active state scaling and appropriate positioning for one-handed mobile use."
-        }
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "summary": "Update HTML meta tags for mobile app configuration",
-      "acceptanceCriteria": [
-        "Viewport meta tag is configured with width=device-width, initial-scale=1",
-        "Apple mobile web app capable meta tags are added",
-        "Status bar styling is configured for iOS",
-        "Android theme color is set to match app design"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Add mobile-specific meta tags in the head section: verify viewport meta tag includes width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes; add <meta name=\"apple-mobile-web-app-capable\" content=\"yes\">; add <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">; add <meta name=\"apple-mobile-web-app-title\" content=\"Maa Bhawani Store\">; and add <meta name=\"theme-color\" content=\"oklch(0.55 0.15 40)\"> matching the warm earthy theme color from the design system."
+          "description": "Add comprehensive console logging to track authentication state, actor initialization, and admin check results. Log the current identity principal, actor availability, query status, and admin check response. Display user-friendly error messages in the alert components with specific guidance: for unauthenticated users, prompt them to log in first; for authenticated non-admin users, display 'You do not have admin privileges. Please contact the store owner at 9142876085 to request access.' Add a proper loading state with a spinner or loading message while checking admin status. Implement error boundary handling for network failures with a retry button that re-runs the admin check query."
         }
       ]
     }

@@ -10,12 +10,30 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Bill {
+  'id' : bigint,
+  'customerName' : [] | [string],
+  'customerPhone' : [] | [string],
+  'totalAmount' : bigint,
+  'billNumber' : string,
+  'timestamp' : Time,
+  'generatedByAdmin' : Principal,
+  'items' : Array<BillItem>,
+}
+export interface BillItem {
+  'productId' : bigint,
+  'productName' : string,
+  'pricePerUnit' : bigint,
+  'quantity' : bigint,
+  'totalPrice' : bigint,
+}
 export interface CartItem { 'quantity' : bigint, 'product' : Product }
 export type ExternalBlob = Uint8Array;
 export interface Order {
   'id' : bigint,
   'customerName' : string,
   'deliveryAddress' : string,
+  'timestamp' : Time,
   'phoneNumber' : string,
   'products' : Array<Product>,
   'totalPrice' : bigint,
@@ -23,6 +41,7 @@ export interface Order {
 export interface Product {
   'id' : bigint,
   'name' : string,
+  'barcode' : string,
   'category' : string,
   'image' : ExternalBlob,
   'priceInRupees' : bigint,
@@ -33,6 +52,8 @@ export interface RechargeOrder {
   'operator' : string,
   'mobileNumber' : string,
 }
+export type Time = bigint;
+export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -64,20 +85,37 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addProduct' : ActorMethod<[string, string, bigint, ExternalBlob], undefined>,
+  'addProduct' : ActorMethod<
+    [string, string, bigint, ExternalBlob, string],
+    undefined
+  >,
   'addToCart' : ActorMethod<[bigint, bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'calculateTotalPrice' : ActorMethod<[bigint], bigint>,
   'clearCart' : ActorMethod<[], undefined>,
+  'generateBill' : ActorMethod<
+    [[] | [string], [] | [string], Array<BillItem>, bigint],
+    Bill
+  >,
+  'getAllBills' : ActorMethod<[], Array<Bill>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,
   'getAllRechargeOrders' : ActorMethod<[], Array<RechargeOrder>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCart' : ActorMethod<[], Array<CartItem>>,
+  'getExcludedProducts' : ActorMethod<[], Array<bigint>>,
+  'getProductByBarcode' : ActorMethod<[string], [] | [Product]>,
+  'getShopSlogan' : ActorMethod<[], string>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'isAdmin' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'placeOrder' : ActorMethod<[string, string, string, bigint], bigint>,
   'placeRechargeOrder' : ActorMethod<[string, string, bigint], bigint>,
   'removeProduct' : ActorMethod<[bigint], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setShopSlogan' : ActorMethod<[string], undefined>,
+  'toggleProductExclusion' : ActorMethod<[bigint], boolean>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

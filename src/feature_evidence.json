@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-configure-the-application-for-mobile-app-deployment-by-adding-progressive-web-app-pwa-capabilities-including-a-web-manifest-file-with-appropriate-app-icons-theme-colors-matching-the-store-s-earthy-palette-display-mode-set-to-standalone-and-orientation-set-to-portrait-include-all-required-icon-sizes-for-ios-and-android",
-      "featureTitle": "Configure the application for mobile app deployment by adding Progressive Web App (PWA) capabilities including a web manifest file with appropriate app icons, theme colors matching the store's earthy palette, display mode set to 'standalone', and orientation set to 'portrait'. Include all required icon sizes for iOS and Android.",
+      "featureId": "feature-debug-and-fix-the-admin-panel-access-issue-by-verifying-the-authentication-flow-in-adminguard-component-and-ensuring-proper-admin-authorization-checks-in-the-backend-actor-s-isadmin-method",
+      "featureTitle": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
       "files": [
-        "frontend/index.html",
-        "frontend/public/manifest.json"
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -15,18 +15,19 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-16"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-service-worker-to-enable-offline-functionality-and-app-installation-prompts-the-service-worker-should-cache-critical-assets-html-css-javascript-product-images-and-implement-a-cache-first-strategy-for-static-resources-and-network-first-strategy-for-api-calls",
-      "featureTitle": "Add a service worker to enable offline functionality and app installation prompts. The service worker should cache critical assets (HTML, CSS, JavaScript, product images) and implement a cache-first strategy for static resources and network-first strategy for API calls.",
+      "featureId": "feature-add-error-logging-and-user-friendly-error-messages-to-adminguard-to-help-diagnose-access-issues-when-authentication-or-authorization-fails",
+      "featureTitle": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
       "files": [
-        "frontend/public/service-worker.js"
+        "frontend/src/components/AdminGuard.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -35,53 +36,11 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-17"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-optimize-the-mobile-experience-by-enhancing-touch-interactions-improving-button-sizes-for-finger-friendly-tap-targets-minimum-44x44px-adding-touch-gestures-for-cart-drawer-and-ensuring-all-interactive-elements-are-easily-accessible-on-mobile-screens",
-      "featureTitle": "Optimize the mobile experience by enhancing touch interactions, improving button sizes for finger-friendly tap targets (minimum 44x44px), adding touch gestures for cart drawer, and ensuring all interactive elements are easily accessible on mobile screens.",
-      "files": [
-        "frontend/src/components/CallUsButton.tsx",
-        "frontend/src/components/CartDrawer.tsx",
-        "frontend/src/components/Header.tsx",
-        "frontend/src/index.css"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-18"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-html-meta-tags-to-include-mobile-specific-viewport-configuration-apple-mobile-web-app-capabilities-and-android-app-configuration-for-proper-mobile-app-behavior-when-installed-on-home-screens",
-      "featureTitle": "Update the HTML meta tags to include mobile-specific viewport configuration, Apple mobile web app capabilities, and Android app configuration for proper mobile app behavior when installed on home screens.",
-      "files": [
-        "frontend/index.html"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-19"
+        "REQ-3"
       ],
       "confidence": "high"
     }

@@ -1,28 +1,59 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import AdminGuard from '../components/AdminGuard';
 import AdminProductForm from '../components/AdminProductForm';
 import AdminProductList from '../components/AdminProductList';
-import { useGetAllOrders, useGetAllRechargeOrders } from '../hooks/useQueries';
-import { Package, Smartphone } from 'lucide-react';
+import BillHistoryTable from '../components/BillHistoryTable';
+import { useGetAllOrders, useGetAllRechargeOrders, useGetAllBills, useGetAllProducts } from '../hooks/useQueries';
+import { Package, Smartphone, Receipt, Settings, FileText } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 
 export default function AdminPage() {
   const { data: orders = [] } = useGetAllOrders();
   const { data: rechargeOrders = [] } = useGetAllRechargeOrders();
+  const { data: bills = [] } = useGetAllBills();
+  const { data: products = [] } = useGetAllProducts();
+  const navigate = useNavigate();
+
+  const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalPrice), 0);
+  const billRevenue = bills.reduce((sum, bill) => sum + Number(bill.totalAmount), 0);
 
   return (
     <AdminGuard>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage your store products and view orders</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold">Admin Panel</h1>
+            <p className="text-muted-foreground">Manage your store products, orders, and billing</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate({ to: '/admin/billing' })} className="gap-2">
+              <Receipt className="h-4 w-4" />
+              Generate Bill
+            </Button>
+            <Button onClick={() => navigate({ to: '/admin/settings' })} variant="outline" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{products.length}</div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{orders.length}</div>
@@ -31,11 +62,11 @@ export default function AdminPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recharge Orders</CardTitle>
-              <Smartphone className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
+              <Receipt className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{rechargeOrders.length}</div>
+              <div className="text-2xl font-bold">{bills.length}</div>
             </CardContent>
           </Card>
 
@@ -45,9 +76,7 @@ export default function AdminPage() {
               <span className="text-2xl">₹</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                ₹{orders.reduce((sum, order) => sum + Number(order.totalPrice), 0)}
-              </div>
+              <div className="text-2xl font-bold">₹{totalRevenue + billRevenue}</div>
             </CardContent>
           </Card>
         </div>
@@ -57,6 +86,7 @@ export default function AdminPage() {
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="recharge">Recharge Orders</TabsTrigger>
+            <TabsTrigger value="bills">Bill History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products" className="space-y-6">
@@ -120,6 +150,10 @@ export default function AdminPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="bills">
+            <BillHistoryTable />
           </TabsContent>
         </Tabs>
       </div>
