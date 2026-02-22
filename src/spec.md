@@ -1,12 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the admin panel access issue to allow authorized administrators to access the admin dashboard.
+**Goal:** Update the admin login ID to '97SKY80' in the backend authentication system.
 
 **Planned changes:**
-- Debug and fix authentication flow in AdminGuard component
-- Verify admin authorization checks in backend actor's isAdmin method
-- Add error logging and user-friendly error messages to diagnose access failures
-- Ensure proper error handling for unauthenticated and non-admin users
+- Change the admin ID from the current value to '97SKY80' in the backend authentication configuration
+- Ensure the admin password remains unchanged
 
-**User-visible outcome:** Authorized admin users can successfully access the admin panel at /admin route, with clear error messages displayed when access is denied due to authentication or authorization failures.
+**User-visible outcome:** Admin can log in using the ID '97SKY80' with the existing password, while the previous admin ID no longer works.

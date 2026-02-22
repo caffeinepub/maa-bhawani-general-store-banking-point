@@ -1,48 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-debug-and-fix-the-admin-panel-access-issue-by-verifying-the-authentication-flow-in-adminguard-component-and-ensuring-proper-admin-authorization-checks-in-the-backend-actor-s-isadmin-method",
-      "featureTitle": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
-      "files": [
-        "frontend/src/components/AdminGuard.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "camera@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-error-logging-and-user-friendly-error-messages-to-adminguard-to-help-diagnose-access-issues-when-authentication-or-authorization-fails",
-      "featureTitle": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
-      "files": [
-        "frontend/src/components/AdminGuard.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "camera@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }

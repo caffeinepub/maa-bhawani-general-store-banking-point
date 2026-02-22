@@ -1,6 +1,6 @@
 {
   "frontend/src/App.tsx": "Main application component with TanStack Router setup including new routes for billing (/admin/billing) and settings (/admin/settings) pages.",
-  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations with enhanced useIsCallerAdmin hook that properly waits for actor and identity initialization, includes comprehensive console logging for debugging, and has retry logic for failed admin checks.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including the new useAuthenticateAdmin mutation hook that handles admin authentication with ID and password validation and automatic admin status refresh.",
   "frontend/src/hooks/useUserProfile.ts": "Custom hooks for managing user profile data including fetching and saving caller user profile with proper loading states to prevent modal flash.",
   "frontend/src/components/Layout.tsx": "Main layout wrapper component that provides consistent structure with Header, Footer, and CallUsButton across all pages.",
   "frontend/src/components/Header.tsx": "Responsive header with touch-optimized navigation buttons meeting 44px minimum touch target requirements.",
@@ -14,7 +14,7 @@
   "frontend/src/components/MobileRechargeSection.tsx": "Banner and form for mobile recharge orders with operator selection and amount input.",
   "frontend/src/components/DeliveryFeeInfo.tsx": "Alert component explaining the delivery fee policy (free within 1km, ₹20/km beyond).",
   "frontend/src/components/PaymentQRCode.tsx": "Payment QR code display with amount and step-by-step payment instructions.",
-  "frontend/src/components/AdminGuard.tsx": "Authorization wrapper component with comprehensive state logging, proper loading states for identity/actor initialization, detailed error messages with retry functionality, and user-friendly access denied messages including contact information and principal ID display.",
+  "frontend/src/components/AdminGuard.tsx": "Authorization wrapper component that verifies admin access with a login dialog for admin authentication using ID and password, replacing the previous token-based self-registration system.",
   "frontend/src/components/AdminProductForm.tsx": "Form for adding new products with image upload, barcode input field (optional), duplicate barcode validation, and progress tracking.",
   "frontend/src/components/AdminProductList.tsx": "Table displaying all products with images and delete functionality with confirmation dialog.",
   "frontend/src/pages/HomePage.tsx": "Landing page displaying the uploaded shop banner image prominently at the top, followed by mobile recharge section and product grid for browsing groceries.",

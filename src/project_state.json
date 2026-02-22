@@ -1,71 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce grocery store app with barcode scanning, portfolio management, flexible quantity input for loose items (Rice, Sugar, Oil, Spices) with dynamic pricing, mobile OTP sign-in, GPS location detection, and admin panel",
+  "summary": "New project",
   "architectural_notes": [
-    "App deployed on Internet Computer blockchain at .icp0.io URL",
-    "Uses barcode scanning for inventory management",
-    "Dynamic pricing calculation based on per-gram/per-kg rates"
+    "Admin authentication credentials set to username: 97SKY80"
   ],
-  "known_issues": [
-    "Admin panel currently inaccessible",
-    "Payment gateway integration encountered build errors",
-    "OTP sign-in and location features caused previous build failures"
-  ],
-  "isFixRequest": true,
-  "existing_features": [
-    {
-      "id": "feature-debug-and-fix-the-admin-panel-access-issue-by-verifying-the-authentication-flow-in-adminguard-component-and-ensuring-proper-admin-authorization-checks-in-the-backend-actor-s-isadmin-method",
-      "title": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-error-logging-and-user-friendly-error-messages-to-adminguard-to-help-diagnose-access-issues-when-authentication-or-authorization-fails",
-      "title": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    }
-  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Flexible quantity input for loose items (Rice, Sugar, Oil, Spices) with custom text box, unit selection (g/kg), and dynamic pricing",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Payment gateway integration with UPI (Google Pay, PhonePe) and Cash on Delivery (COD) option",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Mobile OTP sign-in and Flipkart-style GPS location detection for delivery address",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Fix admin panel access issue",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Verify that the backend isAdmin method correctly identifies admin principals and returns proper authorization status",
+      "summary": "Change the admin login ID from the current value to '97SKY80' in the backend authentication system",
       "reqIds": [
-        "REQ-2"
+        "REQ-1"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Maa Bhawani General Store",
+  "projectName": "Update admin ID to 97SKY80",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

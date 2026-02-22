@@ -1,60 +1,34 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-22T01:16:44.775Z",
+  "generatedAt": "2026-02-22T02:35:00.659Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 2,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx",
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Verify that the backend isAdmin method correctly identifies admin principals and returns proper authorization status",
+        "summary": "Change the admin login ID from the current value to '97SKY80' in the backend authentication system",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
-        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/AdminGuard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

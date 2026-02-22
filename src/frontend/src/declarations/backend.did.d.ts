@@ -10,6 +10,7 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AuthResult { 'message' : string, 'success' : boolean }
 export interface Bill {
   'id' : bigint,
   'customerName' : [] | [string],
@@ -91,12 +92,15 @@ export interface _SERVICE {
   >,
   'addToCart' : ActorMethod<[bigint, bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'authenticate' : ActorMethod<[string, string], AuthResult>,
   'calculateTotalPrice' : ActorMethod<[bigint], bigint>,
+  'changeAdminPassword' : ActorMethod<[string, string], boolean>,
   'clearCart' : ActorMethod<[], undefined>,
   'generateBill' : ActorMethod<
     [[] | [string], [] | [string], Array<BillItem>, bigint],
     Bill
   >,
+  'getAdminCredentials' : ActorMethod<[], [string, string]>,
   'getAllBills' : ActorMethod<[], Array<Bill>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,

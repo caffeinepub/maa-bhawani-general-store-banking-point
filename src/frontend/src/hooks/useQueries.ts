@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentity';
-import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem } from '../backend';
+import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem, AuthResult } from '../backend';
 import { ExternalBlob } from '../backend';
 
 // Products
@@ -257,6 +257,26 @@ export function useIsCallerAdmin() {
     // Ensure loading state reflects all dependencies
     isLoading: actorFetching || isInitializing || query.isLoading,
   };
+}
+
+// Admin Authentication
+export function useAuthenticateAdmin() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ adminId, adminPassword }: { adminId: string; adminPassword: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      const result = await actor.authenticate(adminId, adminPassword);
+      return result;
+    },
+    onSuccess: (result: AuthResult) => {
+      if (result.success) {
+        // Invalidate admin status to trigger re-check
+        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      }
+    },
+  });
 }
 
 // Bills

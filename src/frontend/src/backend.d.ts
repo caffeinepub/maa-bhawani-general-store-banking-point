@@ -14,14 +14,6 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
-export interface Product {
-    id: bigint;
-    name: string;
-    barcode: string;
-    category: string;
-    image: ExternalBlob;
-    priceInRupees: bigint;
-}
 export interface BillItem {
     productId: bigint;
     productName: string;
@@ -30,15 +22,14 @@ export interface BillItem {
     totalPrice: bigint;
 }
 export type Time = bigint;
-export interface RechargeOrder {
+export interface Order {
     id: bigint;
-    rechargeAmount: bigint;
-    operator: string;
-    mobileNumber: string;
-}
-export interface CartItem {
-    quantity: bigint;
-    product: Product;
+    customerName: string;
+    deliveryAddress: string;
+    timestamp: Time;
+    phoneNumber: string;
+    products: Array<Product>;
+    totalPrice: bigint;
 }
 export interface Bill {
     id: bigint;
@@ -50,14 +41,27 @@ export interface Bill {
     generatedByAdmin: Principal;
     items: Array<BillItem>;
 }
-export interface Order {
+export interface RechargeOrder {
     id: bigint;
-    customerName: string;
-    deliveryAddress: string;
-    timestamp: Time;
-    phoneNumber: string;
-    products: Array<Product>;
-    totalPrice: bigint;
+    rechargeAmount: bigint;
+    operator: string;
+    mobileNumber: string;
+}
+export interface CartItem {
+    quantity: bigint;
+    product: Product;
+}
+export interface AuthResult {
+    message: string;
+    success: boolean;
+}
+export interface Product {
+    id: bigint;
+    name: string;
+    barcode: string;
+    category: string;
+    image: ExternalBlob;
+    priceInRupees: bigint;
 }
 export interface UserProfile {
     name: string;
@@ -71,9 +75,12 @@ export interface backendInterface {
     addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string): Promise<void>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    authenticate(providedId: string, providedPassword: string): Promise<AuthResult>;
     calculateTotalPrice(distanceInKm: bigint): Promise<bigint>;
+    changeAdminPassword(oldPassword: string, newPassword: string): Promise<boolean>;
     clearCart(): Promise<void>;
     generateBill(customerName: string | null, customerPhone: string | null, items: Array<BillItem>, totalAmount: bigint): Promise<Bill>;
+    getAdminCredentials(): Promise<[string, string]>;
     getAllBills(): Promise<Array<Bill>>;
     getAllOrders(): Promise<Array<Order>>;
     getAllProducts(): Promise<Array<Product>>;

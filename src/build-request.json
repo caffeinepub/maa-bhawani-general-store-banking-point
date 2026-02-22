@@ -1,72 +1,35 @@
 {
   "kind": "build_request",
-  "title": "Fix admin panel access issue",
-  "projectName": "Maa Bhawani General Store",
-  "priority": "high",
+  "title": "Update admin ID to 97SKY80",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks in the backend actor's isAdmin method",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-20"
-        ],
-        "quotes": [
-          "Im Unable to access admin Panel"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Authenticated users with admin privileges can successfully access /admin route",
-        "AdminGuard component correctly validates both authentication state and admin status",
-        "Clear error messages displayed for unauthenticated users and non-admin users",
-        "Admin panel loads without errors and displays dashboard statistics and management tabs"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Verify that the backend isAdmin method correctly identifies admin principals and returns proper authorization status",
+      "text": "Change the admin login ID from the current value to '97SKY80' in the backend authentication system",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-20"
+          "msg-latest"
+        ],
+        "quotes": [
+          "Make Id :- 97SKY80"
         ]
       },
       "acceptanceCriteria": [
-        "isAdmin method returns true for authorized admin principals",
-        "isAdmin method returns false for non-admin users",
-        "Admin authorization persists across browser sessions",
-        "No unauthorized users can access admin-only backend methods"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-20"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Console logs display detailed authentication state when admin access is denied",
-        "Users see clear instructions on how to gain admin access (e.g., 'Please contact the store owner')",
-        "Loading state is properly handled while checking admin status",
-        "Network errors are caught and displayed with retry options"
+        "Admin can log in using ID '97SKY80' with the existing password",
+        "Previous admin ID no longer works for authentication",
+        "Admin authentication flow remains unchanged otherwise"
       ]
     }
   ],
   "constraints": [
-    "Do not modify the Internet Identity authentication flow in useInternetIdentity hook",
-    "Maintain existing admin authorization logic structure in backend",
-    "Keep AdminGuard component's alert-based UI pattern for unauthorized access messages"
+    "Maintain existing password unchanged",
+    "Do not modify the authentication flow or AdminGuard component"
   ],
   "nonGoals": [
-    "Implementing new admin user management features",
-    "Adding role-based access control beyond basic admin/non-admin",
-    "Redesigning the admin panel UI layout",
-    "Adding payment gateway integration",
-    "Implementing OTP sign-in or GPS location features"
+    "Changing the admin password",
+    "Adding new admin users",
+    "Modifying the login UI"
   ],
   "imageRequirements": {
     "required": [],

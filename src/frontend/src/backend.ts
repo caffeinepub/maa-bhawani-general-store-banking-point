@@ -89,14 +89,6 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface Product {
-    id: bigint;
-    name: string;
-    barcode: string;
-    category: string;
-    image: ExternalBlob;
-    priceInRupees: bigint;
-}
 export interface BillItem {
     productId: bigint;
     productName: string;
@@ -104,23 +96,26 @@ export interface BillItem {
     quantity: bigint;
     totalPrice: bigint;
 }
+export interface _CaffeineStorageRefillResult {
+    success?: boolean;
+    topped_up_amount?: bigint;
+}
 export type Time = bigint;
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
-export interface RechargeOrder {
-    id: bigint;
-    rechargeAmount: bigint;
-    operator: string;
-    mobileNumber: string;
-}
-export interface CartItem {
-    quantity: bigint;
-    product: Product;
-}
 export interface _CaffeineStorageCreateCertificateResult {
     method: string;
     blob_hash: string;
+}
+export interface Order {
+    id: bigint;
+    customerName: string;
+    deliveryAddress: string;
+    timestamp: Time;
+    phoneNumber: string;
+    products: Array<Product>;
+    totalPrice: bigint;
 }
 export interface Bill {
     id: bigint;
@@ -132,21 +127,30 @@ export interface Bill {
     generatedByAdmin: Principal;
     items: Array<BillItem>;
 }
-export interface Order {
+export interface RechargeOrder {
     id: bigint;
-    customerName: string;
-    deliveryAddress: string;
-    timestamp: Time;
-    phoneNumber: string;
-    products: Array<Product>;
-    totalPrice: bigint;
+    rechargeAmount: bigint;
+    operator: string;
+    mobileNumber: string;
+}
+export interface CartItem {
+    quantity: bigint;
+    product: Product;
+}
+export interface AuthResult {
+    message: string;
+    success: boolean;
+}
+export interface Product {
+    id: bigint;
+    name: string;
+    barcode: string;
+    category: string;
+    image: ExternalBlob;
+    priceInRupees: bigint;
 }
 export interface UserProfile {
     name: string;
-}
-export interface _CaffeineStorageRefillResult {
-    success?: boolean;
-    topped_up_amount?: bigint;
 }
 export enum UserRole {
     admin = "admin",
@@ -164,9 +168,12 @@ export interface backendInterface {
     addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string): Promise<void>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    authenticate(providedId: string, providedPassword: string): Promise<AuthResult>;
     calculateTotalPrice(distanceInKm: bigint): Promise<bigint>;
+    changeAdminPassword(oldPassword: string, newPassword: string): Promise<boolean>;
     clearCart(): Promise<void>;
     generateBill(customerName: string | null, customerPhone: string | null, items: Array<BillItem>, totalAmount: bigint): Promise<Bill>;
+    getAdminCredentials(): Promise<[string, string]>;
     getAllBills(): Promise<Array<Bill>>;
     getAllOrders(): Promise<Array<Order>>;
     getAllProducts(): Promise<Array<Product>>;
@@ -330,6 +337,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async authenticate(arg0: string, arg1: string): Promise<AuthResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.authenticate(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.authenticate(arg0, arg1);
+            return result;
+        }
+    }
     async calculateTotalPrice(arg0: bigint): Promise<bigint> {
         if (this.processError) {
             try {
@@ -341,6 +362,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.calculateTotalPrice(arg0);
+            return result;
+        }
+    }
+    async changeAdminPassword(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.changeAdminPassword(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.changeAdminPassword(arg0, arg1);
             return result;
         }
     }
@@ -370,6 +405,26 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.generateBill(to_candid_opt_n11(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n11(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
             return from_candid_Bill_n12(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAdminCredentials(): Promise<[string, string]> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAdminCredentials();
+                return [
+                    result[0],
+                    result[1]
+                ];
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAdminCredentials();
+            return [
+                result[0],
+                result[1]
+            ];
         }
     }
     async getAllBills(): Promise<Array<Bill>> {

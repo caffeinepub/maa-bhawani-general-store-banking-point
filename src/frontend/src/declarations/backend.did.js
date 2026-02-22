@@ -25,6 +25,10 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const AuthResult = IDL.Record({
+  'message' : IDL.Text,
+  'success' : IDL.Bool,
+});
 export const BillItem = IDL.Record({
   'productId' : IDL.Nat,
   'productName' : IDL.Text,
@@ -107,13 +111,16 @@ export const idlService = IDL.Service({
     ),
   'addToCart' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
   'calculateTotalPrice' : IDL.Func([IDL.Nat], [IDL.Nat], []),
+  'changeAdminPassword' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
   'clearCart' : IDL.Func([], [], []),
   'generateBill' : IDL.Func(
       [IDL.Opt(IDL.Text), IDL.Opt(IDL.Text), IDL.Vec(BillItem), IDL.Nat],
       [Bill],
       [],
     ),
+  'getAdminCredentials' : IDL.Func([], [IDL.Text, IDL.Text], ['query']),
   'getAllBills' : IDL.Func([], [IDL.Vec(Bill)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
@@ -163,6 +170,7 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const AuthResult = IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool });
   const BillItem = IDL.Record({
     'productId' : IDL.Nat,
     'productName' : IDL.Text,
@@ -242,13 +250,16 @@ export const idlFactory = ({ IDL }) => {
       ),
     'addToCart' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
     'calculateTotalPrice' : IDL.Func([IDL.Nat], [IDL.Nat], []),
+    'changeAdminPassword' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'clearCart' : IDL.Func([], [], []),
     'generateBill' : IDL.Func(
         [IDL.Opt(IDL.Text), IDL.Opt(IDL.Text), IDL.Vec(BillItem), IDL.Nat],
         [Bill],
         [],
       ),
+    'getAdminCredentials' : IDL.Func([], [IDL.Text, IDL.Text], ['query']),
     'getAllBills' : IDL.Func([], [IDL.Vec(Bill)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),

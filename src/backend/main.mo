@@ -1,27 +1,97 @@
-import Runtime "mo:core/Runtime";
 import Map "mo:core/Map";
-import Iter "mo:core/Iter";
-import Nat "mo:core/Nat";
 import List "mo:core/List";
-import Text "mo:core/Text";
-import Array "mo:core/Array";
-import Principal "mo:core/Principal";
-import Time "mo:core/Time";
+import Nat "mo:core/Nat";
 import Set "mo:core/Set";
+import Array "mo:core/Array";
+import Time "mo:core/Time";
+import Text "mo:core/Text";
+import Runtime "mo:core/Runtime";
+import Principal "mo:core/Principal";
+import Iter "mo:core/Iter";
 import CoreOrder "mo:core/Order";
 
 import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
-actor {
-  // Include components
+(with migration = Migration.run) actor {
+  // state (initialized once at the start on system-level)
   include MixinStorage();
 
-  // Authorization
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  // Fixed admin credentials - these should be provided to the user securely
+  // In production, consider using environment variables or secure configuration
+  let adminId : Text = "97SKY80";
+  var adminPassword : Text = "SecureP@ssw0rd2024!";
+
+  type AuthResult = {
+    success : Bool;
+    message : Text;
+  };
+
+  // This function should only be called once by the deployer to retrieve initial credentials
+  // After first call, credentials should be changed via a secure channel
+  public query ({ caller }) func getAdminCredentials() : async (Text, Text) {
+    // Only allow the canister controller to retrieve credentials
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only existing admins can retrieve credentials");
+    };
+    (adminId, adminPassword);
+  };
+
+  // Authenticate and grant admin role upon successful authentication
+  public shared ({ caller }) func authenticate(providedId : Text, providedPassword : Text) : async AuthResult {
+    if (caller.isAnonymous()) {
+      return {
+        success = false;
+        message = "Anonymous callers cannot authenticate";
+      };
+    };
+
+    if (not Text.equal(providedId, adminId)) {
+      return {
+        success = false;
+        message = "Invalid admin ID";
+      };
+    };
+
+    if (not Text.equal(providedPassword, adminPassword)) {
+      return {
+        success = false;
+        message = "Invalid admin password";
+      };
+    };
+
+    // Grant admin role to the authenticated caller
+    AccessControl.assignRole(accessControlState, caller, caller, #admin);
+
+    {
+      success = true;
+      message = "Authentication successful - admin role granted";
+    };
+  };
+
+  // Allow admins to change the admin password
+  public shared ({ caller }) func changeAdminPassword(oldPassword : Text, newPassword : Text) : async Bool {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can change password");
+    };
+
+    if (not Text.equal(oldPassword, adminPassword)) {
+      return false;
+    };
+
+    if (newPassword.size() < 8) {
+      Runtime.trap("New password must be at least 8 characters long");
+    };
+
+    adminPassword := newPassword;
+    true;
+  };
 
   // User Profile
   public type UserProfile = {

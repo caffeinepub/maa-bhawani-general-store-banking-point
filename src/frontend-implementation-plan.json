@@ -1,46 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Admin Panel Access Issue",
-  "requirements": [
-    {
-      "id": "REQ-1",
-      "summary": "Debug and fix the admin panel access issue by verifying the authentication flow in AdminGuard component and ensuring proper admin authorization checks",
-      "acceptanceCriteria": [
-        "Authenticated users with admin privileges can successfully access /admin route",
-        "AdminGuard component correctly validates both authentication state and admin status",
-        "Clear error messages displayed for unauthenticated users and non-admin users",
-        "Admin panel loads without errors and displays dashboard statistics and management tabs"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/AdminGuard.tsx",
-          "operation": "modify",
-          "description": "Fix the AdminGuard component to properly check both authentication state and admin status. Ensure the component waits for the actor to be initialized before checking admin status. Add proper loading state handling while authentication and admin checks are in progress. Verify that the component correctly uses the authorization component's isCallerAdmin backend method through the useActor hook and React Query. Add console logging for debugging authentication state and admin check results."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Verify and fix the useIsCallerAdmin query hook to properly handle the enabled state based on actor availability and authentication. Ensure the query is only enabled when the actor is initialized and the user is authenticated. Add proper error handling and retry logic for authorization failures. Ensure the query key is unique and properly invalidated on identity changes."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add error logging and user-friendly error messages to AdminGuard to help diagnose access issues when authentication or authorization fails",
-      "acceptanceCriteria": [
-        "Console logs display detailed authentication state when admin access is denied",
-        "Users see clear instructions on how to gain admin access (e.g., 'Please contact the store owner')",
-        "Loading state is properly handled while checking admin status",
-        "Network errors are caught and displayed with retry options"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/AdminGuard.tsx",
-          "operation": "modify",
-          "description": "Add comprehensive console logging to track authentication state, actor initialization, and admin check results. Log the current identity principal, actor availability, query status, and admin check response. Display user-friendly error messages in the alert components with specific guidance: for unauthenticated users, prompt them to log in first; for authenticated non-admin users, display 'You do not have admin privileges. Please contact the store owner at 9142876085 to request access.' Add a proper loading state with a spinner or loading message while checking admin status. Implement error boundary handling for network failures with a retry button that re-runs the admin check query."
-        }
-      ]
-    }
-  ]
+  "title": "Update Admin ID to 97SKY80 - Frontend Plan",
+  "requirements": []
 }
