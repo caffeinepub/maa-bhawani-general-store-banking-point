@@ -1,157 +1,94 @@
 {
   "kind": "build_request",
-  "title": "Professional Barcode Scanner Upgrade & Address Correction",
+  "title": "Fix admin authentication and add order status notifications",
   "projectName": "Maa Bhawani General Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' and ensure it appears at the top of every generated bill/invoice along with the store name",
-      "target": "frontend",
+      "text": "Reset admin credentials to use ID/Username '919708075648' and password '979142876085' as the permanent admin login. Update the backend authentication logic to validate against these specific credentials.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-final"
         ],
         "quotes": [
-          "Please update the official store address on all generated bills/receipts. The address must be exactly as follows: Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar."
+          "Reset Admin Credentials: Set the following as the permanent Admin login: ID/Username: 919708075648, Password: 979142876085"
         ]
       },
       "acceptanceCriteria": [
-        "Address 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' is printed at the top of every bill",
-        "Address appears on both screen-displayed bills and printed receipts",
-        "Store name is displayed alongside the address"
+        "Admin can successfully log in using username '919708075648' and password '979142876085'",
+        "Invalid or failed login errors are resolved",
+        "Credentials are permanently stored in backend"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Replace the current Quagga2 barcode scanner with a zero-latency, high-performance scanner that uses enhanced decoding algorithms capable of reading barcodes even when blurred, tilted, or in low-light conditions",
-      "target": "frontend",
+      "text": "Fix admin session timeout by implementing persistent session management. Ensure the admin stays logged in during the working session without being repeatedly logged out.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-final"
         ],
         "quotes": [
-          "The current barcode scanner is slow and often fails. I want a professional-grade scanning experience",
-          "Zero-Latency Scanning: Integrate a low-latency library (like Dynamsoft or Scandit approach) that detects barcodes as soon as they enter the camera frame",
-          "Enhanced Decoder: Ensure the scanner can read barcodes even if they are slightly blurred, tilted, or in low-light conditions"
+          "Fix Session Timeout: Ensure the Admin stays logged in during the working session and doesn't get kicked out repeatedly"
         ]
       },
       "acceptanceCriteria": [
-        "Barcode detection occurs within milliseconds of barcode entering camera frame",
-        "Scanner successfully reads barcodes that are slightly blurred",
-        "Scanner successfully reads barcodes that are tilted at various angles",
-        "Scanner functions effectively in low-light conditions",
-        "No perceptible lag between barcode presentation and detection"
+        "Admin session persists throughout active working periods",
+        "No unexpected logouts during normal usage",
+        "Session state is maintained across page refreshes"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add haptic feedback (phone vibration) and a success beep sound that triggers instantly upon successful barcode scan",
+      "text": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-final"
         ],
         "quotes": [
-          "Haptic Feedback: The phone should give a short Vibration (Haptic feedback) and a 'Success' beep sound instantly upon a successful scan."
+          "Error Logs: Provide a clear 'Forgot Password' or 'Reset' option linked to my mobile number/email"
         ]
       },
       "acceptanceCriteria": [
-        "Phone vibrates immediately when barcode is successfully scanned",
-        "Success beep sound plays immediately when barcode is successfully scanned",
-        "Haptic and audio feedback occur simultaneously",
-        "Feedback triggers only on successful scans, not on failed attempts"
+        "Forgot Password link is visible on the admin login screen",
+        "Password reset flow is linked to mobile number 919708075648",
+        "Clear instructions are provided for password recovery"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement auto-quantity increment functionality so that scanning the same barcode multiple times automatically increases the quantity (e.g., Qty: 2) in the bill instead of showing an error or adding duplicate line items",
-      "target": "frontend",
+      "text": "Implement automatic customer notifications when the admin changes an order status (e.g., to 'Out for Delivery'). Notifications should be sent via the app or WhatsApp.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-final"
         ],
         "quotes": [
-          "Auto-Quantity Increment: If the same barcode is scanned twice, the system should automatically increase the quantity (Qty: 2) in the bill instead of showing an error or adding a new line."
+          "Whenever the Admin changes the order status (e.g., to 'Out for Delivery'), an automatic notification should be sent to the customer via the app or WhatsApp"
         ]
       },
       "acceptanceCriteria": [
-        "Scanning the same barcode twice increments quantity to 2 on the existing line item",
-        "Each additional scan of the same barcode continues to increment quantity",
-        "No error messages appear when scanning duplicate barcodes",
-        "No duplicate line items are created for the same product",
-        "Quantity updates are reflected immediately in the bill preview"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Add a professional scanning overlay UI to the camera view with either a laser line or square box guide so the admin knows exactly where to point the barcode for optimal scanning",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Overlay UI: Add a professional scanning 'Laser Line' or 'Square Box' overlay on the camera screen so the admin knows exactly where to point the barcode."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Camera view displays a visible scanning guide (laser line or square box)",
-        "Overlay clearly indicates the optimal barcode placement area",
-        "Overlay does not obstruct camera view or interfere with scanning",
-        "Overlay appears professional and matches the app's design system"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Ensure the final bill total is synced with the payment gateway for seamless checkout after barcode scanning is complete and the bill is generated",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Once the scan is complete and the bill is generated with the correct Bardiha Turki address, ensure the final total is synced with the Payment Gateway for a seamless checkout."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Bill total is accurately transmitted to payment gateway",
-        "Payment gateway displays the correct amount from the generated bill",
-        "Checkout flow works seamlessly after bill generation",
-        "No manual entry of payment amount is required"
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Update the camera permission description in the app settings to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.'",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Camera Permission Description: \"This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.\""
-        ]
-      },
-      "acceptanceCriteria": [
-        "Camera permission prompt displays the specified description",
-        "Description accurately reflects the professional barcode scanning functionality",
-        "Text appears when user is first prompted for camera permissions"
+        "Customer receives notification when order status is updated by admin",
+        "Notification contains order details and new status",
+        "Notification is triggered for all status changes (confirmed, packed, out for delivery, completed)"
       ]
     }
   ],
   "constraints": [
-    "Must maintain compatibility with existing bill generation and printing functionality",
-    "Must not modify the backend schema or main actor structure",
-    "Scanner must work on mobile devices with standard camera hardware",
-    "Must preserve existing product lookup and billing workflow"
+    "Use the exact credentials provided: username '919708075648' and password '979142876085'",
+    "Maintain compatibility with existing Internet Identity authentication system",
+    "Do not modify the existing order status workflow in AdminPage",
+    "Keep the current order management interface intact"
   ],
   "nonGoals": [
-    "Changing the overall UI/UX design of the billing page beyond the scanner overlay",
-    "Modifying the payment gateway integration beyond syncing the total amount",
-    "Adding new product management features",
-    "Implementing real-time WebSocket connections",
-    "Integrating third-party barcode scanning cloud services that require API keys"
+    "Multi-factor authentication for admin",
+    "Role-based access control with multiple admin levels",
+    "Email notification system (focus on app/WhatsApp)",
+    "Customer-facing password reset functionality",
+    "Encryption of admin credentials beyond standard security practices"
   ],
   "imageRequirements": {
     "required": [],

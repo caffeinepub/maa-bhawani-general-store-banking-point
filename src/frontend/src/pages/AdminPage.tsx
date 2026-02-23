@@ -1,14 +1,29 @@
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminGuard from '../components/AdminGuard';
 import AdminProductForm from '../components/AdminProductForm';
 import AdminProductList from '../components/AdminProductList';
 import BillHistoryTable from '../components/BillHistoryTable';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { useGetAllOrders, useGetAllRechargeOrders, useGetAllBills, useGetAllProducts } from '../hooks/useQueries';
-import { Package, Smartphone, Receipt, Settings, FileText } from 'lucide-react';
+import { 
+  useGetAllOrders, 
+  useGetAllRechargeOrders, 
+  useGetAllBills, 
+  useGetAllProducts,
+  useConfirmOrder,
+  useMarkAsPacked,
+  useMarkAsOutForDelivery,
+  useMarkAsCompleted
+} from '../hooks/useQueries';
+import { Package, Smartphone, Receipt, Settings, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
+import type { Order, OrderStatus, PaymentMethod } from '../backend';
 
 export default function AdminPage() {
   const { data: orders = [], error: ordersError } = useGetAllOrders();
@@ -16,6 +31,14 @@ export default function AdminPage() {
   const { data: bills = [], error: billsError } = useGetAllBills();
   const { data: products = [], error: productsError } = useGetAllProducts();
   const navigate = useNavigate();
+
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [processingOrderId, setProcessingOrderId] = useState<bigint | null>(null);
+
+  const confirmOrder = useConfirmOrder();
+  const markAsPacked = useMarkAsPacked();
+  const markAsOutForDelivery = useMarkAsOutForDelivery();
+  const markAsCompleted = useMarkAsCompleted();
 
   // Log any errors for debugging
   if (ordersError) console.error('[AdminPage] Orders error:', ordersError);
@@ -25,6 +48,83 @@ export default function AdminPage() {
 
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalPrice), 0);
   const billRevenue = bills.reduce((sum, bill) => sum + Number(bill.totalAmount), 0);
+
+  const getStatusBadgeVariant = (status: OrderStatus): "default" | "secondary" | "outline" | "destructive" => {
+    switch (status) {
+      case 'pending':
+        return 'outline';
+      case 'confirmed':
+        return 'secondary';
+      case 'packed':
+        return 'default';
+      case 'out_for_delivery':
+        return 'default';
+      case 'completed':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getStatusLabel = (status: OrderStatus): string => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'packed':
+        return 'Packed';
+      case 'out_for_delivery':
+        return 'Out for Delivery';
+      case 'completed':
+        return 'Completed';
+      default:
+        return status;
+    }
+  };
+
+  const getPaymentMethodLabel = (method: PaymentMethod): string => {
+    switch (method) {
+      case 'upi':
+        return 'UPI';
+      case 'cod':
+        return 'Cash on Delivery';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const handleStatusUpdate = async (orderId: bigint, currentStatus: OrderStatus) => {
+    setProcessingOrderId(orderId);
+    try {
+      switch (currentStatus) {
+        case 'pending':
+          await confirmOrder.mutateAsync(orderId);
+          toast.success('Order confirmed successfully');
+          break;
+        case 'confirmed':
+          await markAsPacked.mutateAsync(orderId);
+          toast.success('Order marked as packed');
+          break;
+        case 'packed':
+          await markAsOutForDelivery.mutateAsync(orderId);
+          toast.success('Order marked as out for delivery');
+          break;
+        case 'out_for_delivery':
+          await markAsCompleted.mutateAsync(orderId);
+          toast.success('Order completed successfully');
+          break;
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update order status');
+    } finally {
+      setProcessingOrderId(null);
+    }
+  };
+
+  const filteredOrders = statusFilter === 'all' 
+    ? orders 
+    : orders.filter(order => order.status === statusFilter);
 
   return (
     <ErrorBoundary>
@@ -105,29 +205,130 @@ export default function AdminPage() {
             <TabsContent value="orders">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Orders</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Order Management</CardTitle>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Orders</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                        <SelectItem value="packed">Packed</SelectItem>
+                        <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {orders.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">No orders yet</p>
+                  {filteredOrders.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      {statusFilter === 'all' ? 'No orders yet' : `No ${statusFilter} orders`}
+                    </p>
                   ) : (
-                    <div className="space-y-4">
-                      {orders.map((order) => (
-                        <div key={Number(order.id)} className="border rounded-lg p-4 space-y-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-semibold">Order #{Number(order.id)}</p>
-                              <p className="text-sm text-muted-foreground">{order.customerName}</p>
-                              <p className="text-sm text-muted-foreground">{order.phoneNumber}</p>
-                            </div>
-                            <p className="font-bold text-lg">₹{Number(order.totalPrice)}</p>
-                          </div>
-                          <p className="text-sm">{order.deliveryAddress}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {order.products.length} item(s)
-                          </p>
-                        </div>
-                      ))}
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Order ID</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Address</TableHead>
+                            <TableHead>Items</TableHead>
+                            <TableHead>Payment</TableHead>
+                            <TableHead>Total</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredOrders.map((order) => {
+                            const isProcessing = processingOrderId === order.id;
+                            return (
+                              <TableRow key={Number(order.id)}>
+                                <TableCell className="font-medium">#{Number(order.id)}</TableCell>
+                                <TableCell>{order.customerName}</TableCell>
+                                <TableCell>{order.phoneNumber}</TableCell>
+                                <TableCell className="max-w-[200px] truncate">{order.deliveryAddress}</TableCell>
+                                <TableCell>{order.products.length} item(s)</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">
+                                    {getPaymentMethodLabel(order.paymentMethod)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="font-bold">₹{Number(order.totalPrice)}</TableCell>
+                                <TableCell>
+                                  <Badge variant={getStatusBadgeVariant(order.status)}>
+                                    {getStatusLabel(order.status)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {order.status === 'pending' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleStatusUpdate(order.id, order.status)}
+                                      disabled={isProcessing}
+                                    >
+                                      {isProcessing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        'Confirm Order'
+                                      )}
+                                    </Button>
+                                  )}
+                                  {order.status === 'confirmed' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleStatusUpdate(order.id, order.status)}
+                                      disabled={isProcessing}
+                                    >
+                                      {isProcessing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        'Packed'
+                                      )}
+                                    </Button>
+                                  )}
+                                  {order.status === 'packed' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleStatusUpdate(order.id, order.status)}
+                                      disabled={isProcessing}
+                                    >
+                                      {isProcessing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        'Out for Delivery'
+                                      )}
+                                    </Button>
+                                  )}
+                                  {order.status === 'out_for_delivery' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleStatusUpdate(order.id, order.status)}
+                                      disabled={isProcessing}
+                                    >
+                                      {isProcessing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        'Success'
+                                      )}
+                                    </Button>
+                                  )}
+                                  {order.status === 'completed' && (
+                                    <div className="flex items-center gap-1 text-green-600">
+                                      <CheckCircle2 className="h-4 w-4" />
+                                      <span className="text-sm">Completed</span>
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
                     </div>
                   )}
                 </CardContent>

@@ -1,129 +1,21 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Professional Barcode Scanner Upgrade & Address Correction",
+  "title": "Fix admin authentication and add order status notifications",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Update hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' on all bills",
-      "acceptanceCriteria": [
-        "Address 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' is printed at the top of every bill",
-        "Address appears on both screen-displayed bills and printed receipts",
-        "Store name is displayed alongside the address"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/BillTemplate.tsx",
-          "operation": "modify",
-          "description": "Replace the hardcoded address constant with 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar'. Ensure the address is displayed prominently at the top of the bill template alongside the store name 'Maa Bhawani General Store'. Verify the address formatting works correctly for both screen display and 80mm thermal printer output."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Replace Quagga2 barcode scanner with high-performance zero-latency scanner supporting blurred, tilted, and low-light barcodes",
-      "acceptanceCriteria": [
-        "Barcode detection occurs within milliseconds of barcode entering camera frame",
-        "Scanner successfully reads barcodes that are slightly blurred",
-        "Scanner successfully reads barcodes that are tilted at various angles",
-        "Scanner functions effectively in low-light conditions",
-        "No perceptible lag between barcode presentation and detection"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/BarcodeScanner.tsx",
-          "operation": "modify",
-          "description": "Replace the current Quagga2 barcode scanner implementation with a high-performance scanning solution. Use the camera component's useCamera hook to provide camera access. Integrate a more robust barcode detection library (such as ZXing-based solution or @ericblade/quagga2 with optimized configuration) that supports enhanced decoding algorithms capable of reading blurred, tilted, and low-light barcodes. Configure continuous scanning mode with minimal processing latency. Remove the CDN-based Quagga loading and use npm-installed packages. Verify the camera component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/package.json",
-          "operation": "modify",
-          "description": "Add dependencies for the new high-performance barcode scanning library (e.g., @ericblade/quagga2 or @zxing/library) to replace the CDN-loaded Quagga2. Ensure compatibility with React 18 and TypeScript."
-        }
-      ]
-    },
-    {
       "id": "REQ-3",
-      "summary": "Add instant haptic feedback (vibration) and success beep sound on successful barcode scan",
+      "summary": "Add 'Forgot Password' or 'Reset Password' option in the admin login interface linked to the admin's mobile number for password recovery",
       "acceptanceCriteria": [
-        "Phone vibrates immediately when barcode is successfully scanned",
-        "Success beep sound plays immediately when barcode is successfully scanned",
-        "Haptic and audio feedback occur simultaneously",
-        "Feedback triggers only on successful scans, not on failed attempts"
+        "Forgot Password link is visible on the admin login screen",
+        "Password reset flow is linked to mobile number 919708075648",
+        "Clear instructions are provided for password recovery"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BarcodeScanner.tsx",
+          "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Add haptic feedback using the Vibration API (navigator.vibrate) that triggers immediately upon successful barcode detection. Enhance the existing beep sound functionality to play instantly with the haptic feedback. Ensure both feedback mechanisms trigger simultaneously and only on successful scans. Handle cases where vibration is not supported gracefully. The beep sound asset already exists at frontend/public/beep.mp3."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Implement auto-quantity increment for duplicate barcode scans instead of showing errors",
-      "acceptanceCriteria": [
-        "Scanning the same barcode twice increments quantity to 2 on the existing line item",
-        "Each additional scan of the same barcode continues to increment quantity",
-        "No error messages appear when scanning duplicate barcodes",
-        "No duplicate line items are created for the same product",
-        "Quantity updates are reflected immediately in the bill preview"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BillingPage.tsx",
-          "operation": "modify",
-          "description": "Modify the barcode scan handling logic to check if a scanned product already exists in the current bill items. If the product exists, increment its quantity by 1 instead of adding a new line item or showing an error. Update the quantity input field to reflect the new quantity immediately. Ensure the total amount recalculates automatically when quantity is incremented."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Add professional scanning overlay UI with laser line or square box guide to the camera view",
-      "acceptanceCriteria": [
-        "Camera view displays a visible scanning guide (laser line or square box)",
-        "Overlay clearly indicates the optimal barcode placement area",
-        "Overlay does not obstruct camera view or interfere with scanning",
-        "Overlay appears professional and matches the app's design system"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/BarcodeScanner.tsx",
-          "operation": "modify",
-          "description": "Add a professional scanning overlay UI component that renders on top of the camera preview. Implement either a horizontal laser line animation or a square box guide that indicates the optimal barcode scanning area. Use CSS positioning (absolute/fixed) to overlay the guide on the video element without obstructing the camera feed. Style the overlay using the app's color palette from frontend/src/index.css to ensure visual consistency. The overlay should be semi-transparent and clearly visible against various backgrounds."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Ensure bill total syncs with payment gateway for seamless checkout after bill generation",
-      "acceptanceCriteria": [
-        "Bill total is accurately transmitted to payment gateway",
-        "Payment gateway displays the correct amount from the generated bill",
-        "Checkout flow works seamlessly after bill generation",
-        "No manual entry of payment amount is required"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BillingPage.tsx",
-          "operation": "modify",
-          "description": "After generating a bill, ensure the total amount from the Bill object is properly passed to the payment gateway integration. Verify that the updateBillPaymentStatus backend capability is called with the correct payment reference and gateway ID once payment is confirmed. Add any necessary state management to track the bill total and payment status during the checkout flow."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Update camera permission description in app settings to describe professional barcode scanning",
-      "acceptanceCriteria": [
-        "Camera permission prompt displays the specified description",
-        "Description accurately reflects the professional barcode scanning functionality",
-        "Text appears when user is first prompted for camera permissions"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Update the camera usage description meta tag content to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.' This description appears in browser permission prompts and PWA install prompts on mobile devices."
+          "description": "Add a 'Forgot Password?' link or button below the login form in the admin credentials dialog. The link should display a help message instructing the admin to contact the mobile number 919708075648 for password reset assistance. Include clear visual styling to make the reset option easily discoverable without implementing a full automated reset flow."
         }
       ]
     }

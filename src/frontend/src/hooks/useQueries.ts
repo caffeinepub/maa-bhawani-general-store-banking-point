@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentity';
-import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem, AuthResult } from '../backend';
+import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem, AuthResult, PaymentMethod } from '../backend';
 import { ExternalBlob } from '../backend';
 
 // Products
@@ -102,14 +102,16 @@ export function usePlaceOrder() {
       deliveryAddress,
       phoneNumber,
       distanceInKm,
+      paymentMethod,
     }: {
       customerName: string;
       deliveryAddress: string;
       phoneNumber: string;
       distanceInKm: bigint;
+      paymentMethod: PaymentMethod;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return await actor.placeOrder(customerName, deliveryAddress, phoneNumber, distanceInKm);
+      return await actor.placeOrder(customerName, deliveryAddress, phoneNumber, distanceInKm, paymentMethod);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
@@ -133,6 +135,67 @@ export function useGetAllOrders() {
       }
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+// Order Status Updates
+export function useConfirmOrder() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.confirmOrder(orderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+}
+
+export function useMarkAsPacked() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.markAsPacked(orderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+}
+
+export function useMarkAsOutForDelivery() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.markAsOutForDelivery(orderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+}
+
+export function useMarkAsCompleted() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.markAsCompleted(orderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
   });
 }
 

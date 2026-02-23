@@ -1,71 +1,23 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Point-of-sale (POS) app with professional barcode scanning for Bardiha Turki store in Bihar",
+  "summary": "Food delivery app with admin panel for order management and customer notifications",
   "architectural_notes": [
-    "POS system with barcode scanning and billing",
-    "Store location: Bardiha Turki, Bihar",
-    "Requires low-latency barcode scanning library (Dynamsoft/Scandit-like)",
-    "Payment gateway integration for checkout"
+    "Admin authentication system with persistent sessions",
+    "Customer notification system (app/WhatsApp) for order status updates",
+    "Admin panel with order management capabilities"
   ],
   "known_issues": [
-    "Current barcode scanner is slow and frequently fails"
+    "Admin login returning 'Invalid' or 'Failed' errors",
+    "Admin session timing out during working sessions"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-hardcoded-billing-address-to-bardiha-turki-tarvadih-patepur-vaishali-843110-bihar-and-ensure-it-appears-at-the-top-of-every-generated-bill-invoice-along-with-the-store-name",
-      "title": "Update the hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' and ensure it appears at the top of every generated bill/invoice along with the store name",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-current-quagga2-barcode-scanner-with-a-zero-latency-high-performance-scanner-that-uses-enhanced-decoding-algorithms-capable-of-reading-barcodes-even-when-blurred-tilted-or-in-low-light-conditions",
-      "title": "Replace the current Quagga2 barcode scanner with a zero-latency, high-performance scanner that uses enhanced decoding algorithms capable of reading barcodes even when blurred, tilted, or in low-light conditions",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-haptic-feedback-phone-vibration-and-a-success-beep-sound-that-triggers-instantly-upon-successful-barcode-scan",
-      "title": "Add haptic feedback (phone vibration) and a success beep sound that triggers instantly upon successful barcode scan",
+      "id": "feature-add-a-forgot-password-or-reset-password-option-in-the-admin-login-interface-that-is-linked-to-the-admin-s-mobile-number-919708075648-or-email-for-password-recovery",
+      "title": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-auto-quantity-increment-functionality-so-that-scanning-the-same-barcode-multiple-times-automatically-increases-the-quantity-e-g-qty-2-in-the-bill-instead-of-showing-an-error-or-adding-duplicate-line-items",
-      "title": "Implement auto-quantity increment functionality so that scanning the same barcode multiple times automatically increases the quantity (e.g., Qty: 2) in the bill instead of showing an error or adding duplicate line items",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-professional-scanning-overlay-ui-to-the-camera-view-with-either-a-laser-line-or-square-box-guide-so-the-admin-knows-exactly-where-to-point-the-barcode-for-optimal-scanning",
-      "title": "Add a professional scanning overlay UI to the camera view with either a laser line or square box guide so the admin knows exactly where to point the barcode for optimal scanning",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-final-bill-total-is-synced-with-the-payment-gateway-for-seamless-checkout-after-barcode-scanning-is-complete-and-the-bill-is-generated",
-      "title": "Ensure the final bill total is synced with the payment gateway for seamless checkout after barcode scanning is complete and the bill is generated",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-camera-permission-description-in-the-app-settings-to-this-app-uses-the-camera-to-provide-a-high-speed-professional-barcode-scanning-experience-for-instant-billing-and-inventory-management",
-      "title": "Update the camera permission description in the app settings to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.'",
-      "reqIds": [
-        "REQ-7"
       ],
       "version": 1
     }
@@ -73,48 +25,53 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Update billing address to: Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar",
+      "summary": "Fix admin authentication - reset credentials to 919708075648/979142876085",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Implement zero-latency barcode scanner with enhanced decoder for blurred/tilted/low-light barcodes",
+      "summary": "Fix admin session timeout - keep admin logged in during working session",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Add haptic feedback and success beep sound on successful barcode scan",
+      "summary": "Add forgot password/reset option for admin linked to mobile/email",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Auto-increment quantity when same barcode scanned multiple times",
+      "summary": "Send automatic notifications to customers when order status changes",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Add professional scanning overlay UI (laser line or square box) to camera view",
-      "reqIds": [],
+      "summary": "Reset admin credentials to use ID/Username '919708075648' and password '979142876085' as the permanent admin login. Update the backend authentication logic to validate against these specific credentials.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-6",
-      "summary": "Sync final bill total with payment gateway for seamless checkout",
-      "reqIds": [],
+      "summary": "Fix admin session timeout by implementing persistent session management. Ensure the admin stays logged in during the working session without being repeatedly logged out.",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     },
     {
-      "id": "AR-7",
-      "summary": "Update camera permission description to mention high-speed barcode scanning",
-      "reqIds": [],
+      "id": "AR-8",
+      "summary": "Implement automatic customer notifications when the admin changes an order status (e.g., to 'Out for Delivery'). Notifications should be sent via the app or WhatsApp.",
+      "reqIds": [
+        "REQ-4"
+      ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
   "projectName": "Maa Bhawani General Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0

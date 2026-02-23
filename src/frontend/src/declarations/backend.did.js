@@ -68,10 +68,23 @@ export const Bill = IDL.Record({
   'items' : IDL.Vec(BillItem),
   'paymentGatewayId' : IDL.Opt(IDL.Text),
 });
+export const OrderStatus = IDL.Variant({
+  'pending' : IDL.Null,
+  'out_for_delivery' : IDL.Null,
+  'completed' : IDL.Null,
+  'confirmed' : IDL.Null,
+  'packed' : IDL.Null,
+});
+export const PaymentMethod = IDL.Variant({
+  'cod' : IDL.Null,
+  'upi' : IDL.Null,
+});
 export const Order = IDL.Record({
   'id' : IDL.Nat,
   'customerName' : IDL.Text,
+  'status' : OrderStatus,
   'deliveryAddress' : IDL.Text,
+  'paymentMethod' : PaymentMethod,
   'timestamp' : Time,
   'phoneNumber' : IDL.Text,
   'products' : IDL.Vec(Product),
@@ -131,8 +144,8 @@ export const idlService = IDL.Service({
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
   'calculateTotalPrice' : IDL.Func([IDL.Nat], [IDL.Nat], []),
-  'changeAdminPassword' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
   'clearCart' : IDL.Func([], [], []),
+  'confirmOrder' : IDL.Func([IDL.Nat], [], []),
   'generateBill' : IDL.Func(
       [IDL.Opt(IDL.Text), IDL.Opt(IDL.Text), IDL.Vec(BillItem), IDL.Nat],
       [Bill],
@@ -160,8 +173,11 @@ export const idlService = IDL.Service({
     ),
   'isAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'markAsCompleted' : IDL.Func([IDL.Nat], [], []),
+  'markAsOutForDelivery' : IDL.Func([IDL.Nat], [], []),
+  'markAsPacked' : IDL.Func([IDL.Nat], [], []),
   'placeOrder' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, PaymentMethod],
       [IDL.Nat],
       [],
     ),
@@ -237,10 +253,20 @@ export const idlFactory = ({ IDL }) => {
     'items' : IDL.Vec(BillItem),
     'paymentGatewayId' : IDL.Opt(IDL.Text),
   });
+  const OrderStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'out_for_delivery' : IDL.Null,
+    'completed' : IDL.Null,
+    'confirmed' : IDL.Null,
+    'packed' : IDL.Null,
+  });
+  const PaymentMethod = IDL.Variant({ 'cod' : IDL.Null, 'upi' : IDL.Null });
   const Order = IDL.Record({
     'id' : IDL.Nat,
     'customerName' : IDL.Text,
+    'status' : OrderStatus,
     'deliveryAddress' : IDL.Text,
+    'paymentMethod' : PaymentMethod,
     'timestamp' : Time,
     'phoneNumber' : IDL.Text,
     'products' : IDL.Vec(Product),
@@ -297,8 +323,8 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
     'calculateTotalPrice' : IDL.Func([IDL.Nat], [IDL.Nat], []),
-    'changeAdminPassword' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'clearCart' : IDL.Func([], [], []),
+    'confirmOrder' : IDL.Func([IDL.Nat], [], []),
     'generateBill' : IDL.Func(
         [IDL.Opt(IDL.Text), IDL.Opt(IDL.Text), IDL.Vec(BillItem), IDL.Nat],
         [Bill],
@@ -326,8 +352,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'markAsCompleted' : IDL.Func([IDL.Nat], [], []),
+    'markAsOutForDelivery' : IDL.Func([IDL.Nat], [], []),
+    'markAsPacked' : IDL.Func([IDL.Nat], [], []),
     'placeOrder' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, PaymentMethod],
         [IDL.Nat],
         [],
       ),

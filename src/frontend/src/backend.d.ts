@@ -29,7 +29,9 @@ export interface ProductWithAction {
 export interface Order {
     id: bigint;
     customerName: string;
+    status: OrderStatus;
     deliveryAddress: string;
+    paymentMethod: PaymentMethod;
     timestamp: Time;
     phoneNumber: string;
     products: Array<Product>;
@@ -73,6 +75,17 @@ export interface Product {
 export interface UserProfile {
     name: string;
 }
+export enum OrderStatus {
+    pending = "pending",
+    out_for_delivery = "out_for_delivery",
+    completed = "completed",
+    confirmed = "confirmed",
+    packed = "packed"
+}
+export enum PaymentMethod {
+    cod = "cod",
+    upi = "upi"
+}
 export enum PaymentStatus {
     pending = "pending",
     completed = "completed",
@@ -91,8 +104,8 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     authenticate(providedId: string, providedPassword: string): Promise<AuthResult>;
     calculateTotalPrice(distanceInKm: bigint): Promise<bigint>;
-    changeAdminPassword(oldPassword: string, newPassword: string): Promise<boolean>;
     clearCart(): Promise<void>;
+    confirmOrder(orderId: bigint): Promise<void>;
     generateBill(customerName: string | null, customerPhone: string | null, items: Array<BillItem>, totalAmount: bigint): Promise<Bill>;
     getAllBills(): Promise<Array<Bill>>;
     getAllOrders(): Promise<Array<Order>>;
@@ -108,7 +121,10 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isAdmin(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
-    placeOrder(customerName: string, deliveryAddress: string, phoneNumber: string, distanceInKm: bigint): Promise<bigint>;
+    markAsCompleted(orderId: bigint): Promise<void>;
+    markAsOutForDelivery(orderId: bigint): Promise<void>;
+    markAsPacked(orderId: bigint): Promise<void>;
+    placeOrder(customerName: string, deliveryAddress: string, phoneNumber: string, distanceInKm: bigint, paymentMethod: PaymentMethod): Promise<bigint>;
     placeRechargeOrder(mobileNumber: string, operator: string, rechargeAmount: bigint): Promise<bigint>;
     removeProduct(productId: bigint): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;

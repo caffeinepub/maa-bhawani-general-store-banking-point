@@ -1,15 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Upgrade the barcode scanning system to professional-grade performance with zero-latency detection, enhanced decoding capabilities, and improve billing accuracy with corrected store address.
+**Goal:** Fix admin authentication issues and implement automatic order status notifications for customers.
 
 **Planned changes:**
-- Replace Quagga2 scanner with high-performance zero-latency barcode scanner capable of reading blurred, tilted, or low-light barcodes
-- Add professional scanning overlay UI (laser line or square box guide) to camera view
-- Implement instant haptic feedback (vibration) and success beep sound on successful scan
-- Enable auto-quantity increment when same barcode is scanned multiple times (no duplicate line items)
-- Update hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' at top of all bills/invoices
-- Sync final bill total with payment gateway for seamless checkout
-- Update camera permission description to explain professional barcode scanning functionality
+- Reset admin credentials to username '919708075648' and password '979142876085' as permanent login
+- Fix session timeout to keep admin logged in during working sessions
+- Add 'Forgot Password' option on admin login screen linked to mobile number
+- Implement automatic customer notifications when order status changes (via app or WhatsApp)
 
-**User-visible outcome:** Store admin experiences instant, professional-grade barcode scanning with visual guides, immediate feedback, and automatic quantity handling. All generated bills display the correct store address at the top, and checkout flows seamlessly with accurate payment amounts.
+**User-visible outcome:** Admin can reliably log in with fixed credentials without session timeouts, and customers automatically receive notifications when their order status is updated by the admin.

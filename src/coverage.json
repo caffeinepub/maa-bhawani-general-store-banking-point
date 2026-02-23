@@ -1,112 +1,62 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-22T03:37:26.622Z",
+  "generatedAt": "2026-02-22T16:10:12.364Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 7,
-    "implemented": 7,
+    "total": 4,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the hardcoded billing address to 'Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar' and ensure it appears at the top of every generated bill/invoice along with the store name",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/BillTemplate.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/BillTemplate.tsx"
-        ]
+        "summary": "Reset admin credentials to use ID/Username '919708075648' and password '979142876085' as the permanent admin login. Update the backend authentication logic to validate against these specific credentials.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Replace the current Quagga2 barcode scanner with a zero-latency, high-performance scanner that uses enhanced decoding algorithms capable of reading barcodes even when blurred, tilted, or in low-light conditions",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx",
-          "frontend/package.json"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx"
-        ]
+        "summary": "Fix admin session timeout by implementing persistent session management. Ensure the admin stays logged in during the working session without being repeatedly logged out.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Add haptic feedback (phone vibration) and a success beep sound that triggers instantly upon successful barcode scan",
+        "summary": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx"
+          "frontend/src/components/AdminGuard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx"
+          "frontend/src/components/AdminGuard.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Implement auto-quantity increment functionality so that scanning the same barcode multiple times automatically increases the quantity (e.g., Qty: 2) in the bill instead of showing an error or adding duplicate line items",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/BillingPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/BillingPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Add a professional scanning overlay UI to the camera view with either a laser line or square box guide so the admin knows exactly where to point the barcode for optimal scanning",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/BarcodeScanner.tsx"
-        ]
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Ensure the final bill total is synced with the payment gateway for seamless checkout after barcode scanning is complete and the bill is generated",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/BillingPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/BillingPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Update the camera permission description in the app settings to: 'This app uses the camera to provide a high-speed, professional barcode scanning experience for instant billing and inventory management.'",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/index.html"
-        ],
-        "matchedFiles": [
-          "frontend/index.html"
-        ]
+        "summary": "Implement automatic customer notifications when the admin changes an order status (e.g., to 'Out for Delivery'). Notifications should be sent via the app or WhatsApp.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/http-outcalls/outcall.mo",
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/BarcodeScanner.tsx",
-    "frontend/src/components/BillTemplate.tsx",
+    "frontend/src/components/AdminGuard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/index.css",
-    "frontend/src/pages/AdminSettingsPage.tsx",
-    "frontend/src/pages/BillingPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

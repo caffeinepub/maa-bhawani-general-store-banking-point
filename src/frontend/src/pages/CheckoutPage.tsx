@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useGetCart, usePlaceOrder, useCalculateTotalPrice } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import DeliveryFeeInfo from '../components/DeliveryFeeInfo';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CreditCard, Banknote } from 'lucide-react';
+import { PaymentMethod } from '../backend';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [distance, setDistance] = useState('');
   const [totalPrice, setTotalPrice] = useState<number | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
 
   useEffect(() => {
     if (!identity) {
@@ -78,16 +81,22 @@ export default function CheckoutPage() {
     }
 
     try {
+      const paymentMethodEnum: PaymentMethod = paymentMethod === 'upi' 
+        ? PaymentMethod.upi 
+        : PaymentMethod.cod;
+
       const orderId = await placeOrder.mutateAsync({
         customerName: name,
         deliveryAddress: address,
         phoneNumber,
         distanceInKm: BigInt(Math.ceil(distanceNum)),
+        paymentMethod: paymentMethodEnum,
       });
       
-      // Store total for confirmation page
+      // Store order details for confirmation page
       if (totalPrice) {
         sessionStorage.setItem('lastOrderTotal', totalPrice.toString());
+        sessionStorage.setItem('lastOrderPaymentMethod', paymentMethod);
       }
       
       toast.success('Order placed successfully!');
@@ -165,6 +174,34 @@ export default function CheckoutPage() {
                 </div>
 
                 <DeliveryFeeInfo />
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <Label>Payment Method</Label>
+                  <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'upi' | 'cod')}>
+                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod('upi')}>
+                      <RadioGroupItem value="upi" id="upi" />
+                      <Label htmlFor="upi" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium">UPI Payment</p>
+                          <p className="text-sm text-muted-foreground">Pay online via UPI</p>
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod('cod')}>
+                      <RadioGroupItem value="cod" id="cod" />
+                      <Label htmlFor="cod" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <Banknote className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium">Cash on Delivery (COD)</p>
+                          <p className="text-sm text-muted-foreground">Pay with cash when delivered</p>
+                        </div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
 
                 <Button type="submit" className="w-full" size="lg" disabled={placeOrder.isPending || !totalPrice}>
                   {placeOrder.isPending ? 'Placing Order...' : 'Place Order'}

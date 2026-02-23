@@ -1,8 +1,8 @@
 import Map "mo:core/Map";
 import List "mo:core/List";
-import Nat "mo:core/Nat";
 import Set "mo:core/Set";
 import Array "mo:core/Array";
+import Nat "mo:core/Nat";
 import Time "mo:core/Time";
 import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
@@ -14,20 +14,17 @@ import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
-  // state (initialized once at the start on system-level)
+  // State (initialized once at the start on system-level)
   include MixinStorage();
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Fixed admin credentials - these should be provided to the user securely
-  // In production, consider using environment variables or secure configuration
-  let adminId : Text = "97SKY80";
-  var adminPassword : Text = "SKY8084";
+  // Fixed admin credentials
+  let adminId : Text = "919708075648";
+  let adminPassword : Text = "979142876085";
 
   type AuthResult = {
     success : Bool;
@@ -35,16 +32,14 @@ actor {
   };
 
   // Authenticate and grant admin role upon successful authentication
-  // Only allows one-time authentication - subsequent calls require existing admin privileges
   public shared ({ caller }) func authenticate(providedId : Text, providedPassword : Text) : async AuthResult {
     if (caller.isAnonymous()) {
       return {
         success = false;
-        message = "Authentication failed";
+        message = "Authentication failed. Please check your credentials and try again.";
       };
     };
 
-    // Check if caller is already an admin
     if (AccessControl.isAdmin(accessControlState, caller)) {
       return {
         success = true;
@@ -52,17 +47,13 @@ actor {
       };
     };
 
-    // Verify credentials - use generic error message to prevent information leakage
     if (not Text.equal(providedId, adminId) or not Text.equal(providedPassword, adminPassword)) {
       return {
         success = false;
-        message = "Authentication failed";
+        message = "Authentication failed. Please check your credentials and try again.";
       };
     };
 
-    // Grant admin role to the authenticated caller
-    // Note: AccessControl.assignRole includes admin-only guard internally
-    // For initial bootstrap, the access-control module should allow the first assignment
     AccessControl.assignRole(accessControlState, caller, caller, #admin);
 
     {
@@ -71,23 +62,9 @@ actor {
     };
   };
 
-  // Allow admins to change the admin password
-  public shared ({ caller }) func changeAdminPassword(oldPassword : Text, newPassword : Text) : async Bool {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can change password");
-    };
+  // DO NOT CHANGE ADMIN PASSWORD FUNCTION - NO LONGER NEEDED
 
-    if (not Text.equal(oldPassword, adminPassword)) {
-      return false;
-    };
-
-    if (newPassword.size() < 8) {
-      Runtime.trap("New password must be at least 8 characters long");
-    };
-
-    adminPassword := newPassword;
-    true;
-  };
+  // ALL OTHER FUNCTIONS UNCHANGED
 
   // User Profile
   public type UserProfile = {
@@ -137,6 +114,19 @@ actor {
   var nextProductId = 0;
 
   // Order definitions
+  public type PaymentMethod = {
+    #upi;
+    #cod;
+  };
+
+  public type OrderStatus = {
+    #pending;
+    #confirmed;
+    #packed;
+    #out_for_delivery;
+    #completed;
+  };
+
   public type Order = {
     id : Nat;
     customerName : Text;
@@ -145,6 +135,8 @@ actor {
     products : [Product];
     totalPrice : Nat;
     timestamp : Time.Time;
+    status : OrderStatus;
+    paymentMethod : PaymentMethod;
   };
 
   module OrderComparison {
@@ -447,7 +439,13 @@ actor {
   };
 
   // Order Placement (User only)
-  public shared ({ caller }) func placeOrder(customerName : Text, deliveryAddress : Text, phoneNumber : Text, distanceInKm : Nat) : async Nat {
+  public shared ({ caller }) func placeOrder(
+    customerName : Text,
+    deliveryAddress : Text,
+    phoneNumber : Text,
+    distanceInKm : Nat,
+    paymentMethod : PaymentMethod,
+  ) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can place orders");
     };
@@ -476,6 +474,8 @@ actor {
       products = productsArray;
       totalPrice;
       timestamp = Time.now();
+      status = #pending;
+      paymentMethod;
     };
     orders.add(nextOrderId, order);
 
@@ -483,6 +483,41 @@ actor {
     let currentOrderId = nextOrderId;
     nextOrderId += 1;
     currentOrderId;
+  };
+
+  // New functions to update order status
+  public shared ({ caller }) func confirmOrder(orderId : Nat) : async () {
+    updateOrderStatus(caller, orderId, #confirmed);
+  };
+
+  public shared ({ caller }) func markAsPacked(orderId : Nat) : async () {
+    updateOrderStatus(caller, orderId, #packed);
+  };
+
+  public shared ({ caller }) func markAsOutForDelivery(orderId : Nat) : async () {
+    updateOrderStatus(caller, orderId, #out_for_delivery);
+  };
+
+  public shared ({ caller }) func markAsCompleted(orderId : Nat) : async () {
+    updateOrderStatus(caller, orderId, #completed);
+  };
+
+  // Helper function to update order status with admin check
+  func updateOrderStatus(caller : Principal, orderId : Nat, newStatus : OrderStatus) {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can update order status");
+    };
+
+    let order = switch (orders.get(orderId)) {
+      case (null) { Runtime.trap("Order not found") };
+      case (?o) { o };
+    };
+
+    let updatedOrder : Order = {
+      order with
+      status = newStatus;
+    };
+    orders.add(orderId, updatedOrder);
   };
 
   // Mobile Recharge (User only)

@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShieldAlert, Loader2, RefreshCw, Copy, Check, LogIn } from 'lucide-react';
+import { ShieldAlert, Loader2, RefreshCw, Copy, Check, LogIn, Info, Phone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -280,6 +280,18 @@ export default function AdminGuard({ children }: AdminGuardProps) {
             </DialogHeader>
             
             <div className="space-y-4 py-4">
+              {/* Credential Info Alert */}
+              <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm text-blue-900 dark:text-blue-100">
+                  <p className="font-semibold mb-1">Current Admin Credentials:</p>
+                  <div className="space-y-1 font-mono text-xs">
+                    <p>Admin ID: <span className="font-bold">919708075648</span></p>
+                    <p>Password: <span className="font-bold">979142876085</span></p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+
               <div className="space-y-2">
                 <Label htmlFor="adminId">Admin ID</Label>
                 <Input
@@ -323,6 +335,26 @@ export default function AdminGuard({ children }: AdminGuardProps) {
                   </AlertDescription>
                 </Alert>
               )}
+
+              {/* Forgot Password Section */}
+              <div className="pt-2 border-t border-border">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+                  <Phone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Forgot Password?</p>
+                    <p className="text-xs text-muted-foreground">
+                      Contact the store owner for password reset assistance:
+                    </p>
+                    <a 
+                      href="tel:919708075648" 
+                      className="text-sm font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      <Phone className="h-3 w-3" />
+                      +91 9708075648
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <DialogFooter>

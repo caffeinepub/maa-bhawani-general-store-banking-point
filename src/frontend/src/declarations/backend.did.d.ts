@@ -36,12 +36,21 @@ export type ExternalBlob = Uint8Array;
 export interface Order {
   'id' : bigint,
   'customerName' : string,
+  'status' : OrderStatus,
   'deliveryAddress' : string,
+  'paymentMethod' : PaymentMethod,
   'timestamp' : Time,
   'phoneNumber' : string,
   'products' : Array<Product>,
   'totalPrice' : bigint,
 }
+export type OrderStatus = { 'pending' : null } |
+  { 'out_for_delivery' : null } |
+  { 'completed' : null } |
+  { 'confirmed' : null } |
+  { 'packed' : null };
+export type PaymentMethod = { 'cod' : null } |
+  { 'upi' : null };
 export type PaymentStatus = { 'pending' : null } |
   { 'completed' : null } |
   { 'refunded' : null } |
@@ -103,8 +112,8 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'authenticate' : ActorMethod<[string, string], AuthResult>,
   'calculateTotalPrice' : ActorMethod<[bigint], bigint>,
-  'changeAdminPassword' : ActorMethod<[string, string], boolean>,
   'clearCart' : ActorMethod<[], undefined>,
+  'confirmOrder' : ActorMethod<[bigint], undefined>,
   'generateBill' : ActorMethod<
     [[] | [string], [] | [string], Array<BillItem>, bigint],
     Bill
@@ -123,7 +132,13 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isAdmin' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'placeOrder' : ActorMethod<[string, string, string, bigint], bigint>,
+  'markAsCompleted' : ActorMethod<[bigint], undefined>,
+  'markAsOutForDelivery' : ActorMethod<[bigint], undefined>,
+  'markAsPacked' : ActorMethod<[bigint], undefined>,
+  'placeOrder' : ActorMethod<
+    [string, string, string, bigint, PaymentMethod],
+    bigint
+  >,
   'placeRechargeOrder' : ActorMethod<[string, string, bigint], bigint>,
   'removeProduct' : ActorMethod<[bigint], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
