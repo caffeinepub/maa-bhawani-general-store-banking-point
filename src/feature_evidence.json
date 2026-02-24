@@ -2,10 +2,56 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-redirect-the-user-directly-to-admin-dashboard-immediately-after-successful-admin-login",
-      "featureTitle": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
+      "featureId": "feature-in-the-adminproductform-component-replace-the-fixed-price-input-field-with-a-unit-type-dropdown-the-dropdown-must-have-exactly-four-options-kg-gram-packet-and-piece",
+      "featureTitle": "In the AdminProductForm component, replace the fixed Price input field with a Unit Type dropdown. The dropdown must have exactly four options: Kg, Gram, Packet, and Piece.",
       "files": [
-        "frontend/src/components/AdminGuard.tsx"
+        "frontend/src/components/AdminProductForm.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-kg-or-gram-display-a-text-input-field-where-customers-can-enter-custom-weight-values-accept-inputs-like-100g-0-5kg-1-5kg-250g-and-parse-them-correctly",
+      "featureTitle": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Kg' or 'Gram', display a text input field where customers can enter custom weight values. Accept inputs like '100g', '0.5kg', '1.5kg', '250g' and parse them correctly.",
+      "files": [
+        "frontend/src/components/CartDrawer.tsx",
+        "frontend/src/components/ProductCard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-packet-or-piece-display-only-and-quantity-buttons-for-incrementing-decrementing-whole-number-quantities-hide-the-custom-weight-input-for-these-unit-types",
+      "featureTitle": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for incrementing/decrementing whole number quantities. Hide the custom weight input for these unit types.",
+      "files": [
+        "frontend/src/components/CartDrawer.tsx",
+        "frontend/src/components/ProductCard.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,10 +70,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-any-404-or-access-denied-errors-on-the-admin-dashboard-by-ensuring-proper-routing-configuration-and-file-permissions-for-the-admin-folder",
-      "featureTitle": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
+      "featureId": "feature-update-all-product-display-components-productcard-adminproductlist-billtemplate-to-show-the-unit-type-instead-of-or-alongside-the-price-ensure-billing-and-checkout-flows-correctly-calculate-totals-based-on-unit-type-and-quantity-weight",
+      "featureTitle": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show the unit type instead of or alongside the price. Ensure billing and checkout flows correctly calculate totals based on unit type and quantity/weight.",
       "files": [
-        "frontend/src/App.tsx"
+        "frontend/src/components/AdminProductList.tsx",
+        "frontend/src/components/BillTemplate.tsx",
+        "frontend/src/components/ProductCard.tsx",
+        "frontend/src/pages/BillingPage.tsx",
+        "frontend/src/pages/CheckoutPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -41,7 +91,7 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-5"
+        "REQ-6"
       ],
       "confidence": "high"
     }

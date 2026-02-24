@@ -62,6 +62,7 @@ export interface CartItem {
 }
 export interface Product {
     id: bigint;
+    unitType: UnitType;
     name: string;
     barcode: string;
     category: string;
@@ -88,13 +89,19 @@ export enum PaymentStatus {
     refunded = "refunded",
     failed = "failed"
 }
+export enum UnitType {
+    kg = "kg",
+    gram = "gram",
+    piece = "piece",
+    packet = "packet"
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
 }
 export interface backendInterface {
-    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string): Promise<void>;
+    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string, unitType: UnitType): Promise<bigint>;
     addProductByBarcode(barcode: string, quantity: bigint): Promise<ProductWithAction>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;

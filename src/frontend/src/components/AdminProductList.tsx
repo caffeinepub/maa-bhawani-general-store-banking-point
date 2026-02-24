@@ -20,6 +20,11 @@ export default function AdminProductList() {
     }
   };
 
+  // Format unit type for display
+  const formatUnitType = (unitType: string) => {
+    return unitType.charAt(0).toUpperCase() + unitType.slice(1);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -53,6 +58,7 @@ export default function AdminProductList() {
                   <TableHead>Image</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
+                  <TableHead>Unit Type</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -67,6 +73,7 @@ export default function AdminProductList() {
                       </TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.category}</TableCell>
+                      <TableCell>{formatUnitType(product.unitType)}</TableCell>
                       <TableCell>₹{Number(product.priceInRupees)}</TableCell>
                       <TableCell className="text-right">
                         <AlertDialog>

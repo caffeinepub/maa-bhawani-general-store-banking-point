@@ -56,6 +56,7 @@ export type PaymentStatus = { 'pending' : null } |
   { 'failed' : null };
 export interface Product {
   'id' : bigint,
+  'unitType' : UnitType,
   'name' : string,
   'barcode' : string,
   'category' : string,
@@ -70,6 +71,10 @@ export interface RechargeOrder {
   'mobileNumber' : string,
 }
 export type Time = bigint;
+export type UnitType = { 'kg' : null } |
+  { 'gram' : null } |
+  { 'piece' : null } |
+  { 'packet' : null };
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -103,8 +108,8 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addProduct' : ActorMethod<
-    [string, string, bigint, ExternalBlob, string],
-    undefined
+    [string, string, bigint, ExternalBlob, string, UnitType],
+    bigint
   >,
   'addProductByBarcode' : ActorMethod<[string, bigint], ProductWithAction>,
   'addToCart' : ActorMethod<[bigint, bigint], undefined>,

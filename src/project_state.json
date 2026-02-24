@@ -1,28 +1,43 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Admin panel with hardcoded authentication",
+  "summary": "E-commerce application with product management featuring flexible unit types (Kg, Gram, Packet, Piece) and dynamic quantity input methods based on product type",
   "architectural_notes": [
-    "Admin authentication uses hardcoded credentials (ID: 919708075648, Password: 979142876085)",
-    "Session duration set to 24 hours for admin users",
-    "Admin dashboard accessible at /admin/dashboard route"
+    "Product model includes unit type field (Kg, Gram, Packet, Piece)",
+    "Shop page UI dynamically adapts based on product unit type"
   ],
   "known_issues": [],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-redirect-the-user-directly-to-admin-dashboard-immediately-after-successful-admin-login",
-      "title": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
+      "id": "feature-in-the-adminproductform-component-replace-the-fixed-price-input-field-with-a-unit-type-dropdown-the-dropdown-must-have-exactly-four-options-kg-gram-packet-and-piece",
+      "title": "In the AdminProductForm component, replace the fixed Price input field with a Unit Type dropdown. The dropdown must have exactly four options: Kg, Gram, Packet, and Piece.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-kg-or-gram-display-a-text-input-field-where-customers-can-enter-custom-weight-values-accept-inputs-like-100g-0-5kg-1-5kg-250g-and-parse-them-correctly",
+      "title": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Kg' or 'Gram', display a text input field where customers can enter custom weight values. Accept inputs like '100g', '0.5kg', '1.5kg', '250g' and parse them correctly.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-packet-or-piece-display-only-and-quantity-buttons-for-incrementing-decrementing-whole-number-quantities-hide-the-custom-weight-input-for-these-unit-types",
+      "title": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for incrementing/decrementing whole number quantities. Hide the custom weight input for these unit types.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-any-404-or-access-denied-errors-on-the-admin-dashboard-by-ensuring-proper-routing-configuration-and-file-permissions-for-the-admin-folder",
-      "title": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
+      "id": "feature-update-all-product-display-components-productcard-adminproductlist-billtemplate-to-show-the-unit-type-instead-of-or-alongside-the-price-ensure-billing-and-checkout-flows-correctly-calculate-totals-based-on-unit-type-and-quantity-weight",
+      "title": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show the unit type instead of or alongside the price. Ensure billing and checkout flows correctly calculate totals based on unit type and quantity/weight.",
       "reqIds": [
-        "REQ-5"
+        "REQ-6"
       ],
       "version": 1
     }
@@ -30,48 +45,44 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Hardcoded admin login with credentials ID:919708075648, Password:979142876085",
+      "summary": "Replace fixed Price field with Unit Type dropdown (Kg, Gram, Packet, Piece) in Add Product form",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "24-hour session persistence for admin panel",
-      "reqIds": [],
+      "summary": "Enable custom weight input for Kg/Gram products on shop page",
+      "reqIds": [
+        "AR-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Direct redirect to /admin/dashboard after login success",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Rewrite the admin login function to accept only the hardcoded credentials: ID '919708075648' and Password '979142876085'. Remove all external database checks, OTP verification, and any other validation logic for this specific admin ID.",
+      "summary": "Show only +/- quantity buttons for Packet/Piece products on shop page",
       "reqIds": [
-        "REQ-1"
+        "AR-1"
       ],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Grant full 'Admin' access immediately when the hardcoded credentials match, bypassing all validation errors and authentication flows.",
+      "summary": "Update the backend Product type to include a unitType field (Kg, Gram, Packet, or Piece) instead of or in addition to the price field. Modify the addProduct function to accept and store the unit type.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-6",
-      "summary": "Set the admin session duration to 24 hours to prevent 'Invalid Session' errors and automatic logouts during work periods.",
+      "id": "AR-8",
+      "summary": "Update the cart data structure to support both quantity-based items (Packet, Piece) and weight-based items (Kg, Gram). Modify the backend addToCart and related cart functions to handle both types correctly.",
       "reqIds": [
-        "REQ-3"
+        "REQ-5"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Implement hardcoded admin login with fixed credentials and session persistence",
+  "projectName": "Maa Bhawani General Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

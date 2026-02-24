@@ -1,57 +1,83 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-23T03:10:46.942Z",
+  "generatedAt": "2026-02-24T02:12:26.196Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 2,
+    "total": 6,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Rewrite the admin login function to accept only the hardcoded credentials: ID '919708075648' and Password '979142876085'. Remove all external database checks, OTP verification, and any other validation logic for this specific admin ID.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "In the AdminProductForm component, replace the fixed Price input field with a Unit Type dropdown. The dropdown must have exactly four options: Kg, Gram, Packet, and Piece.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AdminProductForm.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AdminProductForm.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Grant full 'Admin' access immediately when the hardcoded credentials match, bypassing all validation errors and authentication flows.",
+        "summary": "Update the backend Product type to include a unitType field (Kg, Gram, Packet, or Piece) instead of or in addition to the price field. Modify the addProduct function to accept and store the unit type.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Set the admin session duration to 24 hours to prevent 'Invalid Session' errors and automatic logouts during work periods.",
+        "summary": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Kg' or 'Gram', display a text input field where customers can enter custom weight values. Accept inputs like '100g', '0.5kg', '1.5kg', '250g' and parse them correctly.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/CartDrawer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/CartDrawer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for incrementing/decrementing whole number quantities. Hide the custom weight input for these unit types.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/CartDrawer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/CartDrawer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Update the cart data structure to support both quantity-based items (Packet, Piece) and weight-based items (Kg, Gram). Modify the backend addToCart and related cart functions to handle both types correctly.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-4",
-        "summary": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
+        "id": "REQ-6",
+        "summary": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show the unit type instead of or alongside the price. Ensure billing and checkout flows correctly calculate totals based on unit type and quantity/weight.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/AdminProductList.tsx",
+          "frontend/src/components/BillTemplate.tsx",
+          "frontend/src/pages/CheckoutPage.tsx",
+          "frontend/src/pages/BillingPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/pages/AdminPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/AdminProductList.tsx",
+          "frontend/src/components/BillTemplate.tsx",
+          "frontend/src/pages/CheckoutPage.tsx",
+          "frontend/src/pages/BillingPage.tsx"
         ]
       }
     ]
@@ -63,13 +89,18 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/components/AdminProductForm.tsx",
+    "frontend/src/components/AdminProductList.tsx",
+    "frontend/src/components/BillTemplate.tsx",
+    "frontend/src/components/CartDrawer.tsx",
+    "frontend/src/components/ProductCard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/BillingPage.tsx",
+    "frontend/src/pages/CheckoutPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -13,6 +13,25 @@ import { toast } from 'sonner';
 import { ArrowLeft, CreditCard, Banknote } from 'lucide-react';
 import { PaymentMethod } from '../backend';
 
+// Helper function to format quantity with unit type
+function formatQuantityWithUnit(quantity: number, unitType: string): string {
+  const isWeightBased = unitType === 'kg' || unitType === 'gram';
+  
+  if (isWeightBased) {
+    if (unitType === 'kg') {
+      if (quantity >= 1000) {
+        return `${(quantity / 1000).toFixed(quantity % 1000 === 0 ? 0 : 2)} Kg`;
+      }
+      return `${quantity} g`;
+    } else if (unitType === 'gram') {
+      return `${quantity} Gram`;
+    }
+  }
+  
+  const unitDisplay = unitType.charAt(0).toUpperCase() + unitType.slice(1);
+  return `${quantity} ${unitDisplay}`;
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { identity } = useInternetIdentity();
@@ -221,7 +240,7 @@ export default function CheckoutPage() {
                 {cart.map((item) => (
                   <div key={Number(item.product.id)} className="flex justify-between text-sm">
                     <span>
-                      {item.product.name} x {Number(item.quantity)}
+                      {item.product.name} x {formatQuantityWithUnit(Number(item.quantity), item.product.unitType)}
                     </span>
                     <span>₹{Number(item.product.priceInRupees) * Number(item.quantity)}</span>
                   </div>

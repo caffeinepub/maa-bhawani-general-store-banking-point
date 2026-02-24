@@ -20,8 +20,15 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const UnitType = IDL.Variant({
+  'kg' : IDL.Null,
+  'gram' : IDL.Null,
+  'piece' : IDL.Null,
+  'packet' : IDL.Null,
+});
 export const Product = IDL.Record({
   'id' : IDL.Nat,
+  'unitType' : UnitType,
   'name' : IDL.Text,
   'barcode' : IDL.Text,
   'category' : IDL.Text,
@@ -127,8 +134,8 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addProduct' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text],
-      [],
+      [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text, UnitType],
+      [IDL.Nat],
       [],
     ),
   'addProductByBarcode' : IDL.Func(
@@ -203,8 +210,15 @@ export const idlFactory = ({ IDL }) => {
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const UnitType = IDL.Variant({
+    'kg' : IDL.Null,
+    'gram' : IDL.Null,
+    'piece' : IDL.Null,
+    'packet' : IDL.Null,
+  });
   const Product = IDL.Record({
     'id' : IDL.Nat,
+    'unitType' : UnitType,
     'name' : IDL.Text,
     'barcode' : IDL.Text,
     'category' : IDL.Text,
@@ -304,8 +318,8 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addProduct' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text],
-        [],
+        [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text, UnitType],
+        [IDL.Nat],
         [],
       ),
     'addProductByBarcode' : IDL.Func(

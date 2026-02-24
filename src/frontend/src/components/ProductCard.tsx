@@ -2,18 +2,46 @@ import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import type { Product } from '../backend';
 import { useAddToCart } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
 }
 
+// Helper function to parse weight input (e.g., "100g", "0.5kg", "1.5kg", "250g")
+function parseWeightToGrams(input: string): number | null {
+  const trimmed = input.trim().toLowerCase();
+  
+  // Match patterns like "100g", "0.5kg", "1.5kg"
+  const kgMatch = trimmed.match(/^(\d+\.?\d*)\s*kg$/);
+  const gramMatch = trimmed.match(/^(\d+\.?\d*)\s*g$/);
+  
+  if (kgMatch) {
+    const kg = parseFloat(kgMatch[1]);
+    if (!isNaN(kg) && kg > 0) {
+      return Math.round(kg * 1000); // Convert kg to grams
+    }
+  } else if (gramMatch) {
+    const grams = parseFloat(gramMatch[1]);
+    if (!isNaN(grams) && grams > 0) {
+      return Math.round(grams);
+    }
+  }
+  
+  return null;
+}
+
 export default function ProductCard({ product }: ProductCardProps) {
   const addToCart = useAddToCart();
   const { identity } = useInternetIdentity();
+  const [weightInput, setWeightInput] = useState('');
+
+  const isWeightBased = product.unitType === 'kg' || product.unitType === 'gram';
 
   const handleAddToCart = async () => {
     if (!identity) {
@@ -29,7 +57,37 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
+  const handleAddWeightToCart = async () => {
+    if (!identity) {
+      toast.error('Please login to add items to cart');
+      return;
+    }
+
+    if (!weightInput.trim()) {
+      toast.error('Please enter a weight');
+      return;
+    }
+
+    const grams = parseWeightToGrams(weightInput);
+    if (grams === null) {
+      toast.error('Invalid weight format. Use formats like "100g", "0.5kg", "1.5kg"');
+      return;
+    }
+
+    try {
+      // Store weight in grams as quantity
+      await addToCart.mutateAsync({ productId: product.id, quantity: BigInt(grams) });
+      toast.success(`${product.name} (${weightInput}) added to cart!`);
+      setWeightInput('');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add to cart');
+    }
+  };
+
   const imageUrl = product.image.getDirectURL();
+
+  // Format unit type for display
+  const unitTypeDisplay = product.unitType.charAt(0).toUpperCase() + product.unitType.slice(1);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -41,21 +99,49 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
       </div>
       <CardContent className="p-4">
-        <Badge variant="secondary" className="mb-2 text-xs">
-          {product.category}
-        </Badge>
+        <div className="flex gap-2 mb-2">
+          <Badge variant="secondary" className="text-xs">
+            {product.category}
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            {unitTypeDisplay}
+          </Badge>
+        </div>
         <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
         <p className="text-2xl font-bold text-primary">₹{Number(product.priceInRupees)}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button
-          onClick={handleAddToCart}
-          disabled={addToCart.isPending}
-          className="w-full gap-2"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
-        </Button>
+        {isWeightBased ? (
+          <div className="w-full space-y-2">
+            <Input
+              placeholder="e.g., 100g, 0.5kg, 1.5kg"
+              value={weightInput}
+              onChange={(e) => setWeightInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddWeightToCart();
+                }
+              }}
+            />
+            <Button
+              onClick={handleAddWeightToCart}
+              disabled={addToCart.isPending}
+              className="w-full gap-2"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={handleAddToCart}
+            disabled={addToCart.isPending}
+            className="w-full gap-2"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

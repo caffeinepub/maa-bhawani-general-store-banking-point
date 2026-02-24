@@ -9,20 +9,18 @@ import AccessControl "authorization/access-control";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Storage "blob-storage/Storage";
-import Migration "migration";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
-// Use data migration function in with clause
 (with migration = Migration.run)
 actor {
-  // State (initialized once at the start on system-level)
+  // State
   include MixinStorage();
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // User Profile Management
   public type UserProfile = {
     name : Text;
   };
@@ -50,7 +48,13 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Product definitions
+  public type UnitType = {
+    #piece;
+    #packet;
+    #kg;
+    #gram;
+  };
+
   public type Product = {
     id : Nat;
     name : Text;
@@ -58,12 +62,12 @@ actor {
     priceInRupees : Nat;
     image : Storage.ExternalBlob;
     barcode : Text;
+    unitType : UnitType;
   };
 
   let products = Map.empty<Nat, Product>();
   var nextProductId = 0;
 
-  // Order definitions
   public type PaymentMethod = {
     #upi;
     #cod;
@@ -92,7 +96,6 @@ actor {
   let orders = Map.empty<Nat, Order>();
   var nextOrderId = 0;
 
-  // Mobile Recharge definitions
   public type RechargeOrder = {
     id : Nat;
     mobileNumber : Text;
@@ -103,7 +106,6 @@ actor {
   let rechargeOrders = Map.empty<Nat, RechargeOrder>();
   var nextRechargeOrderId = 0;
 
-  // Cart definitions
   public type CartItem = {
     product : Product;
     quantity : Nat;
@@ -111,10 +113,8 @@ actor {
 
   let carts = Map.empty<Principal, List.List<CartItem>>();
 
-  // Pricing Constants
-  let deliveryFeePerKm = 20; // Fixed fee per km beyond 1km
+  let deliveryFeePerKm = 20;
 
-  // Bill definitions
   public type Bill = {
     id : Nat;
     billNumber : Text;
@@ -147,19 +147,21 @@ actor {
   let bills = Map.empty<Nat, Bill>();
   var nextBillId = 0;
 
-  // Shop Slogan
   var shopSlogan : Text = "Welcome to our shop!";
-
-  // Exclusion List for admin toggling
   var excludedProducts = Set.empty<Nat>();
 
-  // Admin Check Function
   public query ({ caller }) func isAdmin() : async Bool {
     AccessControl.isAdmin(accessControlState, caller);
   };
 
-  // Product Management (Admin only)
-  public shared ({ caller }) func addProduct(name : Text, category : Text, priceInRupees : Nat, image : Storage.ExternalBlob, barcode : Text) : async () {
+  public shared ({ caller }) func addProduct(
+    name : Text,
+    category : Text,
+    priceInRupees : Nat,
+    image : Storage.ExternalBlob,
+    barcode : Text,
+    unitType : UnitType,
+  ) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can add products");
     };
@@ -171,9 +173,12 @@ actor {
       priceInRupees;
       image;
       barcode;
+      unitType;
     };
     products.add(nextProductId, product);
+    let addedProductId = nextProductId;
     nextProductId += 1;
+    addedProductId;
   };
 
   public shared ({ caller }) func removeProduct(productId : Nat) : async () {
@@ -197,7 +202,6 @@ actor {
     action : Text;
   };
 
-  // Cart Management (User only)
   public shared ({ caller }) func addToCart(productId : Nat, quantity : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can add to cart");
@@ -370,7 +374,6 @@ actor {
     };
   };
 
-  // Order Placement (User only)
   public shared ({ caller }) func placeOrder(
     customerName : Text,
     deliveryAddress : Text,
@@ -411,7 +414,6 @@ actor {
     nextOrderId - 1;
   };
 
-  // Mobile Recharge (User only)
   public shared ({ caller }) func placeRechargeOrder(mobileNumber : Text, operator : Text, rechargeAmount : Nat) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can place recharge orders");
@@ -431,7 +433,6 @@ actor {
     nextRechargeOrderId - 1;
   };
 
-  // Admin only functions for order management
   public shared ({ caller }) func confirmOrder(orderId : Nat) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can confirm orders");
@@ -473,7 +474,6 @@ actor {
     orders.add(orderId, updatedOrder);
   };
 
-  // Bill generation (Admin only)
   public shared ({ caller }) func generateBill(
     customerName : ?Text,
     customerPhone : ?Text,
@@ -505,7 +505,6 @@ actor {
     bill;
   };
 
-  // Update bill payment status (Admin only)
   public shared ({ caller }) func updateBillPaymentStatus(
     billId : Nat,
     paymentStatus : PaymentStatus,
@@ -532,7 +531,6 @@ actor {
     updatedBill;
   };
 
-  // Shop slogan management (Admin only)
   public shared ({ caller }) func setShopSlogan(slogan : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can set shop slogan");
@@ -540,7 +538,6 @@ actor {
     shopSlogan := slogan;
   };
 
-  // Product exclusion toggle (Admin only)
   public shared ({ caller }) func toggleProductExclusion(productId : Nat) : async Bool {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can toggle product exclusion");
@@ -555,7 +552,6 @@ actor {
     };
   };
 
-  // Query endpoints - Admin only for sensitive data
   public query ({ caller }) func getAllOrders() : async [Order] {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can view all orders");

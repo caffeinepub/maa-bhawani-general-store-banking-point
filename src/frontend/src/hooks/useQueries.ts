@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentity';
-import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem, PaymentMethod } from '../backend';
+import type { Product, CartItem, Order, RechargeOrder, Bill, BillItem, PaymentMethod, UnitType } from '../backend';
 import { ExternalBlob } from '../backend';
 
 // Products
@@ -253,15 +253,18 @@ export function useAddProduct() {
       priceInRupees,
       image,
       barcode,
+      unitType,
     }: {
       name: string;
       category: string;
       priceInRupees: bigint;
       image: ExternalBlob;
       barcode: string;
+      unitType: UnitType;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.addProduct(name, category, priceInRupees, image, barcode);
+      const productId = await actor.addProduct(name, category, priceInRupees, image, barcode, unitType);
+      return productId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });

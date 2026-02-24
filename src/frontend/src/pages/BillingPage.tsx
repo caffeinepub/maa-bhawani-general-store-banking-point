@@ -18,6 +18,25 @@ interface BillLineItem {
   quantity: number;
 }
 
+// Helper function to format quantity with unit type
+function formatQuantityWithUnit(quantity: number, unitType: string): string {
+  const isWeightBased = unitType === 'kg' || unitType === 'gram';
+  
+  if (isWeightBased) {
+    if (unitType === 'kg') {
+      if (quantity >= 1000) {
+        return `${(quantity / 1000).toFixed(quantity % 1000 === 0 ? 0 : 2)} Kg`;
+      }
+      return `${quantity} g`;
+    } else if (unitType === 'gram') {
+      return `${quantity} Gram`;
+    }
+  }
+  
+  const unitDisplay = unitType.charAt(0).toUpperCase() + unitType.slice(1);
+  return `${quantity} ${unitDisplay}`;
+}
+
 export default function BillingPage() {
   const [scanMode, setScanMode] = useState<'camera' | 'manual'>('manual');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -246,12 +265,12 @@ export default function BillingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="customerPhone">Phone Number</Label>
+                  <Label htmlFor="customerPhone">Customer Phone</Label>
                   <Input
                     id="customerPhone"
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="Enter phone number"
+                    onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="10-digit mobile number"
                   />
                 </div>
               </CardContent>
@@ -259,103 +278,100 @@ export default function BillingPage() {
           </div>
 
           {/* Right Column - Bill Items */}
-          <div>
+          <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Bill Items</CardTitle>
+                <CardTitle>Bill Items ({billItems.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {billItems.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No items added yet. Scan or enter barcodes to add products.
+                    No items added yet. Scan products to add them to the bill.
                   </p>
                 ) : (
-                  <>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Product</TableHead>
-                          <TableHead className="text-center">Qty</TableHead>
-                          <TableHead className="text-right">Price</TableHead>
-                          <TableHead className="text-right">Total</TableHead>
-                          <TableHead></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {billItems.map((item) => (
-                          <TableRow key={item.product.id.toString()}>
-                            <TableCell className="font-medium">
-                              {item.product.name}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center justify-center gap-2">
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="h-8 w-8"
-                                  onClick={() => updateQuantity(item.product.id, -1)}
-                                  disabled={item.quantity <= 1}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="w-8 text-center">{item.quantity}</span>
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="h-8 w-8"
-                                  onClick={() => updateQuantity(item.product.id, 1)}
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              ₹{Number(item.product.priceInRupees)}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold">
-                              ₹{Number(item.product.priceInRupees) * item.quantity}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => removeItem(item.product.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </TableCell>
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Product</TableHead>
+                            <TableHead className="text-center">Qty</TableHead>
+                            <TableHead className="text-right">Price</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
+                            <TableHead></TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {billItems.map((item) => (
+                            <TableRow key={Number(item.product.id)}>
+                              <TableCell className="font-medium">{item.product.name}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center justify-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateQuantity(item.product.id, -1)}
+                                    disabled={item.quantity <= 1}
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <span className="min-w-[60px] text-center text-sm">
+                                    {formatQuantityWithUnit(item.quantity, item.product.unitType)}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateQuantity(item.product.id, 1)}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">₹{Number(item.product.priceInRupees)}</TableCell>
+                              <TableCell className="text-right font-semibold">
+                                ₹{Number(item.product.priceInRupees) * item.quantity}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeItem(item.product.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
 
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="flex justify-between items-center text-lg font-bold">
+                    <div className="border-t pt-4">
+                      <div className="flex justify-between text-xl font-bold mb-4">
                         <span>Total:</span>
                         <span>₹{calculateTotal()}</span>
                       </div>
+                      <Button
+                        onClick={handleGenerateBill}
+                        className="w-full"
+                        size="lg"
+                        disabled={generateBill.isPending}
+                      >
+                        {generateBill.isPending ? 'Generating...' : 'Generate Bill'}
+                      </Button>
                     </div>
-
-                    <Button
-                      onClick={handleGenerateBill}
-                      className="w-full mt-4"
-                      size="lg"
-                      disabled={generateBill.isPending}
-                    >
-                      {generateBill.isPending ? 'Generating...' : 'Generate Bill'}
-                    </Button>
-                  </>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Barcode Scanner Modal */}
+        {/* Barcode Scanner */}
         <BarcodeScanner
-          isOpen={isScannerOpen}
           onScan={handleBarcodeScanned}
           onClose={handleStopCamera}
+          isOpen={isScannerOpen}
         />
 
         {/* Product Not Found Dialog */}
@@ -367,11 +383,8 @@ export default function BillingPage() {
                 No product found with barcode: <strong>{notFoundBarcode}</strong>
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                This product is not in the system. Please add it to the inventory first.
-              </p>
-              <Button onClick={() => setShowNotFoundDialog(false)} className="w-full">
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowNotFoundDialog(false)}>
                 Close
               </Button>
             </div>
@@ -383,20 +396,17 @@ export default function BillingPage() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Bill Generated</DialogTitle>
-              <DialogDescription>
-                Bill #{generatedBill?.billNumber} has been created successfully.
-              </DialogDescription>
             </DialogHeader>
-            <div ref={printRef} className="print-area">
+            <div ref={printRef}>
               {generatedBill && <BillTemplate bill={generatedBill} />}
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handlePrint} className="flex-1">
-                <Printer className="h-4 w-4 mr-2" />
-                Print Bill
-              </Button>
-              <Button onClick={handleCloseBillPreview} variant="outline" className="flex-1">
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={handleCloseBillPreview}>
                 Close
+              </Button>
+              <Button onClick={handlePrint} className="gap-2">
+                <Printer className="h-4 w-4" />
+                Print Bill
               </Button>
             </div>
           </DialogContent>

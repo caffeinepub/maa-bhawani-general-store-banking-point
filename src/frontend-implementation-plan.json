@@ -1,42 +1,104 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Implement hardcoded admin login with fixed credentials and session persistence",
+  "title": "Replace Price field with Unit Type dropdown and implement dynamic quantity inputs",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login",
+      "id": "REQ-1",
+      "summary": "Replace the fixed Price input field in AdminProductForm with a Unit Type dropdown containing exactly four options: Kg, Gram, Packet, and Piece",
       "acceptanceCriteria": [
-        "Navigation to '/admin/dashboard' occurs automatically on login success",
-        "No intermediate pages or manual navigation is required",
-        "Redirect happens without delay or user interaction"
+        "The Price field is removed from the Add Product form",
+        "A Unit Type dropdown is displayed in its place",
+        "The dropdown contains exactly four options: Kg, Gram, Packet, and Piece",
+        "The form validation requires a unit type selection before submission"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminGuard.tsx",
+          "path": "frontend/src/components/AdminProductForm.tsx",
           "operation": "modify",
-          "description": "Update the admin login dialog to redirect to '/admin/dashboard' immediately upon successful authentication with the hardcoded credentials (ID: '919708075648', Password: '979142876085'). Remove any intermediate navigation steps and ensure the redirect happens automatically without user interaction. The component should verify the credentials match exactly before allowing access and performing the redirect."
+          "description": "Replace the price input field with a unitType dropdown field. Add a Select component from shadcn/ui with four hardcoded options: Kg, Gram, Packet, Piece. Update form state to track unitType instead of price. Update form validation to require unitType selection. Modify the addProduct mutation call to pass unitType (mapped to backend UnitType enum) instead of priceInRupees. Remove price-related state and validation logic."
         }
       ]
     },
     {
-      "id": "REQ-5",
-      "summary": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration",
+      "id": "REQ-3",
+      "summary": "For products with unit type 'Kg' or 'Gram', display a custom weight input field on ProductCard and CartDrawer where customers can enter values like '100g', '0.5kg', '1.5kg', '250g' with proper parsing",
       "acceptanceCriteria": [
-        "Admin dashboard page loads successfully at '/admin/dashboard'",
-        "No 404 errors occur when accessing the dashboard route",
-        "No 'Access Denied' errors prevent viewing the dashboard content"
+        "Products with Kg or Gram unit type show a weight input field instead of +/- buttons",
+        "Input accepts formats: '100g', '0.5kg', '1.5kg', '250g'",
+        "Weight values are parsed and converted to a consistent unit for cart storage",
+        "Invalid inputs show validation errors",
+        "Cart displays the custom weight entered by the customer"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/ProductCard.tsx",
           "operation": "modify",
-          "description": "Verify that the '/admin/dashboard' route is properly configured in the TanStack Router setup. Ensure the route exists, is correctly mapped to the AdminPage component, and has no conflicting route definitions that could cause 404 errors. Add any missing route configurations needed for the admin dashboard to load successfully."
+          "description": "Add conditional rendering based on product.unitType. If unitType is 'kg' or 'gram', render a text input field for custom weight entry with a submit/add button. If unitType is 'packet' or 'piece', render the existing add-to-cart button. Create a weight parsing utility function that accepts strings like '100g', '0.5kg', '1.5kg', '250g' and converts them to a normalized gram value (bigint). Add input validation and error display for invalid weight formats. Update addToCart mutation to accept the parsed weight value as quantity for weight-based products."
         },
         {
-          "path": "frontend/src/pages/AdminPage.tsx",
+          "path": "frontend/src/components/CartDrawer.tsx",
           "operation": "modify",
-          "description": "Review the AdminPage component to ensure it does not have any access control logic that could trigger 'Access Denied' errors after successful admin authentication. Verify that the component properly handles the authenticated admin state and displays the dashboard content without additional authorization checks that could block access."
+          "description": "Update cart item display to show unit type alongside quantity. For items with unitType 'kg' or 'gram', display the quantity as a formatted weight (e.g., '500g', '1.5kg'). For items with unitType 'packet' or 'piece', display as integer quantity with unit label (e.g., '3 Packet'). Add conditional rendering for quantity controls: weight-based items show a text input for editing weight, while packet/piece items show +/- buttons. Include weight parsing and validation logic consistent with ProductCard. Update quantity display formatting helper function to handle both weight and count-based items."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "For products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for whole number quantities on ProductCard and CartDrawer, hiding custom weight input",
+      "acceptanceCriteria": [
+        "Products with Packet or Piece unit type show only +/- quantity buttons",
+        "Quantities can only be whole numbers (1, 2, 3, etc.)",
+        "No weight input field is shown for these unit types",
+        "Cart displays the integer quantity for Packet/Piece products"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Ensure that for products with unitType 'packet' or 'piece', only the standard add-to-cart button is shown (no weight input field). The existing addToCart flow should work with quantity set to 1 by default. Verify that the conditional rendering from REQ-3 properly hides weight input for packet/piece types."
+        },
+        {
+          "path": "frontend/src/components/CartDrawer.tsx",
+          "operation": "modify",
+          "description": "Ensure that for cart items with unitType 'packet' or 'piece', only +/- increment/decrement buttons are shown. Quantities must remain whole numbers (validated as integers). Display quantity with unit label (e.g., '2 Packet', '5 Piece'). Verify that weight input fields are hidden for these unit types per the conditional rendering from REQ-3."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show unit type and ensure billing and checkout flows correctly display and calculate based on unit type and quantity/weight",
+      "acceptanceCriteria": [
+        "Product cards display unit type (Kg, Gram, Packet, Piece)",
+        "Admin product list shows unit type for each product",
+        "Bills display quantity with unit (e.g., '0.5 Kg', '3 Packet')",
+        "Checkout page calculates subtotals correctly for both weight and quantity items"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Add unit type display badge next to or below the product name showing the unitType value (Kg, Gram, Packet, or Piece). Use a small badge or label component from shadcn/ui. Position it near the category badge for visual consistency."
+        },
+        {
+          "path": "frontend/src/components/AdminProductList.tsx",
+          "operation": "modify",
+          "description": "Add a new table column for Unit Type that displays the product.unitType value. Position the column between Category and Price columns. Display unit type as a formatted label (capitalize first letter: Kg, Gram, Packet, Piece)."
+        },
+        {
+          "path": "frontend/src/components/BillTemplate.tsx",
+          "operation": "modify",
+          "description": "Update the item display in the bill to show quantity with unit type. For weight-based items (Kg, Gram), format quantity as weight (e.g., '0.5 Kg', '250 Gram'). For count-based items (Packet, Piece), format as integer with unit (e.g., '3 Packet', '5 Piece'). Access unitType from the product data associated with each BillItem and format accordingly. Ensure the thermal receipt layout remains compact and readable."
+        },
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "modify",
+          "description": "Update cart item display in the order summary section to show quantity with unit type. Ensure that subtotal calculations handle both weight-based and count-based quantities correctly by multiplying pricePerUnit by quantity (which is already in normalized units from the backend). Display formatted quantity with unit type for each item in the order summary table. Verify that the total price calculation accounts for all item types correctly."
+        },
+        {
+          "path": "frontend/src/pages/BillingPage.tsx",
+          "operation": "modify",
+          "description": "Update the cart preview and item list in the billing interface to display quantity with unit type. For weight-based products, show formatted weight values. For count-based products, show integer quantities with unit labels. Ensure the barcode scanner integration works with the new unitType field when adding products. Update any quantity editing controls to respect unit type (weight input for Kg/Gram, +/- buttons for Packet/Piece)."
         }
       ]
     }

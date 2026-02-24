@@ -16,73 +16,82 @@ export default function BillTemplate({ bill }: BillTemplateProps) {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
     });
   };
 
   return (
-    <div className="bill-template bg-white text-black p-6 max-w-[80mm] mx-auto border border-gray-300 rounded-lg">
-      <div className="text-center space-y-2 mb-4">
-        <h1 className="text-xl font-bold">Maa Bhawani General Store</h1>
-        <h2 className="text-sm font-semibold">& Banking Point</h2>
-        <p className="text-xs font-medium">
-          Bardiha Turki - Tarvadih
-          <br />
+    <div className="bill-template bg-white text-black p-6 max-w-[80mm] mx-auto font-mono text-sm">
+      {/* Header */}
+      <div className="text-center mb-4 border-b-2 border-dashed border-black pb-4">
+        <h1 className="text-xl font-bold mb-1">GROCERY STORE</h1>
+        <p className="text-xs leading-relaxed">
+          Bardiha Turki - Tarvadih<br />
           (Patepur-Vaishali 843110), Bihar
         </p>
-        <p className="text-xs font-semibold">Phone: 9142876085</p>
-        <p className="text-xs italic border-t border-b border-gray-300 py-1 mt-2">{slogan}</p>
+        <p className="text-xs mt-2 italic">{slogan}</p>
       </div>
 
-      <div className="border-t border-b border-gray-300 py-2 mb-3 text-xs">
+      {/* Bill Info */}
+      <div className="mb-4 text-xs space-y-1">
         <div className="flex justify-between">
-          <span>Bill No: <strong>BILL-{bill.billNumber}</strong></span>
+          <span>Bill No:</span>
+          <span className="font-bold">{bill.billNumber}</span>
         </div>
         <div className="flex justify-between">
-          <span>Date: {formatDate(bill.timestamp)}</span>
+          <span>Date:</span>
+          <span>{formatDate(bill.timestamp)}</span>
         </div>
         {bill.customerName && (
           <div className="flex justify-between">
-            <span>Customer: {bill.customerName}</span>
+            <span>Customer:</span>
+            <span>{bill.customerName}</span>
           </div>
         )}
         {bill.customerPhone && (
           <div className="flex justify-between">
-            <span>Phone: {bill.customerPhone}</span>
+            <span>Phone:</span>
+            <span>{bill.customerPhone}</span>
           </div>
         )}
       </div>
 
-      <table className="w-full text-xs mb-3">
-        <thead>
-          <tr className="border-b border-gray-300">
-            <th className="text-left py-1">Item</th>
-            <th className="text-center py-1">Qty</th>
-            <th className="text-right py-1">Price</th>
-            <th className="text-right py-1">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bill.items.map((item, index) => (
-            <tr key={index} className="border-b border-gray-200">
-              <td className="py-1">{item.productName}</td>
-              <td className="text-center py-1">{Number(item.quantity)}</td>
-              <td className="text-right py-1">₹{Number(item.pricePerUnit)}</td>
-              <td className="text-right py-1">₹{Number(item.totalPrice)}</td>
+      {/* Items Table */}
+      <div className="border-t-2 border-b-2 border-dashed border-black py-2 mb-4">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-black">
+              <th className="text-left py-1">Item</th>
+              <th className="text-center py-1">Qty</th>
+              <th className="text-right py-1">Rate</th>
+              <th className="text-right py-1">Amt</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {bill.items.map((item, index) => (
+              <tr key={index} className="border-b border-gray-300">
+                <td className="py-1 pr-2">{item.productName}</td>
+                <td className="text-center py-1">{Number(item.quantity)}</td>
+                <td className="text-right py-1">₹{Number(item.pricePerUnit)}</td>
+                <td className="text-right py-1 font-semibold">₹{Number(item.totalPrice)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <div className="border-t-2 border-gray-300 pt-2 mb-4">
-        <div className="flex justify-between text-sm font-bold">
-          <span>Grand Total:</span>
+      {/* Total */}
+      <div className="mb-4">
+        <div className="flex justify-between text-base font-bold">
+          <span>TOTAL:</span>
           <span>₹{Number(bill.totalAmount)}</span>
         </div>
       </div>
 
-      <div className="text-center text-xs space-y-1 border-t border-gray-300 pt-3">
-        <p className="font-semibold">Thank you for shopping with us!</p>
-        <p>Visit us again</p>
+      {/* Footer */}
+      <div className="text-center text-xs border-t-2 border-dashed border-black pt-4">
+        <p className="mb-2">Thank you for shopping with us!</p>
+        <p className="text-[10px]">Visit again soon</p>
       </div>
     </div>
   );

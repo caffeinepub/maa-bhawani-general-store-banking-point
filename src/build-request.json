@@ -1,112 +1,127 @@
 {
   "kind": "build_request",
-  "title": "Implement hardcoded admin login with fixed credentials and session persistence",
-  "priority": "high",
+  "title": "Replace Price field with Unit Type dropdown and implement dynamic quantity inputs",
+  "projectName": "Maa Bhawani General Store",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Rewrite the admin login function to accept only the hardcoded credentials: ID '919708075648' and Password '979142876085'. Remove all external database checks, OTP verification, and any other validation logic for this specific admin ID.",
-      "target": "backend",
+      "text": "In the AdminProductForm component, replace the fixed Price input field with a Unit Type dropdown. The dropdown must have exactly four options: Kg, Gram, Packet, and Piece.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-latest"
         ],
         "quotes": [
-          "Rewrite the admin login function to strictly accept: ID: 919708075648 Password: 979142876085",
-          "Remove any external database check or OTP for this specific ID if it's causing the 'Failed/Invalid' error"
+          "In the 'Add Product' form, replace the fixed Price field with a 'Unit Type' dropdown. It should have options: Kg, Gram, Packet, and Piece."
         ]
       },
       "acceptanceCriteria": [
-        "Admin login function accepts exactly ID '919708075648' and Password '979142876085'",
-        "No database lookups or OTP checks are performed for this admin credential",
-        "Login succeeds immediately when credentials match exactly",
-        "Login fails for any other credential combination"
+        "The Price field is removed from the Add Product form",
+        "A Unit Type dropdown is displayed in its place",
+        "The dropdown contains exactly four options: Kg, Gram, Packet, and Piece",
+        "The form validation requires a unit type selection before submission"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Grant full 'Admin' access immediately when the hardcoded credentials match, bypassing all validation errors and authentication flows.",
+      "text": "Update the backend Product type to include a unitType field (Kg, Gram, Packet, or Piece) instead of or in addition to the price field. Modify the addProduct function to accept and store the unit type.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-latest"
         ],
         "quotes": [
-          "If the inputs match these exact numbers, grant full 'Admin' access immediately"
+          "In the 'Add Product' form, replace the fixed Price field with a 'Unit Type' dropdown."
         ]
       },
       "acceptanceCriteria": [
-        "Admin access is granted without additional validation steps",
-        "No 'Failed' or 'Invalid' errors occur when correct credentials are provided",
-        "Admin session is established immediately upon successful credential match"
+        "Product type includes unitType field with variant type for Kg, Gram, Packet, Piece",
+        "addProduct function accepts unitType parameter",
+        "Products are stored with their unit type in stable storage"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Set the admin session duration to 24 hours to prevent 'Invalid Session' errors and automatic logouts during work periods.",
-      "target": "backend",
+      "text": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Kg' or 'Gram', display a text input field where customers can enter custom weight values. Accept inputs like '100g', '0.5kg', '1.5kg', '250g' and parse them correctly.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-latest"
         ],
         "quotes": [
-          "Set the 'Session Duration' to 24 hours so I don't get 'Invalid Session' or logged out repeatedly while working"
+          "If I select Kg, the customer should be able to type custom weight (like 100g or 0.5kg) on the shop page."
         ]
       },
       "acceptanceCriteria": [
-        "Admin session persists for 24 hours after login",
-        "No automatic logout occurs within the 24-hour window",
-        "Session token or authentication state remains valid for the full duration"
+        "Products with Kg or Gram unit type show a weight input field instead of +/- buttons",
+        "Input accepts formats: '100g', '0.5kg', '1.5kg', '250g'",
+        "Weight values are parsed and converted to a consistent unit for cart storage",
+        "Invalid inputs show validation errors",
+        "Cart displays the custom weight entered by the customer"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
+      "text": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for incrementing/decrementing whole number quantities. Hide the custom weight input for these unit types.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-latest"
         ],
         "quotes": [
-          "After login success, redirect the user directly to the /admin/dashboard path"
+          "If I select Packet, the customer should only see '+' and '-' quantity buttons."
         ]
       },
       "acceptanceCriteria": [
-        "Navigation to '/admin/dashboard' occurs automatically on login success",
-        "No intermediate pages or manual navigation is required",
-        "Redirect happens without delay or user interaction"
+        "Products with Packet or Piece unit type show only +/- quantity buttons",
+        "Quantities can only be whole numbers (1, 2, 3, etc.)",
+        "No weight input field is shown for these unit types",
+        "Cart displays the integer quantity for Packet/Piece products"
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
-      "target": "frontend",
+      "text": "Update the cart data structure to support both quantity-based items (Packet, Piece) and weight-based items (Kg, Gram). Modify the backend addToCart and related cart functions to handle both types correctly.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-10"
-        ],
-        "quotes": [
-          "If there is a '404' or 'Access Denied' error on the dashboard, fix the file permissions for the Admin folder"
+          "msg-latest"
         ]
       },
       "acceptanceCriteria": [
-        "Admin dashboard page loads successfully at '/admin/dashboard'",
-        "No 404 errors occur when accessing the dashboard route",
-        "No 'Access Denied' errors prevent viewing the dashboard content"
+        "Cart items store either quantity (for Packet/Piece) or weight (for Kg/Gram)",
+        "Backend addToCart function accepts both quantity and weight parameters",
+        "Cart retrieval returns the correct type of measurement for each item"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show the unit type instead of or alongside the price. Ensure billing and checkout flows correctly calculate totals based on unit type and quantity/weight.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Product cards display unit type (Kg, Gram, Packet, Piece)",
+        "Admin product list shows unit type for each product",
+        "Bills display quantity with unit (e.g., '0.5 Kg', '3 Packet')",
+        "Checkout page calculates subtotals correctly for both weight and quantity items"
       ]
     }
   ],
   "constraints": [
-    "Use exactly the credentials ID '919708075648' and Password '979142876085' with no variations",
-    "Session duration must be precisely 24 hours",
-    "Do not introduce any additional authentication mechanisms or external services",
-    "Maintain single-actor backend architecture"
+    "Do not modify immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
+    "Maintain single-actor architecture in backend/main.mo",
+    "Preserve existing cart functionality and authentication flow"
   ],
   "nonGoals": [
-    "Implementing dynamic credential management",
-    "Adding password recovery flows for this admin account",
-    "Creating multi-user admin authentication",
-    "Implementing OAuth or third-party authentication providers"
+    "Adding pricing per unit (price will be handled separately)",
+    "Implementing unit conversion between Kg and Gram",
+    "Adding new unit types beyond the four specified",
+    "Modifying the barcode scanning functionality"
   ],
   "imageRequirements": {
     "required": [],

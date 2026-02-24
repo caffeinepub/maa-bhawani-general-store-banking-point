@@ -1,13 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Implement hardcoded admin login with fixed credentials (ID: 919708075648, Password: 979142876085) and 24-hour session persistence, with automatic redirect to admin dashboard.
+**Goal:** Replace the fixed Price field with a Unit Type dropdown in the Add Product form, and implement dynamic quantity input controls based on unit type (custom weight input for Kg/Gram, +/- buttons for Packet/Piece).
 
 **Planned changes:**
-- Rewrite admin login to accept only hardcoded credentials without database checks or OTP verification
-- Grant full admin access immediately when credentials match
-- Set admin session duration to 24 hours to prevent automatic logouts
-- Redirect directly to /admin/dashboard after successful login
-- Fix any 404 or Access Denied errors on admin dashboard routes
+- Replace Price input field with Unit Type dropdown (Kg, Gram, Packet, Piece) in AdminProductForm
+- Update Product type and backend functions to store unitType instead of fixed price
+- Display custom weight input field (accepts formats like '100g', '0.5kg') for products with Kg or Gram unit type on shop page
+- Display only +/- quantity buttons for whole numbers on products with Packet or Piece unit type
+- Update cart data structure to support both quantity-based and weight-based items
+- Modify all product display components to show unit type and calculate totals based on unit type and quantity/weight
 
-**User-visible outcome:** Admin can log in using the fixed credentials, stay logged in for 24 hours without interruption, and access the admin dashboard immediately without authentication errors.
+**User-visible outcome:** Admin can set unit types when adding products. Customers see weight input fields for Kg/Gram products (allowing custom amounts like "250g" or "1.5kg") and quantity buttons for Packet/Piece products. Cart and checkout correctly handle both measurement types.

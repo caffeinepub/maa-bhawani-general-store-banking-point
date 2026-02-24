@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useAddProduct, useGetAllProducts } from '../hooks/useQueries';
-import { ExternalBlob } from '../backend';
+import { ExternalBlob, UnitType } from '../backend';
 import { toast } from 'sonner';
 
 const CATEGORIES = ['Grains & Flour', 'Rice', 'Sugar & Sweeteners', 'Spices', 'Personal Care', 'Cooking Oil', 'Pulses & Lentils', 'Other'];
@@ -15,6 +15,7 @@ export default function AdminProductForm() {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
+  const [unitType, setUnitType] = useState('');
   const [barcode, setBarcode] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -24,7 +25,7 @@ export default function AdminProductForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !category || !price || !imageFile) {
+    if (!name.trim() || !category || !price || !unitType || !imageFile) {
       toast.error('Please fill all required fields and select an image');
       return;
     }
@@ -51,26 +52,59 @@ export default function AdminProductForm() {
         setUploadProgress(percentage);
       });
 
-      await addProduct.mutateAsync({
+      // Map unitType string to UnitType enum
+      let unitTypeEnum: UnitType;
+      switch (unitType) {
+        case 'kg':
+          unitTypeEnum = UnitType.kg;
+          break;
+        case 'gram':
+          unitTypeEnum = UnitType.gram;
+          break;
+        case 'packet':
+          unitTypeEnum = UnitType.packet;
+          break;
+        case 'piece':
+          unitTypeEnum = UnitType.piece;
+          break;
+        default:
+          toast.error('Invalid unit type');
+          return;
+      }
+
+      const productId = await addProduct.mutateAsync({
         name,
         category,
         priceInRupees: BigInt(priceInRupees),
         image: blob,
         barcode: barcode.trim(),
+        unitType: unitTypeEnum,
       });
 
-      toast.success('Product added successfully!');
+      toast.success(`Product added successfully! (ID: ${productId})`);
+      
+      // Reset form
       setName('');
       setCategory('');
       setPrice('');
+      setUnitType('');
       setBarcode('');
       setImageFile(null);
       setUploadProgress(0);
+      
+      // Reset file input
+      const fileInput = document.getElementById('image') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add product');
+      console.error('Error adding product:', error);
+      toast.error(error.message || 'Failed to add product. Please try again.');
       setUploadProgress(0);
     }
   };
+
+  const isSubmitting = addProduct.isPending || (uploadProgress > 0 && uploadProgress < 100);
 
   return (
     <Card>
@@ -87,13 +121,14 @@ export default function AdminProductForm() {
                 placeholder="e.g., Aashirvaad Atta 5kg"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={isSubmitting}
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select value={category} onValueChange={setCategory} required>
+              <Select value={category} onValueChange={setCategory} disabled={isSubmitting} required>
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -115,9 +150,25 @@ export default function AdminProductForm() {
                 placeholder="Enter price"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
+                disabled={isSubmitting}
                 min="1"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="unitType">Unit Type *</Label>
+              <Select value={unitType} onValueChange={setUnitType} disabled={isSubmitting} required>
+                <SelectTrigger id="unitType">
+                  <SelectValue placeholder="Select unit type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kg">Kg</SelectItem>
+                  <SelectItem value="gram">Gram</SelectItem>
+                  <SelectItem value="packet">Packet</SelectItem>
+                  <SelectItem value="piece">Piece</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -127,6 +178,7 @@ export default function AdminProductForm() {
                 placeholder="Enter barcode"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -137,6 +189,7 @@ export default function AdminProductForm() {
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -150,7 +203,7 @@ export default function AdminProductForm() {
             </div>
           )}
 
-          <Button type="submit" disabled={addProduct.isPending || (uploadProgress > 0 && uploadProgress < 100)}>
+          <Button type="submit" disabled={isSubmitting}>
             {addProduct.isPending ? 'Adding Product...' : 'Add Product'}
           </Button>
         </form>
