@@ -3,18 +3,18 @@ import List "mo:core/List";
 import Set "mo:core/Set";
 import Array "mo:core/Array";
 import Nat "mo:core/Nat";
-import Time "mo:core/Time";
 import Text "mo:core/Text";
-import Runtime "mo:core/Runtime";
-import Principal "mo:core/Principal";
-import Iter "mo:core/Iter";
-import CoreOrder "mo:core/Order";
-
+import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
+import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
 import Storage "blob-storage/Storage";
+import Migration "migration";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
+// Use data migration function in with clause
+(with migration = Migration.run)
 actor {
   // State (initialized once at the start on system-level)
   include MixinStorage();
@@ -22,51 +22,7 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Fixed admin credentials
-  let adminId : Text = "919708075648";
-  let adminPassword : Text = "979142876085";
-
-  type AuthResult = {
-    success : Bool;
-    message : Text;
-  };
-
-  // Authenticate and grant admin role upon successful authentication
-  public shared ({ caller }) func authenticate(providedId : Text, providedPassword : Text) : async AuthResult {
-    if (caller.isAnonymous()) {
-      return {
-        success = false;
-        message = "Authentication failed. Please check your credentials and try again.";
-      };
-    };
-
-    if (AccessControl.isAdmin(accessControlState, caller)) {
-      return {
-        success = true;
-        message = "Already authenticated as admin";
-      };
-    };
-
-    if (not Text.equal(providedId, adminId) or not Text.equal(providedPassword, adminPassword)) {
-      return {
-        success = false;
-        message = "Authentication failed. Please check your credentials and try again.";
-      };
-    };
-
-    AccessControl.assignRole(accessControlState, caller, caller, #admin);
-
-    {
-      success = true;
-      message = "Authentication successful - admin role granted";
-    };
-  };
-
-  // DO NOT CHANGE ADMIN PASSWORD FUNCTION - NO LONGER NEEDED
-
-  // ALL OTHER FUNCTIONS UNCHANGED
-
-  // User Profile
+  // User Profile Management
   public type UserProfile = {
     name : Text;
   };
@@ -104,12 +60,6 @@ actor {
     barcode : Text;
   };
 
-  module Product {
-    public func compare(product1 : Product, product2 : Product) : CoreOrder.Order {
-      Nat.compare(product1.id, product2.id);
-    };
-  };
-
   let products = Map.empty<Nat, Product>();
   var nextProductId = 0;
 
@@ -137,12 +87,6 @@ actor {
     timestamp : Time.Time;
     status : OrderStatus;
     paymentMethod : PaymentMethod;
-  };
-
-  module OrderComparison {
-    public func compareByTotalPrice(order1 : Order, order2 : Order) : CoreOrder.Order {
-      Nat.compare(order1.totalPrice, order2.totalPrice);
-    };
   };
 
   let orders = Map.empty<Nat, Order>();
@@ -241,7 +185,7 @@ actor {
   };
 
   public query ({ caller }) func getAllProducts() : async [Product] {
-    products.values().toArray().sort();
+    products.values().toArray();
   };
 
   public query ({ caller }) func getProductByBarcode(barcode : Text) : async ?Product {
@@ -314,7 +258,6 @@ actor {
     carts.add(caller, cart);
   };
 
-  // New function to add product to cart by barcode
   public shared ({ caller }) func addProductByBarcode(barcode : Text, quantity : Nat) : async ProductWithAction {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can add products to cart");
@@ -380,19 +323,14 @@ actor {
     };
   };
 
-  // New function to get product info by barcode with action
   public query ({ caller }) func getProductByBarcodeWithAction(barcode : Text) : async ProductWithAction {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can fetch products");
     };
 
     switch (products.values().find(func(product) { product.barcode == barcode })) {
-      case (null) {
-        Runtime.trap("Product not found");
-      };
-      case (?product) {
-        { product; action = "fetch-only" };
-      };
+      case (null) { Runtime.trap("Product not found") };
+      case (?product) { { product; action = "fetch-only" } };
     };
   };
 
@@ -411,7 +349,6 @@ actor {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can clear cart");
     };
-
     carts.remove(caller);
   };
 
@@ -425,17 +362,12 @@ actor {
       case (?c) { c };
     };
 
-    var totalPrice = 0;
-    for (item in cart.values()) {
-      totalPrice += item.product.priceInRupees * item.quantity;
-    };
-
+    let totalPrice = cart.toArray().foldLeft(0, func(acc, item) { acc + (item.product.priceInRupees * item.quantity) });
     if (distanceInKm > 1) {
-      let additionalDistance = distanceInKm - 1 : Nat;
-      totalPrice += (additionalDistance * deliveryFeePerKm);
+      totalPrice + ((distanceInKm - 1) * deliveryFeePerKm);
+    } else {
+      totalPrice;
     };
-
-    totalPrice;
   };
 
   // Order Placement (User only)
@@ -455,15 +387,9 @@ actor {
       case (?c) { c };
     };
 
-    if (cart.isEmpty()) {
-      Runtime.trap("Cart is empty");
-    };
+    if (cart.isEmpty()) { Runtime.trap("Cart is empty") };
 
-    let cartArray = cart.toArray();
-    let productsArray = cartArray.map(
-      func(item) { item.product }
-    );
-
+    let productsArray = cart.toArray().map(func(item) { item.product });
     let totalPrice = await calculateTotalPrice(distanceInKm);
 
     let order : Order = {
@@ -477,37 +403,64 @@ actor {
       status = #pending;
       paymentMethod;
     };
-    orders.add(nextOrderId, order);
 
+    orders.add(nextOrderId, order);
     carts.remove(caller);
-    let currentOrderId = nextOrderId;
+
     nextOrderId += 1;
-    currentOrderId;
+    nextOrderId - 1;
   };
 
-  // New functions to update order status
+  // Mobile Recharge (User only)
+  public shared ({ caller }) func placeRechargeOrder(mobileNumber : Text, operator : Text, rechargeAmount : Nat) : async Nat {
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Only users can place recharge orders");
+    };
+
+    if (rechargeAmount <= 0) { Runtime.trap("Recharge amount must be greater than 0") };
+
+    let rechargeOrder : RechargeOrder = {
+      id = nextRechargeOrderId;
+      mobileNumber;
+      operator;
+      rechargeAmount;
+    };
+    rechargeOrders.add(nextRechargeOrderId, rechargeOrder);
+
+    nextRechargeOrderId += 1;
+    nextRechargeOrderId - 1;
+  };
+
+  // Admin only functions for order management
   public shared ({ caller }) func confirmOrder(orderId : Nat) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can confirm orders");
+    };
     updateOrderStatus(caller, orderId, #confirmed);
   };
 
   public shared ({ caller }) func markAsPacked(orderId : Nat) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can mark orders as packed");
+    };
     updateOrderStatus(caller, orderId, #packed);
   };
 
   public shared ({ caller }) func markAsOutForDelivery(orderId : Nat) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can mark orders as out for delivery");
+    };
     updateOrderStatus(caller, orderId, #out_for_delivery);
   };
 
   public shared ({ caller }) func markAsCompleted(orderId : Nat) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can mark orders as completed");
+    };
     updateOrderStatus(caller, orderId, #completed);
   };
 
-  // Helper function to update order status with admin check
-  func updateOrderStatus(caller : Principal, orderId : Nat, newStatus : OrderStatus) {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can update order status");
-    };
-
+  func updateOrderStatus(_caller : Principal, orderId : Nat, newStatus : OrderStatus) {
     let order = switch (orders.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?o) { o };
@@ -520,46 +473,7 @@ actor {
     orders.add(orderId, updatedOrder);
   };
 
-  // Mobile Recharge (User only)
-  public shared ({ caller }) func placeRechargeOrder(mobileNumber : Text, operator : Text, rechargeAmount : Nat) : async Nat {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can place recharge orders");
-    };
-
-    if (rechargeAmount <= 0) {
-      Runtime.trap("Recharge amount must be greater than 0");
-    };
-
-    let rechargeOrder : RechargeOrder = {
-      id = nextRechargeOrderId;
-      mobileNumber;
-      operator;
-      rechargeAmount;
-    };
-    rechargeOrders.add(nextRechargeOrderId, rechargeOrder);
-
-    let currentRechargeOrderId = nextRechargeOrderId;
-    nextRechargeOrderId += 1;
-    currentRechargeOrderId;
-  };
-
-  // Query all orders (Admin only)
-  public query ({ caller }) func getAllOrders() : async [Order] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can view orders");
-    };
-    orders.values().toArray().sort(OrderComparison.compareByTotalPrice);
-  };
-
-  // Query all recharge orders (Admin only)
-  public query ({ caller }) func getAllRechargeOrders() : async [RechargeOrder] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can view recharge orders");
-    };
-    rechargeOrders.values().toArray();
-  };
-
-  // Bill Generation (Admin only)
+  // Bill generation (Admin only)
   public shared ({ caller }) func generateBill(
     customerName : ?Text,
     customerPhone : ?Text,
@@ -588,7 +502,6 @@ actor {
 
     bills.add(nextBillId, bill);
     nextBillId += 1;
-
     bill;
   };
 
@@ -600,7 +513,7 @@ actor {
     paymentGatewayId : ?Text,
   ) : async Bill {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can update payment status");
+      Runtime.trap("Unauthorized: Only admins can update bill payment status");
     };
 
     let oldBill = switch (bills.get(billId)) {
@@ -619,30 +532,18 @@ actor {
     updatedBill;
   };
 
-  public query ({ caller }) func getAllBills() : async [Bill] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can view bills");
-    };
-    bills.values().toArray();
-  };
-
-  // Shop Slogan Management (Admin only)
+  // Shop slogan management (Admin only)
   public shared ({ caller }) func setShopSlogan(slogan : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can set shop slogan");
     };
-
     shopSlogan := slogan;
   };
 
-  public query func getShopSlogan() : async Text {
-    shopSlogan;
-  };
-
-  // Exclusion List for Admins
+  // Product exclusion toggle (Admin only)
   public shared ({ caller }) func toggleProductExclusion(productId : Nat) : async Bool {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can toggle exclusions");
+      Runtime.trap("Unauthorized: Only admins can toggle product exclusion");
     };
 
     if (excludedProducts.contains(productId)) {
@@ -652,6 +553,32 @@ actor {
       excludedProducts.add(productId);
       true;
     };
+  };
+
+  // Query endpoints - Admin only for sensitive data
+  public query ({ caller }) func getAllOrders() : async [Order] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view all orders");
+    };
+    orders.values().toArray();
+  };
+
+  public query ({ caller }) func getAllRechargeOrders() : async [RechargeOrder] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view all recharge orders");
+    };
+    rechargeOrders.values().toArray();
+  };
+
+  public query ({ caller }) func getAllBills() : async [Bill] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view all bills");
+    };
+    bills.values().toArray();
+  };
+
+  public query func getShopSlogan() : async Text {
+    shopSlogan;
   };
 
   public query ({ caller }) func getExcludedProducts() : async [Nat] {

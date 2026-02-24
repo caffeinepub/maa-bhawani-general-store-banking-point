@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-forgot-password-or-reset-password-option-in-the-admin-login-interface-that-is-linked-to-the-admin-s-mobile-number-919708075648-or-email-for-password-recovery",
-      "featureTitle": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
+      "featureId": "feature-redirect-the-user-directly-to-admin-dashboard-immediately-after-successful-admin-login",
+      "featureTitle": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
       "files": [
         "frontend/src/components/AdminGuard.tsx"
       ],
@@ -19,7 +19,29 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-any-404-or-access-denied-errors-on-the-admin-dashboard-by-ensuring-proper-routing-configuration-and-file-permissions-for-the-admin-folder",
+      "featureTitle": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

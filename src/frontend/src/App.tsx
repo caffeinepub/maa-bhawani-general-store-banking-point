@@ -46,6 +46,12 @@ const adminRoute = createRoute({
   component: AdminPage,
 });
 
+const adminDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/dashboard',
+  component: AdminPage,
+});
+
 const billingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/billing',
@@ -64,6 +70,7 @@ const routeTree = rootRoute.addChildren([
   orderConfirmationRoute,
   storeDetailsRoute,
   adminRoute,
+  adminDashboardRoute,
   billingRoute,
   adminSettingsRoute,
 ]);

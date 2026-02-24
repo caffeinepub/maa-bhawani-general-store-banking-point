@@ -1,21 +1,42 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix admin authentication and add order status notifications",
+  "title": "Implement hardcoded admin login with fixed credentials and session persistence",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Add 'Forgot Password' or 'Reset Password' option in the admin login interface linked to the admin's mobile number for password recovery",
+      "id": "REQ-4",
+      "summary": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login",
       "acceptanceCriteria": [
-        "Forgot Password link is visible on the admin login screen",
-        "Password reset flow is linked to mobile number 919708075648",
-        "Clear instructions are provided for password recovery"
+        "Navigation to '/admin/dashboard' occurs automatically on login success",
+        "No intermediate pages or manual navigation is required",
+        "Redirect happens without delay or user interaction"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Add a 'Forgot Password?' link or button below the login form in the admin credentials dialog. The link should display a help message instructing the admin to contact the mobile number 919708075648 for password reset assistance. Include clear visual styling to make the reset option easily discoverable without implementing a full automated reset flow."
+          "description": "Update the admin login dialog to redirect to '/admin/dashboard' immediately upon successful authentication with the hardcoded credentials (ID: '919708075648', Password: '979142876085'). Remove any intermediate navigation steps and ensure the redirect happens automatically without user interaction. The component should verify the credentials match exactly before allowing access and performing the redirect."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration",
+      "acceptanceCriteria": [
+        "Admin dashboard page loads successfully at '/admin/dashboard'",
+        "No 404 errors occur when accessing the dashboard route",
+        "No 'Access Denied' errors prevent viewing the dashboard content"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Verify that the '/admin/dashboard' route is properly configured in the TanStack Router setup. Ensure the route exists, is correctly mapped to the AdminPage component, and has no conflicting route definitions that could cause 404 errors. Add any missing route configurations needed for the admin dashboard to load successfully."
+        },
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "Review the AdminPage component to ensure it does not have any access control logic that could trigger 'Access Denied' errors after successful admin authentication. Verify that the component properly handles the authenticated admin state and displays the dashboard content without additional authorization checks that could block access."
         }
       ]
     }

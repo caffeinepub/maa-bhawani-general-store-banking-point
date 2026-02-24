@@ -1,12 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix admin authentication issues and implement automatic order status notifications for customers.
+**Goal:** Implement hardcoded admin login with fixed credentials (ID: 919708075648, Password: 979142876085) and 24-hour session persistence, with automatic redirect to admin dashboard.
 
 **Planned changes:**
-- Reset admin credentials to username '919708075648' and password '979142876085' as permanent login
-- Fix session timeout to keep admin logged in during working sessions
-- Add 'Forgot Password' option on admin login screen linked to mobile number
-- Implement automatic customer notifications when order status changes (via app or WhatsApp)
+- Rewrite admin login to accept only hardcoded credentials without database checks or OTP verification
+- Grant full admin access immediately when credentials match
+- Set admin session duration to 24 hours to prevent automatic logouts
+- Redirect directly to /admin/dashboard after successful login
+- Fix any 404 or Access Denied errors on admin dashboard routes
 
-**User-visible outcome:** Admin can reliably log in with fixed credentials without session timeouts, and customers automatically receive notifications when their order status is updated by the admin.
+**User-visible outcome:** Admin can log in using the fixed credentials, stay logged in for 24 hours without interruption, and access the admin dashboard immediately without authentication errors.

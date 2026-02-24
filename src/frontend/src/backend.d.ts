@@ -60,10 +60,6 @@ export interface CartItem {
     quantity: bigint;
     product: Product;
 }
-export interface AuthResult {
-    message: string;
-    success: boolean;
-}
 export interface Product {
     id: bigint;
     name: string;
@@ -102,7 +98,6 @@ export interface backendInterface {
     addProductByBarcode(barcode: string, quantity: bigint): Promise<ProductWithAction>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    authenticate(providedId: string, providedPassword: string): Promise<AuthResult>;
     calculateTotalPrice(distanceInKm: bigint): Promise<bigint>;
     clearCart(): Promise<void>;
     confirmOrder(orderId: bigint): Promise<void>;

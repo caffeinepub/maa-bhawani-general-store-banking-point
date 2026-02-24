@@ -37,10 +37,6 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const AuthResult = IDL.Record({
-  'message' : IDL.Text,
-  'success' : IDL.Bool,
-});
 export const BillItem = IDL.Record({
   'productId' : IDL.Nat,
   'productName' : IDL.Text,
@@ -142,7 +138,6 @@ export const idlService = IDL.Service({
     ),
   'addToCart' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
   'calculateTotalPrice' : IDL.Func([IDL.Nat], [IDL.Nat], []),
   'clearCart' : IDL.Func([], [], []),
   'confirmOrder' : IDL.Func([IDL.Nat], [], []),
@@ -225,7 +220,6 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const AuthResult = IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool });
   const BillItem = IDL.Record({
     'productId' : IDL.Nat,
     'productName' : IDL.Text,
@@ -321,7 +315,6 @@ export const idlFactory = ({ IDL }) => {
       ),
     'addToCart' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'authenticate' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
     'calculateTotalPrice' : IDL.Func([IDL.Nat], [IDL.Nat], []),
     'clearCart' : IDL.Func([], [], []),
     'confirmOrder' : IDL.Func([IDL.Nat], [], []),

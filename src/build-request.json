@@ -1,94 +1,112 @@
 {
   "kind": "build_request",
-  "title": "Fix admin authentication and add order status notifications",
-  "projectName": "Maa Bhawani General Store",
+  "title": "Implement hardcoded admin login with fixed credentials and session persistence",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Reset admin credentials to use ID/Username '919708075648' and password '979142876085' as the permanent admin login. Update the backend authentication logic to validate against these specific credentials.",
+      "text": "Rewrite the admin login function to accept only the hardcoded credentials: ID '919708075648' and Password '979142876085'. Remove all external database checks, OTP verification, and any other validation logic for this specific admin ID.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-final"
+          "msg-10"
         ],
         "quotes": [
-          "Reset Admin Credentials: Set the following as the permanent Admin login: ID/Username: 919708075648, Password: 979142876085"
+          "Rewrite the admin login function to strictly accept: ID: 919708075648 Password: 979142876085",
+          "Remove any external database check or OTP for this specific ID if it's causing the 'Failed/Invalid' error"
         ]
       },
       "acceptanceCriteria": [
-        "Admin can successfully log in using username '919708075648' and password '979142876085'",
-        "Invalid or failed login errors are resolved",
-        "Credentials are permanently stored in backend"
+        "Admin login function accepts exactly ID '919708075648' and Password '979142876085'",
+        "No database lookups or OTP checks are performed for this admin credential",
+        "Login succeeds immediately when credentials match exactly",
+        "Login fails for any other credential combination"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Fix admin session timeout by implementing persistent session management. Ensure the admin stays logged in during the working session without being repeatedly logged out.",
+      "text": "Grant full 'Admin' access immediately when the hardcoded credentials match, bypassing all validation errors and authentication flows.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-final"
+          "msg-10"
         ],
         "quotes": [
-          "Fix Session Timeout: Ensure the Admin stays logged in during the working session and doesn't get kicked out repeatedly"
+          "If the inputs match these exact numbers, grant full 'Admin' access immediately"
         ]
       },
       "acceptanceCriteria": [
-        "Admin session persists throughout active working periods",
-        "No unexpected logouts during normal usage",
-        "Session state is maintained across page refreshes"
+        "Admin access is granted without additional validation steps",
+        "No 'Failed' or 'Invalid' errors occur when correct credentials are provided",
+        "Admin session is established immediately upon successful credential match"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
-      "target": "frontend",
+      "text": "Set the admin session duration to 24 hours to prevent 'Invalid Session' errors and automatic logouts during work periods.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-final"
+          "msg-10"
         ],
         "quotes": [
-          "Error Logs: Provide a clear 'Forgot Password' or 'Reset' option linked to my mobile number/email"
+          "Set the 'Session Duration' to 24 hours so I don't get 'Invalid Session' or logged out repeatedly while working"
         ]
       },
       "acceptanceCriteria": [
-        "Forgot Password link is visible on the admin login screen",
-        "Password reset flow is linked to mobile number 919708075648",
-        "Clear instructions are provided for password recovery"
+        "Admin session persists for 24 hours after login",
+        "No automatic logout occurs within the 24-hour window",
+        "Session token or authentication state remains valid for the full duration"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement automatic customer notifications when the admin changes an order status (e.g., to 'Out for Delivery'). Notifications should be sent via the app or WhatsApp.",
-      "target": "backend",
+      "text": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-final"
+          "msg-10"
         ],
         "quotes": [
-          "Whenever the Admin changes the order status (e.g., to 'Out for Delivery'), an automatic notification should be sent to the customer via the app or WhatsApp"
+          "After login success, redirect the user directly to the /admin/dashboard path"
         ]
       },
       "acceptanceCriteria": [
-        "Customer receives notification when order status is updated by admin",
-        "Notification contains order details and new status",
-        "Notification is triggered for all status changes (confirmed, packed, out for delivery, completed)"
+        "Navigation to '/admin/dashboard' occurs automatically on login success",
+        "No intermediate pages or manual navigation is required",
+        "Redirect happens without delay or user interaction"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "If there is a '404' or 'Access Denied' error on the dashboard, fix the file permissions for the Admin folder"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin dashboard page loads successfully at '/admin/dashboard'",
+        "No 404 errors occur when accessing the dashboard route",
+        "No 'Access Denied' errors prevent viewing the dashboard content"
       ]
     }
   ],
   "constraints": [
-    "Use the exact credentials provided: username '919708075648' and password '979142876085'",
-    "Maintain compatibility with existing Internet Identity authentication system",
-    "Do not modify the existing order status workflow in AdminPage",
-    "Keep the current order management interface intact"
+    "Use exactly the credentials ID '919708075648' and Password '979142876085' with no variations",
+    "Session duration must be precisely 24 hours",
+    "Do not introduce any additional authentication mechanisms or external services",
+    "Maintain single-actor backend architecture"
   ],
   "nonGoals": [
-    "Multi-factor authentication for admin",
-    "Role-based access control with multiple admin levels",
-    "Email notification system (focus on app/WhatsApp)",
-    "Customer-facing password reset functionality",
-    "Encryption of admin credentials beyond standard security practices"
+    "Implementing dynamic credential management",
+    "Adding password recovery flows for this admin account",
+    "Creating multi-user admin authentication",
+    "Implementing OAuth or third-party authentication providers"
   ],
   "imageRequirements": {
     "required": [],

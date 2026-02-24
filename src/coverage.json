@@ -1,32 +1,39 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-22T16:10:12.364Z",
+  "generatedAt": "2026-02-23T03:10:46.942Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 1,
+    "total": 5,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Reset admin credentials to use ID/Username '919708075648' and password '979142876085' as the permanent admin login. Update the backend authentication logic to validate against these specific credentials.",
+        "summary": "Rewrite the admin login function to accept only the hardcoded credentials: ID '919708075648' and Password '979142876085'. Remove all external database checks, OTP verification, and any other validation logic for this specific admin ID.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Fix admin session timeout by implementing persistent session management. Ensure the admin stays logged in during the working session without being repeatedly logged out.",
+        "summary": "Grant full 'Admin' access immediately when the hardcoded credentials match, bypassing all validation errors and authentication flows.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
+        "summary": "Set the admin session duration to 24 hours to prevent 'Invalid Session' errors and automatic logouts during work periods.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/AdminGuard.tsx"
@@ -36,27 +43,33 @@
         ]
       },
       {
-        "id": "REQ-4",
-        "summary": "Implement automatic customer notifications when the admin changes an order status (e.g., to 'Out for Delivery'). Notifications should be sent via the app or WhatsApp.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "id": "REQ-5",
+        "summary": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx",
+          "frontend/src/pages/AdminPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx"
+        ]
       }
     ]
   },
   "changedFiles": [
-    "backend/http-outcalls/outcall.mo",
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
     "frontend/src/components/AdminGuard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

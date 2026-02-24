@@ -146,10 +146,6 @@ export interface CartItem {
     quantity: bigint;
     product: Product;
 }
-export interface AuthResult {
-    message: string;
-    success: boolean;
-}
 export interface Product {
     id: bigint;
     name: string;
@@ -195,7 +191,6 @@ export interface backendInterface {
     addProductByBarcode(barcode: string, quantity: bigint): Promise<ProductWithAction>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    authenticate(providedId: string, providedPassword: string): Promise<AuthResult>;
     calculateTotalPrice(distanceInKm: bigint): Promise<bigint>;
     clearCart(): Promise<void>;
     confirmOrder(orderId: bigint): Promise<void>;
@@ -379,20 +374,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n14(this._uploadFile, this._downloadFile, arg1));
-            return result;
-        }
-    }
-    async authenticate(arg0: string, arg1: string): Promise<AuthResult> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.authenticate(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.authenticate(arg0, arg1);
             return result;
         }
     }

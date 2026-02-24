@@ -1,23 +1,28 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Food delivery app with admin panel for order management and customer notifications",
+  "summary": "Admin panel with hardcoded authentication",
   "architectural_notes": [
-    "Admin authentication system with persistent sessions",
-    "Customer notification system (app/WhatsApp) for order status updates",
-    "Admin panel with order management capabilities"
+    "Admin authentication uses hardcoded credentials (ID: 919708075648, Password: 979142876085)",
+    "Session duration set to 24 hours for admin users",
+    "Admin dashboard accessible at /admin/dashboard route"
   ],
-  "known_issues": [
-    "Admin login returning 'Invalid' or 'Failed' errors",
-    "Admin session timing out during working sessions"
-  ],
+  "known_issues": [],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-a-forgot-password-or-reset-password-option-in-the-admin-login-interface-that-is-linked-to-the-admin-s-mobile-number-919708075648-or-email-for-password-recovery",
-      "title": "Add a 'Forgot Password' or 'Reset Password' option in the admin login interface that is linked to the admin's mobile number (919708075648) or email for password recovery.",
+      "id": "feature-redirect-the-user-directly-to-admin-dashboard-immediately-after-successful-admin-login",
+      "title": "Redirect the user directly to '/admin/dashboard' immediately after successful admin login.",
       "reqIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-any-404-or-access-denied-errors-on-the-admin-dashboard-by-ensuring-proper-routing-configuration-and-file-permissions-for-the-admin-folder",
+      "title": "Fix any '404' or 'Access Denied' errors on the admin dashboard by ensuring proper routing configuration and file permissions for the admin folder.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -25,54 +30,48 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix admin authentication - reset credentials to 919708075648/979142876085",
+      "summary": "Hardcoded admin login with credentials ID:919708075648, Password:979142876085",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Fix admin session timeout - keep admin logged in during working session",
+      "summary": "24-hour session persistence for admin panel",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Add forgot password/reset option for admin linked to mobile/email",
+      "summary": "Direct redirect to /admin/dashboard after login success",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Send automatic notifications to customers when order status changes",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Reset admin credentials to use ID/Username '919708075648' and password '979142876085' as the permanent admin login. Update the backend authentication logic to validate against these specific credentials.",
+      "summary": "Rewrite the admin login function to accept only the hardcoded credentials: ID '919708075648' and Password '979142876085'. Remove all external database checks, OTP verification, and any other validation logic for this specific admin ID.",
       "reqIds": [
         "REQ-1"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-6",
-      "summary": "Fix admin session timeout by implementing persistent session management. Ensure the admin stays logged in during the working session without being repeatedly logged out.",
+      "id": "AR-5",
+      "summary": "Grant full 'Admin' access immediately when the hardcoded credentials match, bypassing all validation errors and authentication flows.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-8",
-      "summary": "Implement automatic customer notifications when the admin changes an order status (e.g., to 'Out for Delivery'). Notifications should be sent via the app or WhatsApp.",
+      "id": "AR-6",
+      "summary": "Set the admin session duration to 24 hours to prevent 'Invalid Session' errors and automatic logouts during work periods.",
       "reqIds": [
-        "REQ-4"
+        "REQ-3"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Maa Bhawani General Store",
+  "projectName": "Implement hardcoded admin login with fixed credentials and session persistence",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
