@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import type { Product } from '../backend';
-import { useAddToCart } from '../hooks/useQueries';
+import { useAddToCart, useGetShopOpenStatus } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -39,6 +39,7 @@ function parseWeightToGrams(input: string): number | null {
 export default function ProductCard({ product }: ProductCardProps) {
   const addToCart = useAddToCart();
   const { identity } = useInternetIdentity();
+  const { data: isShopOpen } = useGetShopOpenStatus();
   const [weightInput, setWeightInput] = useState('');
 
   const isWeightBased = product.unitType === 'kg' || product.unitType === 'gram';
@@ -46,6 +47,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = async () => {
     if (!identity) {
       toast.error('Please login to add items to cart');
+      return;
+    }
+
+    if (!isShopOpen) {
+      toast.error('Shop is currently closed. Cannot add items to cart.');
       return;
     }
 
@@ -60,6 +66,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddWeightToCart = async () => {
     if (!identity) {
       toast.error('Please login to add items to cart');
+      return;
+    }
+
+    if (!isShopOpen) {
+      toast.error('Shop is currently closed. Cannot add items to cart.');
       return;
     }
 
@@ -89,9 +100,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Format unit type for display
   const unitTypeDisplay = product.unitType.charAt(0).toUpperCase() + product.unitType.slice(1);
 
+  const isDisabled = !isShopOpen || addToCart.isPending;
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-square overflow-hidden bg-muted">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
+      <div className="aspect-square overflow-hidden bg-gray-100">
         <img
           src={imageUrl}
           alt={product.name}
@@ -100,10 +113,10 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
       <CardContent className="p-4">
         <div className="flex gap-2 mb-2">
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs bg-secondary text-white">
             {product.category}
           </Badge>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs border-primary text-primary">
             {unitTypeDisplay}
           </Badge>
         </div>
@@ -122,11 +135,15 @@ export default function ProductCard({ product }: ProductCardProps) {
                   handleAddWeightToCart();
                 }
               }}
+              disabled={!isShopOpen}
             />
             <Button
               onClick={handleAddWeightToCart}
-              disabled={addToCart.isPending}
-              className="w-full gap-2"
+              disabled={isDisabled}
+              title={!isShopOpen ? 'Shop is closed' : ''}
+              className={`w-full gap-2 bg-primary hover:bg-primary/90 text-white min-h-[44px] ${
+                !isShopOpen ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <ShoppingCart className="h-4 w-4" />
               {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
@@ -135,8 +152,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         ) : (
           <Button
             onClick={handleAddToCart}
-            disabled={addToCart.isPending}
-            className="w-full gap-2"
+            disabled={isDisabled}
+            title={!isShopOpen ? 'Shop is closed' : ''}
+            className={`w-full gap-2 bg-primary hover:bg-primary/90 text-white min-h-[44px] ${
+              !isShopOpen ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
             <ShoppingCart className="h-4 w-4" />
             {addToCart.isPending ? 'Adding...' : 'Add to Cart'}

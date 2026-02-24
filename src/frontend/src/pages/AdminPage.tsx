@@ -1,124 +1,145 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import AdminGuard from '../components/AdminGuard';
 import AdminProductForm from '../components/AdminProductForm';
 import AdminProductList from '../components/AdminProductList';
 import BillHistoryTable from '../components/BillHistoryTable';
-import ErrorBoundary from '../components/ErrorBoundary';
-import { 
-  useGetAllOrders, 
-  useGetAllRechargeOrders, 
-  useGetAllBills, 
-  useGetAllProducts,
-  useConfirmOrder,
-  useMarkAsPacked,
-  useMarkAsOutForDelivery,
-  useMarkAsCompleted
-} from '../hooks/useQueries';
-import { Package, Smartphone, Receipt, Settings, FileText, CheckCircle2, Loader2 } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
+import ShopStatusToggle from '../components/ShopStatusToggle';
+import { useGetAllOrders, useGetAllRechargeOrders, useConfirmOrder, useMarkAsPacked, useMarkAsOutForDelivery, useMarkAsCompleted } from '../hooks/useQueries';
+import { OrderStatus, PaymentMethod } from '../backend';
 import { toast } from 'sonner';
-import type { Order, OrderStatus, PaymentMethod } from '../backend';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Settings, Package, ShoppingBag, Receipt, Smartphone } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 
 export default function AdminPage() {
-  const { data: orders = [], error: ordersError } = useGetAllOrders();
-  const { data: rechargeOrders = [], error: rechargeError } = useGetAllRechargeOrders();
-  const { data: bills = [], error: billsError } = useGetAllBills();
-  const { data: products = [], error: productsError } = useGetAllProducts();
   const navigate = useNavigate();
-
+  const { data: orders = [], isLoading: ordersLoading } = useGetAllOrders();
+  const { data: rechargeOrders = [], isLoading: rechargeLoading } = useGetAllRechargeOrders();
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [processingOrderId, setProcessingOrderId] = useState<bigint | null>(null);
-
+  
   const confirmOrder = useConfirmOrder();
   const markAsPacked = useMarkAsPacked();
   const markAsOutForDelivery = useMarkAsOutForDelivery();
   const markAsCompleted = useMarkAsCompleted();
 
-  // Log any errors for debugging
-  if (ordersError) console.error('[AdminPage] Orders error:', ordersError);
-  if (rechargeError) console.error('[AdminPage] Recharge orders error:', rechargeError);
-  if (billsError) console.error('[AdminPage] Bills error:', billsError);
-  if (productsError) console.error('[AdminPage] Products error:', productsError);
-
-  const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalPrice), 0);
-  const billRevenue = bills.reduce((sum, bill) => sum + Number(bill.totalAmount), 0);
-
-  const getStatusBadgeVariant = (status: OrderStatus): "default" | "secondary" | "outline" | "destructive" => {
-    switch (status) {
-      case 'pending':
-        return 'outline';
-      case 'confirmed':
-        return 'secondary';
-      case 'packed':
-        return 'default';
-      case 'out_for_delivery':
-        return 'default';
-      case 'completed':
-        return 'secondary';
-      default:
-        return 'outline';
+  const handleStatusChange = async (orderId: bigint, currentStatus: OrderStatus) => {
+    try {
+      switch (currentStatus) {
+        case OrderStatus.pending:
+          await confirmOrder.mutateAsync(orderId);
+          toast.success('Order confirmed');
+          break;
+        case OrderStatus.confirmed:
+          await markAsPacked.mutateAsync(orderId);
+          toast.success('Order marked as packed');
+          break;
+        case OrderStatus.packed:
+          await markAsOutForDelivery.mutateAsync(orderId);
+          toast.success('Order marked as out for delivery');
+          break;
+        case OrderStatus.out_for_delivery:
+          await markAsCompleted.mutateAsync(orderId);
+          toast.success('Order completed');
+          break;
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update order status');
     }
   };
 
-  const getStatusLabel = (status: OrderStatus): string => {
+  const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
-      case 'pending':
+      case OrderStatus.pending:
+        return 'secondary';
+      case OrderStatus.confirmed:
+        return 'default';
+      case OrderStatus.packed:
+        return 'default';
+      case OrderStatus.out_for_delivery:
+        return 'default';
+      case OrderStatus.completed:
+        return 'outline';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: OrderStatus) => {
+    switch (status) {
+      case OrderStatus.pending:
         return 'Pending';
-      case 'confirmed':
+      case OrderStatus.confirmed:
         return 'Confirmed';
-      case 'packed':
+      case OrderStatus.packed:
         return 'Packed';
-      case 'out_for_delivery':
+      case OrderStatus.out_for_delivery:
         return 'Out for Delivery';
-      case 'completed':
+      case OrderStatus.completed:
         return 'Completed';
       default:
         return status;
     }
   };
 
-  const getPaymentMethodLabel = (method: PaymentMethod): string => {
-    switch (method) {
-      case 'upi':
-        return 'UPI';
-      case 'cod':
-        return 'Cash on Delivery';
-      default:
-        return 'Unknown';
-    }
-  };
+  const getNextActionButton = (order: any) => {
+    const isProcessing = confirmOrder.isPending || markAsPacked.isPending || 
+                        markAsOutForDelivery.isPending || markAsCompleted.isPending;
 
-  const handleStatusUpdate = async (orderId: bigint, currentStatus: OrderStatus) => {
-    setProcessingOrderId(orderId);
-    try {
-      switch (currentStatus) {
-        case 'pending':
-          await confirmOrder.mutateAsync(orderId);
-          toast.success('Order confirmed successfully');
-          break;
-        case 'confirmed':
-          await markAsPacked.mutateAsync(orderId);
-          toast.success('Order marked as packed');
-          break;
-        case 'packed':
-          await markAsOutForDelivery.mutateAsync(orderId);
-          toast.success('Order marked as out for delivery');
-          break;
-        case 'out_for_delivery':
-          await markAsCompleted.mutateAsync(orderId);
-          toast.success('Order completed successfully');
-          break;
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update order status');
-    } finally {
-      setProcessingOrderId(null);
+    switch (order.status) {
+      case OrderStatus.pending:
+        return (
+          <Button
+            size="sm"
+            onClick={() => handleStatusChange(order.id, order.status)}
+            disabled={isProcessing}
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            Confirm Order
+          </Button>
+        );
+      case OrderStatus.confirmed:
+        return (
+          <Button
+            size="sm"
+            onClick={() => handleStatusChange(order.id, order.status)}
+            disabled={isProcessing}
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            Mark as Packed
+          </Button>
+        );
+      case OrderStatus.packed:
+        return (
+          <Button
+            size="sm"
+            onClick={() => handleStatusChange(order.id, order.status)}
+            disabled={isProcessing}
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            Out for Delivery
+          </Button>
+        );
+      case OrderStatus.out_for_delivery:
+        return (
+          <Button
+            size="sm"
+            onClick={() => handleStatusChange(order.id, order.status)}
+            disabled={isProcessing}
+            className="bg-success hover:bg-success/90 text-white"
+          >
+            Mark as Completed
+          </Button>
+        );
+      case OrderStatus.completed:
+        return <Badge variant="outline" className="bg-success/10 text-success border-success">Completed</Badge>;
+      default:
+        return null;
     }
   };
 
@@ -127,246 +148,209 @@ export default function AdminPage() {
     : orders.filter(order => order.status === statusFilter);
 
   return (
-    <ErrorBoundary>
-      <AdminGuard>
-        <div className="space-y-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold">Admin Panel</h1>
-              <p className="text-muted-foreground">Manage your store products, orders, and billing</p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => navigate({ to: '/admin/billing' })} className="gap-2">
-                <Receipt className="h-4 w-4" />
-                Generate Bill
-              </Button>
-              <Button onClick={() => navigate({ to: '/admin/settings' })} variant="outline" className="gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
-              </Button>
-            </div>
+    <AdminGuard>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Manage your store inventory and orders</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{products.length}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{orders.length}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{bills.length}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                <span className="text-2xl">₹</span>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">₹{totalRevenue + billRevenue}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Tabs defaultValue="products" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="recharge">Recharge Orders</TabsTrigger>
-              <TabsTrigger value="bills">Bill History</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="products" className="space-y-6">
-              <AdminProductForm />
-              <AdminProductList />
-            </TabsContent>
-
-            <TabsContent value="orders">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>Order Management</CardTitle>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Orders</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                        <SelectItem value="packed">Packed</SelectItem>
-                        <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {filteredOrders.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      {statusFilter === 'all' ? 'No orders yet' : `No ${statusFilter} orders`}
-                    </p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Order ID</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Address</TableHead>
-                            <TableHead>Items</TableHead>
-                            <TableHead>Payment</TableHead>
-                            <TableHead>Total</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Action</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredOrders.map((order) => {
-                            const isProcessing = processingOrderId === order.id;
-                            return (
-                              <TableRow key={Number(order.id)}>
-                                <TableCell className="font-medium">#{Number(order.id)}</TableCell>
-                                <TableCell>{order.customerName}</TableCell>
-                                <TableCell>{order.phoneNumber}</TableCell>
-                                <TableCell className="max-w-[200px] truncate">{order.deliveryAddress}</TableCell>
-                                <TableCell>{order.products.length} item(s)</TableCell>
-                                <TableCell>
-                                  <Badge variant="outline">
-                                    {getPaymentMethodLabel(order.paymentMethod)}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="font-bold">₹{Number(order.totalPrice)}</TableCell>
-                                <TableCell>
-                                  <Badge variant={getStatusBadgeVariant(order.status)}>
-                                    {getStatusLabel(order.status)}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  {order.status === 'pending' && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleStatusUpdate(order.id, order.status)}
-                                      disabled={isProcessing}
-                                    >
-                                      {isProcessing ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        'Confirm Order'
-                                      )}
-                                    </Button>
-                                  )}
-                                  {order.status === 'confirmed' && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleStatusUpdate(order.id, order.status)}
-                                      disabled={isProcessing}
-                                    >
-                                      {isProcessing ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        'Packed'
-                                      )}
-                                    </Button>
-                                  )}
-                                  {order.status === 'packed' && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleStatusUpdate(order.id, order.status)}
-                                      disabled={isProcessing}
-                                    >
-                                      {isProcessing ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        'Out for Delivery'
-                                      )}
-                                    </Button>
-                                  )}
-                                  {order.status === 'out_for_delivery' && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleStatusUpdate(order.id, order.status)}
-                                      disabled={isProcessing}
-                                    >
-                                      {isProcessing ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        'Success'
-                                      )}
-                                    </Button>
-                                  )}
-                                  {order.status === 'completed' && (
-                                    <div className="flex items-center gap-1 text-green-600">
-                                      <CheckCircle2 className="h-4 w-4" />
-                                      <span className="text-sm">Completed</span>
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="recharge">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recharge Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {rechargeOrders.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">No recharge orders yet</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {rechargeOrders.map((order) => (
-                        <div key={Number(order.id)} className="border rounded-lg p-4 flex justify-between items-center">
-                          <div>
-                            <p className="font-semibold">Order #{Number(order.id)}</p>
-                            <p className="text-sm text-muted-foreground">{order.mobileNumber}</p>
-                            <p className="text-sm text-muted-foreground">{order.operator}</p>
-                          </div>
-                          <p className="font-bold text-lg">₹{Number(order.rechargeAmount)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="bills">
-              <BillHistoryTable />
-            </TabsContent>
-          </Tabs>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate({ to: '/admin/settings' })}
+            className="gap-2 hover:bg-primary/5 hover:text-primary hover:border-primary"
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
         </div>
-      </AdminGuard>
-    </ErrorBoundary>
+
+        {/* Shop Status Toggle */}
+        <ShopStatusToggle />
+
+        <Tabs defaultValue="products" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid bg-white border shadow-sm">
+            <TabsTrigger value="products" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-white">
+              <Package className="h-4 w-4" />
+              <span className="hidden sm:inline">Products</span>
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-white">
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden sm:inline">Orders</span>
+            </TabsTrigger>
+            <TabsTrigger value="recharge" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-white">
+              <Smartphone className="h-4 w-4" />
+              <span className="hidden sm:inline">Recharge</span>
+            </TabsTrigger>
+            <TabsTrigger value="bills" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-white">
+              <Receipt className="h-4 w-4" />
+              <span className="hidden sm:inline">Bills</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="products" className="space-y-6">
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle>Add New Product</CardTitle>
+                <CardDescription>Add products to your inventory</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <AdminProductForm />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle>Product Inventory</CardTitle>
+                <CardDescription>Manage your product catalog</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <AdminProductList />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-6">
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="bg-gray-50 border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Customer Orders</CardTitle>
+                    <CardDescription>Manage and track customer orders</CardDescription>
+                  </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Orders</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="packed">Packed</SelectItem>
+                      <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {ordersLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : filteredOrders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No orders found</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                          <TableHead className="font-semibold">Order ID</TableHead>
+                          <TableHead className="font-semibold">Customer</TableHead>
+                          <TableHead className="font-semibold">Phone</TableHead>
+                          <TableHead className="font-semibold">Address</TableHead>
+                          <TableHead className="font-semibold">Total</TableHead>
+                          <TableHead className="font-semibold">Payment</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.map((order) => (
+                          <TableRow key={Number(order.id)} className="hover:bg-gray-50">
+                            <TableCell className="font-medium">#{Number(order.id)}</TableCell>
+                            <TableCell>{order.customerName}</TableCell>
+                            <TableCell>{order.phoneNumber}</TableCell>
+                            <TableCell className="max-w-xs truncate">{order.deliveryAddress}</TableCell>
+                            <TableCell className="font-semibold text-primary">₹{Number(order.totalPrice)}</TableCell>
+                            <TableCell>
+                              <Badge variant={order.paymentMethod === PaymentMethod.upi ? 'default' : 'secondary'}>
+                                {order.paymentMethod === PaymentMethod.upi ? 'UPI' : 'COD'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={getStatusBadgeVariant(order.status)}>
+                                {getStatusLabel(order.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{getNextActionButton(order)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="recharge" className="space-y-6">
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle>Mobile Recharge Orders</CardTitle>
+                <CardDescription>View and manage mobile recharge requests</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {rechargeLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : rechargeOrders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Smartphone className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No recharge orders found</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                          <TableHead className="font-semibold">Order ID</TableHead>
+                          <TableHead className="font-semibold">Mobile Number</TableHead>
+                          <TableHead className="font-semibold">Operator</TableHead>
+                          <TableHead className="font-semibold">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {rechargeOrders.map((order) => (
+                          <TableRow key={Number(order.id)} className="hover:bg-gray-50">
+                            <TableCell className="font-medium">#{Number(order.id)}</TableCell>
+                            <TableCell>{order.mobileNumber}</TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{order.operator}</Badge>
+                            </TableCell>
+                            <TableCell className="font-semibold text-primary">₹{Number(order.rechargeAmount)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="bills" className="space-y-6">
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle>Bill History</CardTitle>
+                <CardDescription>View and manage generated bills</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <BillHistoryTable />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AdminGuard>
   );
 }

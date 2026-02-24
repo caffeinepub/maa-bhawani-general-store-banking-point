@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useGetCart, usePlaceOrder, useCalculateTotalPrice } from '../hooks/useQueries';
+import { useGetCart, usePlaceOrder, useCalculateTotalPrice, useGetShopOpenStatus } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import DeliveryFeeInfo from '../components/DeliveryFeeInfo';
+import ShopClosedCheckoutDialog from '../components/ShopClosedCheckoutDialog';
 import { toast } from 'sonner';
 import { ArrowLeft, CreditCard, Banknote } from 'lucide-react';
 import { PaymentMethod } from '../backend';
@@ -36,6 +37,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { identity } = useInternetIdentity();
   const { data: cart = [] } = useGetCart();
+  const { data: isShopOpen } = useGetShopOpenStatus();
   const placeOrder = usePlaceOrder();
   const calculateTotal = useCalculateTotalPrice();
 
@@ -83,6 +85,11 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isShopOpen) {
+      toast.error('Shop is currently closed. Cannot place order.');
+      return;
+    }
+
     if (!name.trim() || !phoneNumber.trim() || !address.trim() || !distance) {
       toast.error('Please fill all fields');
       return;
@@ -129,6 +136,9 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Shop Closed Dialog */}
+      <ShopClosedCheckoutDialog />
+
       <Button variant="ghost" onClick={() => navigate({ to: '/' })} className="gap-2">
         <ArrowLeft className="h-4 w-4" />
         Back to Shop
@@ -152,6 +162,7 @@ export default function CheckoutPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
+                    disabled={!isShopOpen}
                   />
                 </div>
 
@@ -164,6 +175,7 @@ export default function CheckoutPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     required
+                    disabled={!isShopOpen}
                   />
                 </div>
 
@@ -175,6 +187,7 @@ export default function CheckoutPage() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
+                    disabled={!isShopOpen}
                   />
                 </div>
 
@@ -189,6 +202,7 @@ export default function CheckoutPage() {
                     value={distance}
                     onChange={(e) => handleDistanceChange(e.target.value)}
                     required
+                    disabled={!isShopOpen}
                   />
                 </div>
 
@@ -198,9 +212,13 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3">
                   <Label>Payment Method</Label>
-                  <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'upi' | 'cod')}>
-                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod('upi')}>
-                      <RadioGroupItem value="upi" id="upi" />
+                  <RadioGroup 
+                    value={paymentMethod} 
+                    onValueChange={(value) => setPaymentMethod(value as 'upi' | 'cod')}
+                    disabled={!isShopOpen}
+                  >
+                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => isShopOpen && setPaymentMethod('upi')}>
+                      <RadioGroupItem value="upi" id="upi" disabled={!isShopOpen} />
                       <Label htmlFor="upi" className="flex items-center gap-2 cursor-pointer flex-1">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <div>
@@ -209,8 +227,8 @@ export default function CheckoutPage() {
                         </div>
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod('cod')}>
-                      <RadioGroupItem value="cod" id="cod" />
+                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => isShopOpen && setPaymentMethod('cod')}>
+                      <RadioGroupItem value="cod" id="cod" disabled={!isShopOpen} />
                       <Label htmlFor="cod" className="flex items-center gap-2 cursor-pointer flex-1">
                         <Banknote className="h-5 w-5 text-primary" />
                         <div>
@@ -222,7 +240,12 @@ export default function CheckoutPage() {
                   </RadioGroup>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={placeOrder.isPending || !totalPrice}>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  size="lg" 
+                  disabled={placeOrder.isPending || !totalPrice || !isShopOpen}
+                >
                   {placeOrder.isPending ? 'Placing Order...' : 'Place Order'}
                 </Button>
               </form>

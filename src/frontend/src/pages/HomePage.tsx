@@ -1,16 +1,20 @@
 import ProductGrid from '../components/ProductGrid';
 import MobileRechargeSection from '../components/MobileRechargeSection';
+import ShopClosedBanner from '../components/ShopClosedBanner';
 
 export default function HomePage() {
   return (
-    <div className="space-y-8">
-      <section className="relative rounded-2xl overflow-hidden shadow-lg">
+    <div className="space-y-12">
+      <section className="relative rounded-xl overflow-hidden shadow-md bg-white">
         <img
           src="/assets/IMG_20251019_102908.png"
           alt="Maa Bhawani General Store - Kirana Store with Aadhar Enabled Payment System and Stationery"
           className="w-full h-auto object-contain"
         />
       </section>
+
+      {/* Shop Closed Banner */}
+      <ShopClosedBanner />
 
       <MobileRechargeSection />
 

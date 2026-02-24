@@ -190,34 +190,34 @@ export default function BillingPage() {
           {/* Left Column - Scanning & Input */}
           <div className="space-y-6">
             {/* Scan Mode Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Scan Products</CardTitle>
+            <Card className="shadow-md">
+              <CardHeader className="border-b bg-gray-50">
+                <CardTitle className="text-xl">Scan Products</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex gap-3">
                   <Button
                     onClick={handleStartCamera}
                     variant={scanMode === 'camera' ? 'default' : 'outline'}
-                    className="flex-1"
+                    className={`flex-1 gap-2 ${scanMode === 'camera' ? 'bg-primary hover:bg-primary/90 text-white' : 'hover:bg-primary/5 hover:text-primary hover:border-primary'}`}
                     disabled={isScannerOpen}
                   >
-                    <Camera className="h-4 w-4 mr-2" />
+                    <Camera className="h-4 w-4" />
                     Camera Scan
                   </Button>
                   <Button
                     onClick={() => setScanMode('manual')}
                     variant={scanMode === 'manual' ? 'default' : 'outline'}
-                    className="flex-1"
+                    className={`flex-1 gap-2 ${scanMode === 'manual' ? 'bg-primary hover:bg-primary/90 text-white' : 'hover:bg-primary/5 hover:text-primary hover:border-primary'}`}
                   >
-                    <Keyboard className="h-4 w-4 mr-2" />
+                    <Keyboard className="h-4 w-4" />
                     Manual Entry
                   </Button>
                 </div>
 
                 {scanMode === 'manual' && (
                   <div className="space-y-2">
-                    <Label htmlFor="barcode">Enter Barcode</Label>
+                    <Label htmlFor="barcode" className="font-medium">Enter Barcode</Label>
                     <div className="flex gap-2">
                       <Input
                         id="barcode"
@@ -231,7 +231,12 @@ export default function BillingPage() {
                         placeholder="Scan or type barcode"
                         className="flex-1"
                       />
-                      <Button onClick={handleManualBarcodeSubmit}>Add</Button>
+                      <Button 
+                        onClick={handleManualBarcodeSubmit}
+                        className="bg-primary hover:bg-primary/90 text-white"
+                      >
+                        Add
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -241,7 +246,11 @@ export default function BillingPage() {
                     <p className="text-sm text-muted-foreground mb-2">
                       Camera is active. Scan barcodes to add products.
                     </p>
-                    <Button onClick={handleStopCamera} variant="destructive">
+                    <Button 
+                      onClick={handleStopCamera} 
+                      variant="destructive"
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
                       Stop Camera
                     </Button>
                   </div>
@@ -250,13 +259,13 @@ export default function BillingPage() {
             </Card>
 
             {/* Customer Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Customer Details (Optional)</CardTitle>
+            <Card className="shadow-md">
+              <CardHeader className="border-b bg-gray-50">
+                <CardTitle className="text-xl">Customer Details (Optional)</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-6 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="customerName">Customer Name</Label>
+                  <Label htmlFor="customerName" className="font-medium">Customer Name</Label>
                   <Input
                     id="customerName"
                     value={customerName}
@@ -265,7 +274,7 @@ export default function BillingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="customerPhone">Customer Phone</Label>
+                  <Label htmlFor="customerPhone" className="font-medium">Customer Phone</Label>
                   <Input
                     id="customerPhone"
                     value={customerPhone}
@@ -279,11 +288,11 @@ export default function BillingPage() {
 
           {/* Right Column - Bill Items */}
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Bill Items ({billItems.length})</CardTitle>
+            <Card className="shadow-md">
+              <CardHeader className="border-b bg-gray-50">
+                <CardTitle className="text-xl">Bill Items ({billItems.length})</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 {billItems.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
                     No items added yet. Scan products to add them to the bill.
@@ -293,17 +302,17 @@ export default function BillingPage() {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead className="text-center">Qty</TableHead>
-                            <TableHead className="text-right">Price</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="font-semibold">Product</TableHead>
+                            <TableHead className="text-center font-semibold">Qty</TableHead>
+                            <TableHead className="text-right font-semibold">Price</TableHead>
+                            <TableHead className="text-right font-semibold">Total</TableHead>
                             <TableHead></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {billItems.map((item) => (
-                            <TableRow key={Number(item.product.id)}>
+                            <TableRow key={Number(item.product.id)} className="hover:bg-gray-50">
                               <TableCell className="font-medium">{item.product.name}</TableCell>
                               <TableCell>
                                 <div className="flex items-center justify-center gap-2">
@@ -312,6 +321,7 @@ export default function BillingPage() {
                                     variant="outline"
                                     onClick={() => updateQuantity(item.product.id, -1)}
                                     disabled={item.quantity <= 1}
+                                    className="h-8 w-8 p-0 hover:bg-primary/5 hover:border-primary"
                                   >
                                     <Minus className="h-3 w-3" />
                                   </Button>
@@ -322,13 +332,14 @@ export default function BillingPage() {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => updateQuantity(item.product.id, 1)}
+                                    className="h-8 w-8 p-0 hover:bg-primary/5 hover:border-primary"
                                   >
                                     <Plus className="h-3 w-3" />
                                   </Button>
                                 </div>
                               </TableCell>
                               <TableCell className="text-right">₹{Number(item.product.priceInRupees)}</TableCell>
-                              <TableCell className="text-right font-semibold">
+                              <TableCell className="text-right font-semibold text-primary">
                                 ₹{Number(item.product.priceInRupees) * item.quantity}
                               </TableCell>
                               <TableCell>
@@ -336,8 +347,9 @@ export default function BillingPage() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => removeItem(item.product.id)}
+                                  className="hover:bg-destructive/10 hover:text-destructive"
                                 >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -349,11 +361,11 @@ export default function BillingPage() {
                     <div className="border-t pt-4">
                       <div className="flex justify-between text-xl font-bold mb-4">
                         <span>Total:</span>
-                        <span>₹{calculateTotal()}</span>
+                        <span className="text-primary">₹{calculateTotal()}</span>
                       </div>
                       <Button
                         onClick={handleGenerateBill}
-                        className="w-full"
+                        className="w-full bg-primary hover:bg-primary/90 text-white min-h-[48px]"
                         size="lg"
                         disabled={generateBill.isPending}
                       >
@@ -384,7 +396,11 @@ export default function BillingPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowNotFoundDialog(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowNotFoundDialog(false)}
+                className="hover:bg-primary/5 hover:text-primary hover:border-primary"
+              >
                 Close
               </Button>
             </div>
@@ -401,10 +417,17 @@ export default function BillingPage() {
               {generatedBill && <BillTemplate bill={generatedBill} />}
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={handleCloseBillPreview}>
+              <Button 
+                variant="outline" 
+                onClick={handleCloseBillPreview}
+                className="hover:bg-primary/5 hover:text-primary hover:border-primary"
+              >
                 Close
               </Button>
-              <Button onClick={handlePrint} className="gap-2">
+              <Button 
+                onClick={handlePrint} 
+                className="gap-2 bg-primary hover:bg-primary/90 text-white"
+              >
                 <Printer className="h-4 w-4" />
                 Print Bill
               </Button>

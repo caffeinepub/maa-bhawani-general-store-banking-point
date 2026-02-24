@@ -1,14 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the fixed Price field with a Unit Type dropdown in the Add Product form, and implement dynamic quantity input controls based on unit type (custom weight input for Kg/Gram, +/- buttons for Packet/Piece).
+**Goal:** Add a shop management system that allows admins to manually open/close the store and prevents customer orders when closed.
 
 **Planned changes:**
-- Replace Price input field with Unit Type dropdown (Kg, Gram, Packet, Piece) in AdminProductForm
-- Update Product type and backend functions to store unitType instead of fixed price
-- Display custom weight input field (accepts formats like '100g', '0.5kg') for products with Kg or Gram unit type on shop page
-- Display only +/- quantity buttons for whole numbers on products with Packet or Piece unit type
-- Update cart data structure to support both quantity-based and weight-based items
-- Modify all product display components to show unit type and calculate totals based on unit type and quantity/weight
+- Add a shop status toggle switch at the top of the Admin Dashboard for opening/closing the store
+- Store and manage shop open/closed status in the backend with admin-only access
+- Prevent new orders from being placed when the shop is closed
+- Display a full-width notice banner on the home screen when closed with the message "Namaste! MBG Store is currently Closed. We are not accepting orders right now. We will open again at 8:00 AM. Thank you for your patience!"
+- Disable all "Add to Cart" and "Checkout" buttons when the shop is closed
+- Add a colored dot indicator (green when open, red when closed) next to the store name in the header
+- Show a popup notification during checkout if the shop closes while a customer has items in their cart
 
-**User-visible outcome:** Admin can set unit types when adding products. Customers see weight input fields for Kg/Gram products (allowing custom amounts like "250g" or "1.5kg") and quantity buttons for Packet/Piece products. Cart and checkout correctly handle both measurement types.
+**User-visible outcome:** Admins can control store availability with a toggle switch. Customers see clear visual indicators of shop status throughout the app, cannot place orders when closed, and receive appropriate messages explaining the closure.

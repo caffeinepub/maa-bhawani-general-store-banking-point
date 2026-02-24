@@ -4,53 +4,53 @@
 
 @layer base {
   :root {
-    /* Warm earthy color palette for grocery store */
-    --background: oklch(98% 0.01 85);
-    --foreground: oklch(25% 0.02 85);
+    /* Clean dashboard theme with royal blue and emerald green */
+    --background: oklch(100% 0 0);
+    --foreground: oklch(20% 0.01 240);
     --card: oklch(100% 0 0);
-    --card-foreground: oklch(25% 0.02 85);
+    --card-foreground: oklch(20% 0.01 240);
     --popover: oklch(100% 0 0);
-    --popover-foreground: oklch(25% 0.02 85);
-    --primary: oklch(55% 0.15 45);
-    --primary-foreground: oklch(98% 0.01 85);
-    --secondary: oklch(85% 0.05 85);
-    --secondary-foreground: oklch(25% 0.02 85);
-    --muted: oklch(92% 0.02 85);
-    --muted-foreground: oklch(50% 0.02 85);
-    --accent: oklch(75% 0.12 65);
-    --accent-foreground: oklch(25% 0.02 85);
+    --popover-foreground: oklch(20% 0.01 240);
+    --primary: oklch(55% 0.20 264);
+    --primary-foreground: oklch(100% 0 0);
+    --secondary: oklch(60% 0.18 166);
+    --secondary-foreground: oklch(100% 0 0);
+    --muted: oklch(96% 0.01 240);
+    --muted-foreground: oklch(50% 0.01 240);
+    --accent: oklch(95% 0.02 240);
+    --accent-foreground: oklch(20% 0.01 240);
     --destructive: oklch(55% 0.22 25);
-    --destructive-foreground: oklch(98% 0.01 85);
-    --border: oklch(88% 0.02 85);
-    --input: oklch(88% 0.02 85);
-    --ring: oklch(55% 0.15 45);
+    --destructive-foreground: oklch(100% 0 0);
+    --border: oklch(90% 0.01 240);
+    --input: oklch(90% 0.01 240);
+    --ring: oklch(55% 0.20 264);
     --radius: 0.5rem;
-    --success: oklch(60% 0.15 145);
-    --warning: oklch(70% 0.15 75);
+    --success: oklch(60% 0.18 166);
+    --success-foreground: oklch(100% 0 0);
   }
 
   .dark {
-    --background: oklch(20% 0.02 85);
-    --foreground: oklch(95% 0.01 85);
-    --card: oklch(22% 0.02 85);
-    --card-foreground: oklch(95% 0.01 85);
-    --popover: oklch(22% 0.02 85);
-    --popover-foreground: oklch(95% 0.01 85);
-    --primary: oklch(65% 0.15 45);
-    --primary-foreground: oklch(20% 0.02 85);
-    --secondary: oklch(30% 0.05 85);
-    --secondary-foreground: oklch(95% 0.01 85);
-    --muted: oklch(28% 0.02 85);
-    --muted-foreground: oklch(70% 0.02 85);
-    --accent: oklch(40% 0.12 65);
-    --accent-foreground: oklch(95% 0.01 85);
+    --background: oklch(15% 0.02 240);
+    --foreground: oklch(98% 0.01 240);
+    --card: oklch(18% 0.02 240);
+    --card-foreground: oklch(98% 0.01 240);
+    --popover: oklch(18% 0.02 240);
+    --popover-foreground: oklch(98% 0.01 240);
+    --primary: oklch(65% 0.20 264);
+    --primary-foreground: oklch(100% 0 0);
+    --secondary: oklch(65% 0.18 166);
+    --secondary-foreground: oklch(100% 0 0);
+    --muted: oklch(25% 0.02 240);
+    --muted-foreground: oklch(70% 0.01 240);
+    --accent: oklch(25% 0.02 240);
+    --accent-foreground: oklch(98% 0.01 240);
     --destructive: oklch(55% 0.22 25);
-    --destructive-foreground: oklch(95% 0.01 85);
-    --border: oklch(32% 0.02 85);
-    --input: oklch(32% 0.02 85);
-    --ring: oklch(65% 0.15 45);
-    --success: oklch(60% 0.15 145);
-    --warning: oklch(70% 0.15 75);
+    --destructive-foreground: oklch(98% 0.01 240);
+    --border: oklch(30% 0.02 240);
+    --input: oklch(30% 0.02 240);
+    --ring: oklch(65% 0.20 264);
+    --success: oklch(65% 0.18 166);
+    --success-foreground: oklch(100% 0 0);
   }
 }
 

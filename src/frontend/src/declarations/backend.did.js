@@ -167,6 +167,7 @@ export const idlService = IDL.Service({
       [ProductWithAction],
       ['query'],
     ),
+  'getShopOpenStatus' : IDL.Func([], [IDL.Bool], ['query']),
   'getShopSlogan' : IDL.Func([], [IDL.Text], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -186,6 +187,7 @@ export const idlService = IDL.Service({
   'placeRechargeOrder' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [IDL.Nat], []),
   'removeProduct' : IDL.Func([IDL.Nat], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setShopOpenStatus' : IDL.Func([IDL.Bool], [IDL.Bool], []),
   'setShopSlogan' : IDL.Func([IDL.Text], [], []),
   'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'updateBillPaymentStatus' : IDL.Func(
@@ -351,6 +353,7 @@ export const idlFactory = ({ IDL }) => {
         [ProductWithAction],
         ['query'],
       ),
+    'getShopOpenStatus' : IDL.Func([], [IDL.Bool], ['query']),
     'getShopSlogan' : IDL.Func([], [IDL.Text], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
@@ -374,6 +377,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'removeProduct' : IDL.Func([IDL.Nat], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setShopOpenStatus' : IDL.Func([IDL.Bool], [IDL.Bool], []),
     'setShopSlogan' : IDL.Func([IDL.Text], [], []),
     'toggleProductExclusion' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'updateBillPaymentStatus' : IDL.Func(

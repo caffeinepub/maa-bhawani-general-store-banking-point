@@ -150,6 +150,9 @@ actor {
   var shopSlogan : Text = "Welcome to our shop!";
   var excludedProducts = Set.empty<Nat>();
 
+  // Shop Open/Closed Feature
+  var isShopOpen : Bool = true;
+
   public query ({ caller }) func isAdmin() : async Bool {
     AccessControl.isAdmin(accessControlState, caller);
   };
@@ -385,6 +388,10 @@ actor {
       Runtime.trap("Unauthorized: Only users can place orders");
     };
 
+    if (not isShopOpen) {
+      Runtime.trap("Shop is currently closed. No orders can be placed at the moment.");
+    };
+
     let cart = switch (carts.get(caller)) {
       case (null) { List.empty<CartItem>() };
       case (?c) { c };
@@ -417,6 +424,10 @@ actor {
   public shared ({ caller }) func placeRechargeOrder(mobileNumber : Text, operator : Text, rechargeAmount : Nat) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can place recharge orders");
+    };
+
+    if (not isShopOpen) {
+      Runtime.trap("Shop is currently closed. No orders can be placed at the moment.");
     };
 
     if (rechargeAmount <= 0) { Runtime.trap("Recharge amount must be greater than 0") };
@@ -582,5 +593,18 @@ actor {
       Runtime.trap("Unauthorized: Only admins can view excluded products");
     };
     excludedProducts.toArray();
+  };
+
+  // Shop Open/Closed Feature Methods
+  public query ({ caller }) func getShopOpenStatus() : async Bool {
+    isShopOpen;
+  };
+
+  public shared ({ caller }) func setShopOpenStatus(status : Bool) : async Bool {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can change shop open status");
+    };
+    isShopOpen := status;
+    isShopOpen;
   };
 };

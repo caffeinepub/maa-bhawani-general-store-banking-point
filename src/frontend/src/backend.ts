@@ -212,6 +212,7 @@ export interface backendInterface {
     getExcludedProducts(): Promise<Array<bigint>>;
     getProductByBarcode(barcode: string): Promise<Product | null>;
     getProductByBarcodeWithAction(barcode: string): Promise<ProductWithAction>;
+    getShopOpenStatus(): Promise<boolean>;
     getShopSlogan(): Promise<string>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isAdmin(): Promise<boolean>;
@@ -223,6 +224,7 @@ export interface backendInterface {
     placeRechargeOrder(mobileNumber: string, operator: string, rechargeAmount: bigint): Promise<bigint>;
     removeProduct(productId: bigint): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setShopOpenStatus(status: boolean): Promise<boolean>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
     updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;
@@ -580,6 +582,20 @@ export class Backend implements backendInterface {
             return from_candid_ProductWithAction_n11(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getShopOpenStatus(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getShopOpenStatus();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getShopOpenStatus();
+            return result;
+        }
+    }
     async getShopSlogan(): Promise<string> {
         if (this.processError) {
             try {
@@ -731,6 +747,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(arg0);
+            return result;
+        }
+    }
+    async setShopOpenStatus(arg0: boolean): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setShopOpenStatus(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setShopOpenStatus(arg0);
             return result;
         }
     }

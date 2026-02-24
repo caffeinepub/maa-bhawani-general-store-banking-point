@@ -11,7 +11,7 @@ export default function AdminProductList() {
   const { data: products = [], isLoading } = useGetAllProducts();
   const removeProduct = useRemoveProduct();
 
-  const handleDelete = async (productId: bigint, productName: string) => {
+  const handleRemove = async (productId: bigint, productName: string) => {
     try {
       await removeProduct.mutateAsync(productId);
       toast.success(`${productName} removed successfully`);
@@ -27,12 +27,12 @@ export default function AdminProductList() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Product List</CardTitle>
+      <Card className="shadow-md">
+        <CardHeader className="border-b bg-gray-50">
+          <CardTitle className="text-xl">All Products</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <CardContent className="p-6">
+          <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-16 w-full" />
             ))}
@@ -43,68 +43,74 @@ export default function AdminProductList() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Product List ({products.length})</CardTitle>
+    <Card className="shadow-md">
+      <CardHeader className="border-b bg-gray-50">
+        <CardTitle className="text-xl">All Products ({products.length})</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         {products.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No products available. Add your first product above.</p>
+          <p className="text-center text-muted-foreground py-8">No products added yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Unit Type</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold">Image</TableHead>
+                  <TableHead className="font-semibold">Name</TableHead>
+                  <TableHead className="font-semibold">Category</TableHead>
+                  <TableHead className="font-semibold">Unit Type</TableHead>
+                  <TableHead className="font-semibold">Price</TableHead>
+                  <TableHead className="font-semibold">Barcode</TableHead>
+                  <TableHead className="text-right font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => {
-                  const imageUrl = product.image.getDirectURL();
-                  return (
-                    <TableRow key={Number(product.id)}>
-                      <TableCell>
-                        <img src={imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded" />
-                      </TableCell>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{product.category}</TableCell>
-                      <TableCell>{formatUnitType(product.unitType)}</TableCell>
-                      <TableCell>₹{Number(product.priceInRupees)}</TableCell>
-                      <TableCell className="text-right">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" className="gap-2">
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Product</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{product.name}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(product.id, product.name)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {products.map((product) => (
+                  <TableRow key={Number(product.id)} className="hover:bg-gray-50">
+                    <TableCell>
+                      <img
+                        src={product.image.getDirectURL()}
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{formatUnitType(product.unitType)}</TableCell>
+                    <TableCell className="font-semibold text-primary">₹{Number(product.priceInRupees)}</TableCell>
+                    <TableCell className="font-mono text-sm">{product.barcode || '-'}</TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove Product</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to remove "{product.name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleRemove(product.id, product.name)}
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Remove
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>

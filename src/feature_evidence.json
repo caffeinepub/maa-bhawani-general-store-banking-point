@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-in-the-adminproductform-component-replace-the-fixed-price-input-field-with-a-unit-type-dropdown-the-dropdown-must-have-exactly-four-options-kg-gram-packet-and-piece",
-      "featureTitle": "In the AdminProductForm component, replace the fixed Price input field with a Unit Type dropdown. The dropdown must have exactly four options: Kg, Gram, Packet, and Piece.",
+      "featureId": "feature-add-a-shop-status-toggle-switch-at-the-top-of-the-admin-dashboard-that-allows-admins-to-manually-open-or-close-the-shop",
+      "featureTitle": "Add a shop status toggle switch at the top of the Admin Dashboard that allows admins to manually open or close the shop",
       "files": [
-        "frontend/src/components/AdminProductForm.tsx"
+        "frontend/src/components/ShopStatusToggle.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/AdminPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,34 +26,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-kg-or-gram-display-a-text-input-field-where-customers-can-enter-custom-weight-values-accept-inputs-like-100g-0-5kg-1-5kg-250g-and-parse-them-correctly",
-      "featureTitle": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Kg' or 'Gram', display a text input field where customers can enter custom weight values. Accept inputs like '100g', '0.5kg', '1.5kg', '250g' and parse them correctly.",
+      "featureId": "feature-display-a-full-width-notice-banner-on-the-home-screen-when-the-shop-is-closed-with-the-text-namaste-mbg-store-is-currently-closed-we-are-not-accepting-orders-right-now-we-will-open-again-at-8-00-am-thank-you-for-your-patience-using-a-calm-background-color-soft-orange-or-grey",
+      "featureTitle": "Display a full-width notice banner on the home screen when the shop is closed with the text 'Namaste! MBG Store is currently Closed. We are not accepting orders right now. We will open again at 8:00 AM. Thank you for your patience!' using a calm background color (soft orange or grey)",
       "files": [
-        "frontend/src/components/CartDrawer.tsx",
-        "frontend/src/components/ProductCard.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "camera@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-packet-or-piece-display-only-and-quantity-buttons-for-incrementing-decrementing-whole-number-quantities-hide-the-custom-weight-input-for-these-unit-types",
-      "featureTitle": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for incrementing/decrementing whole number quantities. Hide the custom weight input for these unit types.",
-      "files": [
-        "frontend/src/components/CartDrawer.tsx",
-        "frontend/src/components/ProductCard.tsx"
+        "frontend/src/components/ShopClosedBanner.tsx",
+        "frontend/src/pages/HomePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -70,14 +49,33 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-all-product-display-components-productcard-adminproductlist-billtemplate-to-show-the-unit-type-instead-of-or-alongside-the-price-ensure-billing-and-checkout-flows-correctly-calculate-totals-based-on-unit-type-and-quantity-weight",
-      "featureTitle": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show the unit type instead of or alongside the price. Ensure billing and checkout flows correctly calculate totals based on unit type and quantity/weight.",
+      "featureId": "feature-disable-add-to-cart-and-checkout-buttons-across-the-entire-app-when-the-shop-is-closed",
+      "featureTitle": "Disable 'Add to Cart' and 'Checkout' buttons across the entire app when the shop is closed",
       "files": [
-        "frontend/src/components/AdminProductList.tsx",
-        "frontend/src/components/BillTemplate.tsx",
-        "frontend/src/components/ProductCard.tsx",
-        "frontend/src/pages/BillingPage.tsx",
-        "frontend/src/pages/CheckoutPage.tsx"
+        "frontend/src/components/CartDrawer.tsx",
+        "frontend/src/components/ProductCard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-small-colored-dot-indicator-next-to-the-store-name-in-the-header-showing-green-when-open-and-red-when-closed",
+      "featureTitle": "Add a small colored dot indicator next to the store name in the header showing green when open and red when closed",
+      "files": [
+        "frontend/src/components/Header.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -92,6 +90,29 @@
       ],
       "testIds": [
         "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-show-a-popup-notification-during-checkout-with-the-message-sorry-the-store-just-closed-please-place-your-order-when-we-reopen-if-the-shop-closes-while-a-customer-has-items-in-their-cart",
+      "featureTitle": "Show a popup notification during checkout with the message 'Sorry, the store just closed. Please place your order when we reopen!' if the shop closes while a customer has items in their cart",
+      "files": [
+        "frontend/src/components/ShopClosedCheckoutDialog.tsx",
+        "frontend/src/pages/CheckoutPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
       ],
       "confidence": "high"
     }

@@ -5,8 +5,8 @@ export default function Footer() {
   const appIdentifier = encodeURIComponent(window.location.hostname || 'maa-bhawani-store');
 
   return (
-    <footer className="border-t border-border/40 bg-card mt-12">
-      <div className="container mx-auto px-4 py-8">
+    <footer className="border-t border-gray-200 bg-white mt-12">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="font-bold text-lg mb-3 text-primary">Maa Bhawani General Store</h3>
@@ -43,7 +43,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-border/40 text-center text-sm text-muted-foreground">
+        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-muted-foreground">
           <p className="flex items-center justify-center gap-1 flex-wrap">
             © {currentYear} Maa Bhawani General Store. Built with{' '}
             <Heart className="h-4 w-4 text-red-500 fill-red-500" /> using{' '}

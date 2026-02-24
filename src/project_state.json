@@ -1,43 +1,51 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce application with product management featuring flexible unit types (Kg, Gram, Packet, Piece) and dynamic quantity input methods based on product type",
+  "summary": "E-commerce admin panel with shop management system, allowing manual open/close control and customer-facing status indicators",
   "architectural_notes": [
-    "Product model includes unit type field (Kg, Gram, Packet, Piece)",
-    "Shop page UI dynamically adapts based on product unit type"
+    "Shop status managed as global state synchronized across admin and customer views",
+    "Real-time status updates needed to handle mid-checkout closures"
   ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-in-the-adminproductform-component-replace-the-fixed-price-input-field-with-a-unit-type-dropdown-the-dropdown-must-have-exactly-four-options-kg-gram-packet-and-piece",
-      "title": "In the AdminProductForm component, replace the fixed Price input field with a Unit Type dropdown. The dropdown must have exactly four options: Kg, Gram, Packet, and Piece.",
+      "id": "feature-add-a-shop-status-toggle-switch-at-the-top-of-the-admin-dashboard-that-allows-admins-to-manually-open-or-close-the-shop",
+      "title": "Add a shop status toggle switch at the top of the Admin Dashboard that allows admins to manually open or close the shop",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-kg-or-gram-display-a-text-input-field-where-customers-can-enter-custom-weight-values-accept-inputs-like-100g-0-5kg-1-5kg-250g-and-parse-them-correctly",
-      "title": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Kg' or 'Gram', display a text input field where customers can enter custom weight values. Accept inputs like '100g', '0.5kg', '1.5kg', '250g' and parse them correctly.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-on-the-shop-page-productcard-and-cartdrawer-for-products-with-unit-type-packet-or-piece-display-only-and-quantity-buttons-for-incrementing-decrementing-whole-number-quantities-hide-the-custom-weight-input-for-these-unit-types",
-      "title": "On the shop page (ProductCard and CartDrawer), for products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for incrementing/decrementing whole number quantities. Hide the custom weight input for these unit types.",
+      "id": "feature-display-a-full-width-notice-banner-on-the-home-screen-when-the-shop-is-closed-with-the-text-namaste-mbg-store-is-currently-closed-we-are-not-accepting-orders-right-now-we-will-open-again-at-8-00-am-thank-you-for-your-patience-using-a-calm-background-color-soft-orange-or-grey",
+      "title": "Display a full-width notice banner on the home screen when the shop is closed with the text 'Namaste! MBG Store is currently Closed. We are not accepting orders right now. We will open again at 8:00 AM. Thank you for your patience!' using a calm background color (soft orange or grey)",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-all-product-display-components-productcard-adminproductlist-billtemplate-to-show-the-unit-type-instead-of-or-alongside-the-price-ensure-billing-and-checkout-flows-correctly-calculate-totals-based-on-unit-type-and-quantity-weight",
-      "title": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show the unit type instead of or alongside the price. Ensure billing and checkout flows correctly calculate totals based on unit type and quantity/weight.",
+      "id": "feature-disable-add-to-cart-and-checkout-buttons-across-the-entire-app-when-the-shop-is-closed",
+      "title": "Disable 'Add to Cart' and 'Checkout' buttons across the entire app when the shop is closed",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-small-colored-dot-indicator-next-to-the-store-name-in-the-header-showing-green-when-open-and-red-when-closed",
+      "title": "Add a small colored dot indicator next to the store name in the header showing green when open and red when closed",
       "reqIds": [
         "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-show-a-popup-notification-during-checkout-with-the-message-sorry-the-store-just-closed-please-place-your-order-when-we-reopen-if-the-shop-closes-while-a-customer-has-items-in-their-cart",
+      "title": "Show a popup notification during checkout with the message 'Sorry, the store just closed. Please place your order when we reopen!' if the shop closes while a customer has items in their cart",
+      "reqIds": [
+        "REQ-7"
       ],
       "version": 1
     }
@@ -45,44 +53,46 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Replace fixed Price field with Unit Type dropdown (Kg, Gram, Packet, Piece) in Add Product form",
+      "summary": "Admin shop status toggle switch on dashboard",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Enable custom weight input for Kg/Gram products on shop page",
-      "reqIds": [
-        "AR-1"
-      ],
+      "summary": "Shop closed banner on home screen with disabled cart/checkout",
+      "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Show only +/- quantity buttons for Packet/Piece products on shop page",
-      "reqIds": [
-        "AR-1"
-      ],
+      "summary": "Open/closed indicator dot next to store name in header",
+      "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-5",
-      "summary": "Update the backend Product type to include a unitType field (Kg, Gram, Packet, or Piece) instead of or in addition to the price field. Modify the addProduct function to accept and store the unit type.",
+      "id": "AR-4",
+      "summary": "Popup notification when shop closes during checkout",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Store shop open/closed status in the backend and provide methods to get and update the status",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-8",
-      "summary": "Update the cart data structure to support both quantity-based items (Packet, Piece) and weight-based items (Kg, Gram). Modify the backend addToCart and related cart functions to handle both types correctly.",
+      "id": "AR-7",
+      "summary": "Prevent customers from placing new orders when the shop is closed",
       "reqIds": [
-        "REQ-5"
+        "REQ-3"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Maa Bhawani General Store",
+  "projectName": "MBG Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

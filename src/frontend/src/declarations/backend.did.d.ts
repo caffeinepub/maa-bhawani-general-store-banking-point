@@ -131,6 +131,7 @@ export interface _SERVICE {
   'getExcludedProducts' : ActorMethod<[], Array<bigint>>,
   'getProductByBarcode' : ActorMethod<[string], [] | [Product]>,
   'getProductByBarcodeWithAction' : ActorMethod<[string], ProductWithAction>,
+  'getShopOpenStatus' : ActorMethod<[], boolean>,
   'getShopSlogan' : ActorMethod<[], string>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isAdmin' : ActorMethod<[], boolean>,
@@ -145,6 +146,7 @@ export interface _SERVICE {
   'placeRechargeOrder' : ActorMethod<[string, string, bigint], bigint>,
   'removeProduct' : ActorMethod<[bigint], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setShopOpenStatus' : ActorMethod<[boolean], boolean>,
   'setShopSlogan' : ActorMethod<[string], undefined>,
   'toggleProductExclusion' : ActorMethod<[bigint], boolean>,
   'updateBillPaymentStatus' : ActorMethod<

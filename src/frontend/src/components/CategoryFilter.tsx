@@ -14,14 +14,18 @@ export default function CategoryFilter({
 }: CategoryFilterProps) {
   return (
     <ScrollArea className="w-full whitespace-nowrap">
-      <div className="flex gap-2 pb-2">
+      <div className="flex gap-3 pb-2">
         {categories.map((category) => (
           <Button
             key={category}
             variant={selectedCategory === category ? 'default' : 'outline'}
             size="sm"
             onClick={() => onSelectCategory(category)}
-            className="flex-shrink-0"
+            className={`flex-shrink-0 min-h-[40px] px-4 transition-all ${
+              selectedCategory === category
+                ? 'bg-primary hover:bg-primary/90 text-white'
+                : 'bg-white hover:bg-primary/5 hover:text-primary hover:border-primary'
+            }`}
           >
             {category}
           </Button>

@@ -69,91 +69,88 @@ export default function AdminSettingsPage() {
     <AdminGuard>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/admin' })}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate({ to: '/admin' })}
+            className="hover:bg-primary/5 hover:text-primary"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Settings</h1>
-            <p className="text-muted-foreground">Customize your shop details and billing preferences</p>
+            <p className="text-muted-foreground mt-1">Customize your store settings</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Shop Slogan</CardTitle>
-                <CardDescription>
-                  This slogan will appear on all generated bills
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="slogan">Slogan</Label>
-                  <Input
-                    id="slogan"
-                    placeholder="Enter your shop slogan"
-                    value={slogan}
-                    onChange={(e) => setSlogan(e.target.value)}
-                    maxLength={100}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {slogan.length}/100 characters
-                  </p>
-                </div>
-
-                <Button
-                  onClick={handleSave}
-                  disabled={setShopSlogan.isPending || slogan === currentSlogan}
-                >
-                  {setShopSlogan.isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Shop Information</CardTitle>
-                <CardDescription>
-                  These details are fixed and appear on all bills
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="font-semibold">Shop Name:</p>
-                  <p className="text-muted-foreground">Maa Bhawani General Store & Banking Point</p>
-                </div>
-                <Separator />
-                <div>
-                  <p className="font-semibold">Address:</p>
-                  <p className="text-muted-foreground">
-                    Bardiha Turki - Tarvadih<br />
-                    (Patepur-Vaishali 843110), Bihar
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <p className="font-semibold">Phone:</p>
-                  <p className="text-muted-foreground">9142876085</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Bill Preview</CardTitle>
-              <CardDescription>
-                Preview how your slogan will appear on bills
-              </CardDescription>
+          {/* Shop Slogan Form */}
+          <Card className="shadow-md">
+            <CardHeader className="border-b bg-gray-50">
+              <CardTitle className="text-xl">Shop Slogan</CardTitle>
+              <CardDescription>Customize the slogan that appears on bills</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="border rounded-lg p-4 bg-gray-50">
+            <CardContent className="p-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="slogan" className="font-medium">Slogan</Label>
+                <Input
+                  id="slogan"
+                  value={slogan}
+                  onChange={(e) => setSlogan(e.target.value)}
+                  placeholder="Enter shop slogan"
+                />
+              </div>
+              <Button
+                onClick={handleSave}
+                disabled={setShopSlogan.isPending}
+                className="bg-primary hover:bg-primary/90 text-white min-h-[44px]"
+              >
+                {setShopSlogan.isPending ? 'Saving...' : 'Save Slogan'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Bill Preview */}
+          <Card className="shadow-md">
+            <CardHeader className="border-b bg-gray-50">
+              <CardTitle className="text-xl">Bill Preview</CardTitle>
+              <CardDescription>Preview how your bill will look</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <BillTemplate bill={mockBill} />
               </div>
             </CardContent>
           </Card>
         </div>
+
+        <Separator />
+
+        {/* Store Information */}
+        <Card className="shadow-md">
+          <CardHeader className="border-b bg-gray-50">
+            <CardTitle className="text-xl">Store Information</CardTitle>
+            <CardDescription>Your store details</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Store Name</h3>
+                <p className="text-muted-foreground">Maa Bhawani General Store & Banking Point</p>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Address</h3>
+                <p className="text-muted-foreground">
+                  Bardiha Turki - Tarvadih (Patepur-Vaishali 843110), Bihar
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Contact</h3>
+                <p className="text-muted-foreground">9142876085</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminGuard>
   );

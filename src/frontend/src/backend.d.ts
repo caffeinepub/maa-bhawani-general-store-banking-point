@@ -119,6 +119,7 @@ export interface backendInterface {
     getExcludedProducts(): Promise<Array<bigint>>;
     getProductByBarcode(barcode: string): Promise<Product | null>;
     getProductByBarcodeWithAction(barcode: string): Promise<ProductWithAction>;
+    getShopOpenStatus(): Promise<boolean>;
     getShopSlogan(): Promise<string>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isAdmin(): Promise<boolean>;
@@ -130,6 +131,7 @@ export interface backendInterface {
     placeRechargeOrder(mobileNumber: string, operator: string, rechargeAmount: bigint): Promise<bigint>;
     removeProduct(productId: bigint): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setShopOpenStatus(status: boolean): Promise<boolean>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
     updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;

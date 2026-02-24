@@ -432,3 +432,33 @@ export function useToggleProductExclusion() {
     },
   });
 }
+
+// Shop Open/Close Status
+export function useGetShopOpenStatus() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['shopStatus'],
+    queryFn: async () => {
+      if (!actor) return true; // Default to open if actor not available
+      return actor.getShopOpenStatus();
+    },
+    enabled: !!actor && !isFetching,
+    refetchInterval: 10000, // Refetch every 10 seconds to keep status updated
+  });
+}
+
+export function useSetShopOpenStatus() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (status: boolean) => {
+      if (!actor) throw new Error('Actor not available');
+      return await actor.setShopOpenStatus(status);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopStatus'] });
+    },
+  });
+}

@@ -1,28 +1,34 @@
-import { Link, useNavigate } from '@tanstack/react-router';
-import { ShoppingCart, Store, Phone, User } from 'lucide-react';
+import { ShoppingCart, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useGetCart, useIsCallerAdmin, useGetShopOpenStatus } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
-import { useGetCart } from '../hooks/useQueries';
-import CartDrawer from './CartDrawer';
 import { useState } from 'react';
+import CartDrawer from './CartDrawer';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 
 export default function Header() {
   const { login, clear, loginStatus, identity } = useInternetIdentity();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const { data: cart = [] } = useGetCart();
-  const [cartOpen, setCartOpen] = useState(false);
+  const { data: isAdmin = false } = useIsCallerAdmin();
+  const { data: isShopOpen } = useGetShopOpenStatus();
+  const queryClient = useQueryClient();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isAuthenticated = !!identity;
   const disabled = loginStatus === 'logging-in';
-  const cartItemCount = cart.reduce((sum, item) => sum + Number(item.quantity), 0);
+  const cartItemCount = cart.length;
 
   const handleAuth = async () => {
     if (isAuthenticated) {
       await clear();
       queryClient.clear();
-      navigate({ to: '/' });
+      if (location.pathname.startsWith('/admin')) {
+        navigate({ to: '/' });
+      }
     } else {
       try {
         await login();
@@ -37,65 +43,93 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img 
-              src="/assets/Gemini_Generated_Image_rjk9furjk9furjk9.png" 
-              alt="Maa Bhawani General Store Logo" 
-              className="h-12 w-12 rounded-full object-contain"
-            />
-            <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight text-primary">Maa Bhawani</span>
-              <span className="text-xs text-muted-foreground">General Store & Banking Point</span>
-            </div>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors min-h-[44px] flex items-center">
-              Shop
-            </Link>
-            <Link to="/store-details" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 min-h-[44px]">
-              <Store className="h-4 w-4" />
-              Store Info
-            </Link>
-            <a href="tel:9708075648" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 min-h-[44px]">
-              <Phone className="h-4 w-4" />
-              97080 75648
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative min-h-[44px] min-w-[44px]"
-              onClick={() => setCartOpen(true)}
+    <>
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex h-16 items-center justify-between">
+            <button
+              onClick={() => navigate({ to: '/' })}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
-              <ShoppingCart className="h-5 w-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-                  {cartItemCount}
-                </span>
+              <img
+                src="/assets/generated/store-logo.dim_200x200.png"
+                alt="Maa Bhawani General Store"
+                className="h-10 w-10 rounded-full"
+              />
+              <div className="hidden sm:block">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-foreground">Maa Bhawani General Store</h1>
+                  {/* Shop Status Indicator */}
+                  {isShopOpen !== undefined && (
+                    <div 
+                      className={`w-2.5 h-2.5 rounded-full ${isShopOpen ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
+                      title={isShopOpen ? 'Shop Open' : 'Shop Closed'}
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">& Banking Point</p>
+              </div>
+            </button>
+
+            <nav className="flex items-center gap-2">
+              {isAuthenticated && isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate({ to: '/admin' })}
+                  className="gap-2 hover:text-primary hover:bg-primary/5"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Button>
               )}
-            </Button>
 
-            <Button
-              onClick={handleAuth}
-              disabled={disabled}
-              variant={isAuthenticated ? 'outline' : 'default'}
-              size="sm"
-              className="gap-2 min-h-[44px] px-4"
-            >
-              <User className="h-4 w-4" />
-              {loginStatus === 'logging-in' ? 'Logging in...' : isAuthenticated ? 'Logout' : 'Login'}
-            </Button>
+              {isAuthenticated && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative gap-2 hover:text-primary hover:bg-primary/5"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartItemCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary text-white text-xs">
+                      {cartItemCount}
+                    </Badge>
+                  )}
+                  <span className="hidden sm:inline">Cart</span>
+                </Button>
+              )}
+
+              <Button
+                onClick={handleAuth}
+                disabled={disabled}
+                size="sm"
+                variant={isAuthenticated ? 'outline' : 'default'}
+                className={`gap-2 min-w-[100px] ${
+                  isAuthenticated
+                    ? 'hover:bg-gray-100'
+                    : 'bg-primary hover:bg-primary/90 text-white'
+                }`}
+              >
+                {isAuthenticated ? (
+                  <>
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="h-4 w-4" />
+                    {disabled ? 'Logging in...' : 'Login'}
+                  </>
+                )}
+              </Button>
+            </nav>
           </div>
         </div>
-      </div>
+      </header>
 
-      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
-    </header>
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+    </>
   );
 }

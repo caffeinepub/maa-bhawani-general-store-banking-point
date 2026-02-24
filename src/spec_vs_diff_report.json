@@ -1,32 +1,40 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-24T02:12:26.193Z",
-  "summary": "The diff implements most requirements successfully. Backend migration adds unitType to Product, frontend forms use Unit Type dropdown, ProductCard/CartDrawer show conditional UI (weight input for Kg/Gram, +/- buttons for Packet/Piece), and display components show unit types. However, the backend cart structure still uses integer quantity only (no separate weight field), and some display components may not fully differentiate weight vs quantity semantics.",
-  "missing_requirements": [
+  "generatedAt": "2026-02-24T02:36:27.096Z",
+  "summary": "The implementation successfully addresses all 7 requirements with comprehensive shop management functionality. Backend migration adds isShopOpen state, frontend includes toggle switch, status indicators, conditional UI disabling, and dynamic checkout dialog. All major features are present with proper evidence in the diff.",
+  "missing_requirements": [],
+  "hallucinated_features": [
     {
-      "id": "REQ-5",
-      "requirement": "Cart items store either quantity (for Packet/Piece) or weight (for Kg/Gram). Backend addToCart function accepts both quantity and weight parameters.",
-      "reason": "The backend CartItem type still has a single 'quantity: Nat' field. The addToCart function signature remains 'addToCart(productId, quantity)', not separate quantity/weight parameters. Weight values are stored as grams in the quantity field, but the data structure does not distinguish between quantity and weight semantically.",
+      "description": "Backend migration.mo file includes extensive data structures and types (UserProfile, Product, Order, Bill, etc.) that appear to be general schema definitions rather than shop status-specific implementation",
+      "reason": "The migration file contains many type definitions unrelated to the shop open/closed feature. While the migration does add isShopOpen field, the bulk of the file appears to be existing schema definitions rather than new feature implementation.",
       "evidence": [
-        "backend/main.mo"
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "description": "useGetShopOpenStatus hook configured with 10-second automatic refetching interval",
+      "reason": "The build request specifies 'Status updates in real-time when shop status changes' but does not explicitly request or specify polling intervals. The 10-second refetch is an implementation detail not mentioned in requirements.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.85,
+  "confidence": 0.92,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/AdminProductForm.tsx",
-    "frontend/src/components/AdminProductList.tsx",
-    "frontend/src/components/BillTemplate.tsx",
     "frontend/src/components/CartDrawer.tsx",
+    "frontend/src/components/Header.tsx",
     "frontend/src/components/ProductCard.tsx",
+    "frontend/src/components/ShopClosedBanner.tsx",
+    "frontend/src/components/ShopClosedCheckoutDialog.tsx",
+    "frontend/src/components/ShopStatusToggle.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/BillingPage.tsx",
+    "frontend/src/pages/AdminPage.tsx",
     "frontend/src/pages/CheckoutPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "project_state.json"
   ]
 }

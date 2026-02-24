@@ -1,104 +1,118 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace Price field with Unit Type dropdown and implement dynamic quantity inputs",
+  "title": "Add Shop Management System with Open/Close Toggle",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace the fixed Price input field in AdminProductForm with a Unit Type dropdown containing exactly four options: Kg, Gram, Packet, and Piece",
+      "summary": "Add shop status toggle switch at the top of the Admin Dashboard",
       "acceptanceCriteria": [
-        "The Price field is removed from the Add Product form",
-        "A Unit Type dropdown is displayed in its place",
-        "The dropdown contains exactly four options: Kg, Gram, Packet, and Piece",
-        "The form validation requires a unit type selection before submission"
+        "Toggle switch is prominently displayed at the top of the Admin Dashboard page",
+        "Toggle shows clear visual distinction between ON (Open) and OFF (Closed) states",
+        "Toggle state persists after page refresh",
+        "Toggle is only accessible to authenticated admin users"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminProductForm.tsx",
-          "operation": "modify",
-          "description": "Replace the price input field with a unitType dropdown field. Add a Select component from shadcn/ui with four hardcoded options: Kg, Gram, Packet, Piece. Update form state to track unitType instead of price. Update form validation to require unitType selection. Modify the addProduct mutation call to pass unitType (mapped to backend UnitType enum) instead of priceInRupees. Remove price-related state and validation logic."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "For products with unit type 'Kg' or 'Gram', display a custom weight input field on ProductCard and CartDrawer where customers can enter values like '100g', '0.5kg', '1.5kg', '250g' with proper parsing",
-      "acceptanceCriteria": [
-        "Products with Kg or Gram unit type show a weight input field instead of +/- buttons",
-        "Input accepts formats: '100g', '0.5kg', '1.5kg', '250g'",
-        "Weight values are parsed and converted to a consistent unit for cart storage",
-        "Invalid inputs show validation errors",
-        "Cart displays the custom weight entered by the customer"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/ProductCard.tsx",
-          "operation": "modify",
-          "description": "Add conditional rendering based on product.unitType. If unitType is 'kg' or 'gram', render a text input field for custom weight entry with a submit/add button. If unitType is 'packet' or 'piece', render the existing add-to-cart button. Create a weight parsing utility function that accepts strings like '100g', '0.5kg', '1.5kg', '250g' and converts them to a normalized gram value (bigint). Add input validation and error display for invalid weight formats. Update addToCart mutation to accept the parsed weight value as quantity for weight-based products."
+          "path": "frontend/src/components/ShopStatusToggle.tsx",
+          "operation": "create",
+          "description": "Create a shop status toggle component that displays the current shop open/closed status with a switch control. Use the shadcn/ui Switch component for the toggle. Call backend method getShopOpenStatus() to fetch current status and setShopOpenStatus(boolean) to update it. Show clear labels for 'Open' (green indicator) and 'Closed' (red indicator) states. Include loading state while fetching or updating status. Use React Query mutation for status updates with optimistic updates and automatic query invalidation."
         },
         {
-          "path": "frontend/src/components/CartDrawer.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Update cart item display to show unit type alongside quantity. For items with unitType 'kg' or 'gram', display the quantity as a formatted weight (e.g., '500g', '1.5kg'). For items with unitType 'packet' or 'piece', display as integer quantity with unit label (e.g., '3 Packet'). Add conditional rendering for quantity controls: weight-based items show a text input for editing weight, while packet/piece items show +/- buttons. Include weight parsing and validation logic consistent with ProductCard. Update quantity display formatting helper function to handle both weight and count-based items."
+          "description": "Add React Query hooks for shop status management. Create useGetShopOpenStatus query hook that calls actor.getShopOpenStatus() with queryKey ['shopStatus']. Create useSetShopOpenStatus mutation hook that calls actor.setShopOpenStatus(status) and invalidates ['shopStatus'] query on success. Export both hooks for use in components."
+        },
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "Import and render the ShopStatusToggle component at the top of the admin dashboard page, above the existing tabs. Position it prominently with appropriate spacing and styling to make it easily visible and accessible to admin users. Ensure it's rendered within the AdminGuard protection."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "For products with unit type 'Packet' or 'Piece', display only '+' and '-' quantity buttons for whole number quantities on ProductCard and CartDrawer, hiding custom weight input",
+      "summary": "Display full-width notice banner on home screen when shop is closed",
       "acceptanceCriteria": [
-        "Products with Packet or Piece unit type show only +/- quantity buttons",
-        "Quantities can only be whole numbers (1, 2, 3, etc.)",
-        "No weight input field is shown for these unit types",
-        "Cart displays the integer quantity for Packet/Piece products"
+        "Banner appears at the top of the home screen when shop is closed",
+        "Banner displays the exact text specified",
+        "Banner uses a soft orange or grey background color",
+        "Banner is full-width and professionally styled",
+        "Banner disappears when shop is open"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ShopClosedBanner.tsx",
+          "operation": "create",
+          "description": "Create a full-width notice banner component that displays when the shop is closed. Use the useGetShopOpenStatus hook to check shop status. When shopOpen is false, render a banner with the exact text: 'Namaste! MBG Store is currently Closed. We are not accepting orders right now. We will open again at 8:00 AM. Thank you for your patience!' Style with a soft orange background (use bg-orange-100 or similar Tailwind class), full width (w-full), padding, centered text, and professional typography. Use shadcn/ui Alert component for consistent styling. Return null when shop is open or while loading."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Import and render the ShopClosedBanner component at the very top of the HomePage, before the store banner image. This ensures the notice is the first thing customers see when the shop is closed."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Disable 'Add to Cart' and 'Checkout' buttons when shop is closed",
+      "acceptanceCriteria": [
+        "All 'Add to Cart' buttons in ProductCard components are disabled when shop is closed",
+        "Checkout button in CartDrawer is disabled when shop is closed",
+        "Disabled buttons show visual indication (greyed out or similar)",
+        "Buttons function normally when shop is open"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/ProductCard.tsx",
           "operation": "modify",
-          "description": "Ensure that for products with unitType 'packet' or 'piece', only the standard add-to-cart button is shown (no weight input field). The existing addToCart flow should work with quantity set to 1 by default. Verify that the conditional rendering from REQ-3 properly hides weight input for packet/piece types."
+          "description": "Import and use the useGetShopOpenStatus hook to check shop status. Disable the 'Add to Cart' button when shopOpen is false by setting the disabled prop and adding visual styling (opacity-50, cursor-not-allowed). Add a title/tooltip attribute explaining why the button is disabled when shop is closed. Ensure the button functions normally when shopOpen is true."
         },
         {
           "path": "frontend/src/components/CartDrawer.tsx",
           "operation": "modify",
-          "description": "Ensure that for cart items with unitType 'packet' or 'piece', only +/- increment/decrement buttons are shown. Quantities must remain whole numbers (validated as integers). Display quantity with unit label (e.g., '2 Packet', '5 Piece'). Verify that weight input fields are hidden for these unit types per the conditional rendering from REQ-3."
+          "description": "Import and use the useGetShopOpenStatus hook to check shop status. Disable the checkout/proceed button when shopOpen is false. Show a brief message near the button explaining that checkout is unavailable because the shop is closed. Apply disabled styling (opacity-50, cursor-not-allowed) and prevent navigation to checkout page when disabled."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Update all product display components (ProductCard, AdminProductList, BillTemplate) to show unit type and ensure billing and checkout flows correctly display and calculate based on unit type and quantity/weight",
+      "summary": "Add colored dot indicator next to store name in header showing shop status",
       "acceptanceCriteria": [
-        "Product cards display unit type (Kg, Gram, Packet, Piece)",
-        "Admin product list shows unit type for each product",
-        "Bills display quantity with unit (e.g., '0.5 Kg', '3 Packet')",
-        "Checkout page calculates subtotals correctly for both weight and quantity items"
+        "Green dot appears next to store name when shop is open",
+        "Red dot appears next to store name when shop is closed",
+        "Indicator is visible on all pages with the header",
+        "Dot has a small, unobtrusive size but is clearly visible",
+        "Status updates in real-time when shop status changes"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProductCard.tsx",
+          "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Add unit type display badge next to or below the product name showing the unitType value (Kg, Gram, Packet, or Piece). Use a small badge or label component from shadcn/ui. Position it near the category badge for visual consistency."
-        },
+          "description": "Import and use the useGetShopOpenStatus hook to fetch current shop status. Add a small colored dot indicator next to the store name/logo. When shopOpen is true, show a green dot (bg-green-500). When shopOpen is false, show a red dot (bg-red-500). Style the dot as a small circle (w-2 h-2 or w-3 h-3, rounded-full) positioned inline with the store name. Include a subtle animation or glow effect for better visibility. Add a title attribute for accessibility (e.g., 'Shop Open' or 'Shop Closed')."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Show popup notification during checkout if shop closes while customer has items in cart",
+      "acceptanceCriteria": [
+        "Popup appears on the checkout page if shop status changes to closed",
+        "Popup displays the exact message specified",
+        "Popup prevents order submission until dismissed",
+        "User can dismiss the popup and return to cart or home",
+        "Popup does not appear if shop was already closed when user navigated to checkout"
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/components/AdminProductList.tsx",
-          "operation": "modify",
-          "description": "Add a new table column for Unit Type that displays the product.unitType value. Position the column between Category and Price columns. Display unit type as a formatted label (capitalize first letter: Kg, Gram, Packet, Piece)."
-        },
-        {
-          "path": "frontend/src/components/BillTemplate.tsx",
-          "operation": "modify",
-          "description": "Update the item display in the bill to show quantity with unit type. For weight-based items (Kg, Gram), format quantity as weight (e.g., '0.5 Kg', '250 Gram'). For count-based items (Packet, Piece), format as integer with unit (e.g., '3 Packet', '5 Piece'). Access unitType from the product data associated with each BillItem and format accordingly. Ensure the thermal receipt layout remains compact and readable."
+          "path": "frontend/src/components/ShopClosedCheckoutDialog.tsx",
+          "operation": "create",
+          "description": "Create a dialog component using shadcn/ui Dialog or AlertDialog that displays when the shop closes while on the checkout page. Show the exact message: 'Sorry, the store just closed. Please place your order when we reopen!' Include buttons to either go back to the cart or return to the home page. Use the useGetShopOpenStatus hook to monitor shop status. Style with appropriate warning/alert colors and ensure it's modal (blocks interaction with checkout form until dismissed)."
         },
         {
           "path": "frontend/src/pages/CheckoutPage.tsx",
           "operation": "modify",
-          "description": "Update cart item display in the order summary section to show quantity with unit type. Ensure that subtotal calculations handle both weight-based and count-based quantities correctly by multiplying pricePerUnit by quantity (which is already in normalized units from the backend). Display formatted quantity with unit type for each item in the order summary table. Verify that the total price calculation accounts for all item types correctly."
-        },
-        {
-          "path": "frontend/src/pages/BillingPage.tsx",
-          "operation": "modify",
-          "description": "Update the cart preview and item list in the billing interface to display quantity with unit type. For weight-based products, show formatted weight values. For count-based products, show integer quantities with unit labels. Ensure the barcode scanner integration works with the new unitType field when adding products. Update any quantity editing controls to respect unit type (weight input for Kg/Gram, +/- buttons for Packet/Piece)."
+          "description": "Import and integrate the ShopClosedCheckoutDialog component. Use the useGetShopOpenStatus hook to monitor shop status continuously while on the checkout page. Track whether shop was open when the page loaded (using useRef or useState). If shop status changes from open to closed during the user's session on checkout page, show the dialog. Disable the place order button and form submission when shop is closed. Ensure the dialog only appears if the shop status actually changed (not if it was already closed when user navigated to checkout)."
         }
       ]
     }
