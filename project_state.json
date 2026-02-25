@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Project with Admin Dashboard that includes product management functionality. User wants a professional redesign of the Admin Dashboard layout.",
+  "architectural_notes": [
+    "Admin Dashboard includes a product management section with barcode support and add product functionality"
+  ],
+  "known_issues": [
+    "'Add Product' button gets stuck in 'Adding Product...' loading state",
+    "'Barcode' field in Add New Product section is non-functional"
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-redesign-the-admin-dashboard-page-adminpage-tsx-layout-to-professional-standards-use-a-clean-two-column-or-sidebar-main-layout-with-clear-visual-hierarchy-consistent-spacing-section-headings-and-card-based-panels-for-each-tab-s-content-area",
+      "title": "Redesign the Admin Dashboard page (AdminPage.tsx) layout to professional standards: use a clean two-column or sidebar-main layout with clear visual hierarchy, consistent spacing, section headings, and card-based panels for each tab's content area.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-add-new-product-section-in-adminproductform-tsx-as-a-clean-well-aligned-card-use-a-single-cohesive-card-container-with-proper-label-input-alignment-grid-or-flex-layout-consistent-input-sizing-grouped-sections-e-g-basic-info-pricing-media-and-clear-visual-separation-between-fields",
+      "title": "Redesign the 'Add New Product' section in AdminProductForm.tsx as a clean, well-aligned card: use a single cohesive card container with proper label/input alignment (grid or flex layout), consistent input sizing, grouped sections (e.g., basic info, pricing, media), and clear visual separation between fields.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-barcode-field-in-adminproductform-tsx-to-be-fully-functional-the-barcode-input-must-accept-manual-text-entry-and-the-camera-based-barcodescanner-integration-must-correctly-populate-the-barcode-field-value-when-a-code-is-scanned-ensure-the-scanned-value-is-bound-to-the-form-state",
+      "title": "Fix the Barcode field in AdminProductForm.tsx to be fully functional: the barcode input must accept manual text entry, and the camera-based BarcodeScanner integration must correctly populate the barcode field value when a code is scanned. Ensure the scanned value is bound to the form state.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-add-product-button-in-adminproductform-tsx-so-it-does-not-get-stuck-in-the-adding-product-loading-state-ensure-the-mutation-s-loading-pending-state-is-properly-reset-on-both-success-and-error-the-button-returns-to-its-default-state-after-the-operation-completes-and-success-error-feedback-is-shown-to-the-user",
+      "title": "Fix the 'Add Product' button in AdminProductForm.tsx so it does not get stuck in the 'Adding Product...' loading state. Ensure the mutation's loading/pending state is properly reset on both success and error, the button returns to its default state after the operation completes, and success/error feedback is shown to the user.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Redesign Admin Dashboard layout to professional standards with clean card layout for 'Add New Product' section and better alignment",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Fix 'Barcode' field to be functional in the Add New Product section",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Fix 'Add Product' button hanging on 'Adding Product...' state",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Maa Bhawani Store Admin",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

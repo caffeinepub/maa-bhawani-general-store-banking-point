@@ -1,0 +1,30 @@
+{
+  "name": "Maa Bhawani General Store & Banking Point",
+  "short_name": "Maa Bhawani Store",
+  "description": "Your trusted neighborhood general store and banking point for groceries, mobile recharges, and daily essentials",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#8b6f47",
+  "background_color": "#faf9f7",
+  "icons": [
+    {
+      "src": "/assets/generated/app-icon-192.dim_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/generated/app-icon-512.dim_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/generated/apple-touch-icon.dim_180x180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

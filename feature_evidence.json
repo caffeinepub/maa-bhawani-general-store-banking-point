@@ -1,0 +1,97 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-redesign-the-admin-dashboard-page-adminpage-tsx-layout-to-professional-standards-use-a-clean-two-column-or-sidebar-main-layout-with-clear-visual-hierarchy-consistent-spacing-section-headings-and-card-based-panels-for-each-tab-s-content-area",
+      "featureTitle": "Redesign the Admin Dashboard page (AdminPage.tsx) layout to professional standards: use a clean two-column or sidebar-main layout with clear visual hierarchy, consistent spacing, section headings, and card-based panels for each tab's content area.",
+      "files": [
+        "frontend/src/pages/AdminPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0",
+        "qr-code@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-redesign-the-add-new-product-section-in-adminproductform-tsx-as-a-clean-well-aligned-card-use-a-single-cohesive-card-container-with-proper-label-input-alignment-grid-or-flex-layout-consistent-input-sizing-grouped-sections-e-g-basic-info-pricing-media-and-clear-visual-separation-between-fields",
+      "featureTitle": "Redesign the 'Add New Product' section in AdminProductForm.tsx as a clean, well-aligned card: use a single cohesive card container with proper label/input alignment (grid or flex layout), consistent input sizing, grouped sections (e.g., basic info, pricing, media), and clear visual separation between fields.",
+      "files": [
+        "frontend/src/components/AdminProductForm.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0",
+        "qr-code@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-the-barcode-field-in-adminproductform-tsx-to-be-fully-functional-the-barcode-input-must-accept-manual-text-entry-and-the-camera-based-barcodescanner-integration-must-correctly-populate-the-barcode-field-value-when-a-code-is-scanned-ensure-the-scanned-value-is-bound-to-the-form-state",
+      "featureTitle": "Fix the Barcode field in AdminProductForm.tsx to be fully functional: the barcode input must accept manual text entry, and the camera-based BarcodeScanner integration must correctly populate the barcode field value when a code is scanned. Ensure the scanned value is bound to the form state.",
+      "files": [
+        "frontend/src/components/AdminProductForm.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0",
+        "qr-code@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-the-add-product-button-in-adminproductform-tsx-so-it-does-not-get-stuck-in-the-adding-product-loading-state-ensure-the-mutation-s-loading-pending-state-is-properly-reset-on-both-success-and-error-the-button-returns-to-its-default-state-after-the-operation-completes-and-success-error-feedback-is-shown-to-the-user",
+      "featureTitle": "Fix the 'Add Product' button in AdminProductForm.tsx so it does not get stuck in the 'Adding Product...' loading state. Ensure the mutation's loading/pending state is properly reset on both success and error, the button returns to its default state after the operation completes, and success/error feedback is shown to the user.",
+      "files": [
+        "frontend/src/components/AdminProductForm.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0",
+        "qr-code@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

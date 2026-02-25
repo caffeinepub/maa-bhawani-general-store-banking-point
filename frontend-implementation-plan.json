@@ -1,0 +1,83 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Redesign Admin Dashboard layout, fix Barcode field, and fix Add Product button hang",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Redesign the Admin Dashboard page layout to professional standards with clean two-column or sidebar-main layout, consistent spacing, section headings, and card-based panels",
+      "acceptanceCriteria": [
+        "Admin Dashboard uses a professional layout with consistent spacing, clear headings, and card-based panels",
+        "Tab content areas are visually separated with proper padding and alignment",
+        "Layout is responsive and does not overflow on common screen sizes"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "Refactor the AdminPage layout from basic tabs to a professional two-column or sidebar-main design. Wrap the entire page in a container with proper max-width and padding. Restructure the tabs component to use a vertical sidebar on larger screens and horizontal tabs on mobile. Apply consistent card-based styling to each tab's content area using shadcn/ui Card components with proper headers, sections, and spacing. Ensure the header (page title and shop status toggle) is clearly separated from the main content. Add visual hierarchy with proper typography scale for section headings. Verify responsive behavior across breakpoints to prevent overflow."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Redesign the 'Add New Product' section in AdminProductForm as a clean, well-aligned card with proper label/input alignment, consistent sizing, grouped sections, and clear visual separation",
+      "acceptanceCriteria": [
+        "'Add New Product' section is rendered inside a styled card component with clear header",
+        "All form fields are consistently aligned using a grid or flex layout",
+        "Related fields are visually grouped (e.g., name/category together, price/unit together)",
+        "The card has appropriate padding, border, and shadow consistent with the dashboard design"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminProductForm.tsx",
+          "operation": "modify",
+          "description": "Wrap the entire form in a shadcn/ui Card component with a CardHeader displaying 'Add New Product' title and CardContent containing the form. Restructure the form fields using a CSS Grid layout (grid-cols-1 md:grid-cols-2) for consistent alignment and sizing. Group related fields visually: (1) Basic Info section (name, category, barcode with scanner button), (2) Pricing & Units section (price, unit type selector), (3) Product Media section (image upload with progress). Use shadcn/ui Form components (FormField, FormItem, FormLabel, FormControl, FormMessage) for consistent label/input pairing. Add subtle section dividers or spacing between field groups. Ensure all inputs have uniform height and the layout is responsive. Position the submit button prominently at the bottom of the card with proper spacing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Fix the Barcode field to be fully functional: accept manual text entry and correctly populate from camera-based BarcodeScanner with scanned value bound to form state",
+      "acceptanceCriteria": [
+        "Barcode text input accepts manual keyboard entry and updates form state correctly",
+        "Triggering the BarcodeScanner and scanning a barcode populates the barcode field with the scanned value",
+        "The barcode value is included in the product data submitted to the backend"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminProductForm.tsx",
+          "operation": "modify",
+          "description": "Ensure the barcode input field is a controlled component properly bound to the form state (using react-hook-form or local state). Verify the input's onChange handler correctly updates the barcode state variable. When the BarcodeScanner modal/dialog is opened and a barcode is scanned, ensure the onScan callback receives the scanned value and updates the same barcode state variable that the input is bound to. After the scanner detects a barcode, close the scanner UI and populate the barcode input field. Verify that the barcode value is included in the product object passed to the addProduct mutation when the form is submitted. Test both manual typing and camera scanning workflows to confirm the barcode field updates correctly in both cases."
+        },
+        {
+          "path": "frontend/src/components/BarcodeScanner.tsx",
+          "operation": "modify",
+          "description": "Review the BarcodeScanner component to ensure it correctly emits the scanned barcode value via the onScan prop callback. Verify that Quagga2 integration properly detects barcodes and triggers the callback with the decoded barcode string. Ensure the scanner provides clear visual/audio feedback when a barcode is successfully scanned. If the scanner is embedded in a dialog or modal, ensure closing the scanner after a successful scan passes the value back to the parent form component (AdminProductForm). Add error handling for camera permission issues and display helpful messages to the user."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Fix the 'Add Product' button so it does not get stuck in 'Adding Product...' loading state: properly reset mutation state on success and error, return button to default state, and show success/error feedback",
+      "acceptanceCriteria": [
+        "After a successful product addition, the button returns to its default 'Add Product' label and is re-enabled",
+        "After a failed product addition, the button returns to its default state and an error message is displayed",
+        "The button is disabled only while the mutation is actively in-flight",
+        "Form resets or shows a success notification after successful submission"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminProductForm.tsx",
+          "operation": "modify",
+          "description": "Review the addProduct mutation integration (from useAddProduct hook in useQueries.ts) to ensure the button's disabled state is tied only to mutation.isPending (or equivalent). Verify that the button label conditionally displays 'Adding Product...' only when isPending is true, and 'Add Product' otherwise. In the mutation's onSuccess callback, reset the form fields to their initial empty state and display a success toast/notification to the user. In the mutation's onError callback, display an error toast/notification with the error message and ensure the button is re-enabled. Remove any manual loading state variables that might prevent the button from resetting. Confirm that after the mutation settles (success or error), the button returns to its default enabled state with the correct label."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Review the useAddProduct mutation definition to ensure it properly handles both success and error states. Verify that the mutation does not manually set any persistent loading flags outside of TanStack Query's built-in isPending state. Ensure the mutation's mutate/mutateAsync function correctly resolves or rejects the promise based on the backend response. Add onSuccess and onError callbacks if needed to invalidate the product list query cache and trigger UI updates. Confirm that the mutation state resets automatically after completion, allowing subsequent submissions to work correctly without requiring a page refresh."
+        }
+      ]
+    }
+  ]
+}

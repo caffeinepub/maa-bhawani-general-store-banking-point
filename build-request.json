@@ -1,0 +1,97 @@
+{
+  "kind": "build_request",
+  "title": "Redesign Admin Dashboard layout, fix Barcode field, and fix Add Product button hang",
+  "projectName": "Maa Bhawani Store Admin",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Redesign the Admin Dashboard page (AdminPage.tsx) layout to professional standards: use a clean two-column or sidebar-main layout with clear visual hierarchy, consistent spacing, section headings, and card-based panels for each tab's content area.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Redesign the Admin Dashboard layout as per professional standards"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin Dashboard uses a professional layout with consistent spacing, clear headings, and card-based panels",
+        "Tab content areas are visually separated with proper padding and alignment",
+        "Layout is responsive and does not overflow on common screen sizes"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Redesign the 'Add New Product' section in AdminProductForm.tsx as a clean, well-aligned card: use a single cohesive card container with proper label/input alignment (grid or flex layout), consistent input sizing, grouped sections (e.g., basic info, pricing, media), and clear visual separation between fields.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "The 'Add New Product' section should be a clean card with better alignment"
+        ]
+      },
+      "acceptanceCriteria": [
+        "'Add New Product' section is rendered inside a styled card component with clear header",
+        "All form fields are consistently aligned using a grid or flex layout",
+        "Related fields are visually grouped (e.g., name/category together, price/unit together)",
+        "The card has appropriate padding, border, and shadow consistent with the dashboard design"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Fix the Barcode field in AdminProductForm.tsx to be fully functional: the barcode input must accept manual text entry, and the camera-based BarcodeScanner integration must correctly populate the barcode field value when a code is scanned. Ensure the scanned value is bound to the form state.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Ensure that the 'Barcode' field is functional"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Barcode text input accepts manual keyboard entry and updates form state correctly",
+        "Triggering the BarcodeScanner and scanning a barcode populates the barcode field with the scanned value",
+        "The barcode value is included in the product data submitted to the backend"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Fix the 'Add Product' button in AdminProductForm.tsx so it does not get stuck in the 'Adding Product...' loading state. Ensure the mutation's loading/pending state is properly reset on both success and error, the button returns to its default state after the operation completes, and success/error feedback is shown to the user.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "the 'Add Product' button doesn't hang on 'Adding Product...'"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After a successful product addition, the button returns to its default 'Add Product' label and is re-enabled",
+        "After a failed product addition, the button returns to its default state and an error message is displayed",
+        "The button is disabled only while the mutation is actively in-flight",
+        "Form resets or shows a success notification after successful submission"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Backend API contracts (product schema, mutation signatures) must not be changed",
+    "Existing product management functionality (image upload, category selection, unit type) must remain intact"
+  ],
+  "nonGoals": [
+    "Redesigning pages other than the Admin Dashboard and its sub-components",
+    "Adding new product fields beyond what already exists",
+    "Changes to backend Motoko logic",
+    "Modifying the BillingPage or BillTemplate components"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}
