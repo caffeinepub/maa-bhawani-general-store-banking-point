@@ -64,6 +64,7 @@ export interface Product {
     id: bigint;
     unitType: UnitType;
     name: string;
+    stock: bigint;
     barcode: string;
     category: string;
     image: ExternalBlob;
@@ -101,7 +102,7 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string, unitType: UnitType): Promise<bigint>;
+    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string, unitType: UnitType, stock: bigint): Promise<bigint>;
     addProductByBarcode(barcode: string, quantity: bigint): Promise<ProductWithAction>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -131,8 +132,9 @@ export interface backendInterface {
     placeRechargeOrder(mobileNumber: string, operator: string, rechargeAmount: bigint): Promise<bigint>;
     removeProduct(productId: bigint): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    setShopOpenStatus(status: boolean): Promise<boolean>;
+    setShopOpenStatus(isOpen: boolean): Promise<boolean>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
     updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;
+    updateProductStock(productId: bigint, newStock: bigint): Promise<void>;
 }

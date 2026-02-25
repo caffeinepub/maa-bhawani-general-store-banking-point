@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAddProduct, useGetAllProducts } from '../hooks/useQueries';
 import { ExternalBlob, UnitType } from '../backend';
 import { toast } from 'sonner';
-import { Camera, Package, Tag, DollarSign, ImageIcon, Barcode, Loader2, Plus } from 'lucide-react';
+import { Camera, Package, Tag, DollarSign, ImageIcon, Barcode, Loader2, Plus, Warehouse } from 'lucide-react';
 import BarcodeScanner from './BarcodeScanner';
 
 const CATEGORIES = [
@@ -24,12 +24,23 @@ const CATEGORIES = [
   'Other',
 ];
 
+function getStockLabel(unitType: string): string {
+  switch (unitType) {
+    case 'kg': return 'Stock (Kg)';
+    case 'gram': return 'Stock (Grams)';
+    case 'packet': return 'Stock (Packets)';
+    case 'piece': return 'Stock (Pcs)';
+    default: return 'Stock Quantity';
+  }
+}
+
 export default function AdminProductForm() {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
   const [unitType, setUnitType] = useState('');
   const [barcode, setBarcode] = useState('');
+  const [stock, setStock] = useState('0');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -57,6 +68,7 @@ export default function AdminProductForm() {
     setPrice('');
     setUnitType('');
     setBarcode('');
+    setStock('0');
     setImageFile(null);
     setImagePreview(null);
     setUploadProgress(0);
@@ -76,6 +88,12 @@ export default function AdminProductForm() {
     const priceInRupees = parseInt(price);
     if (isNaN(priceInRupees) || priceInRupees <= 0) {
       toast.error('Please enter a valid price');
+      return;
+    }
+
+    const stockQty = parseInt(stock);
+    if (isNaN(stockQty) || stockQty < 0) {
+      toast.error('Please enter a valid stock quantity (0 or more)');
       return;
     }
 
@@ -114,6 +132,7 @@ export default function AdminProductForm() {
         image: blob,
         barcode: barcode.trim(),
         unitType: unitTypeEnum,
+        stock: BigInt(stockQty),
       });
 
       toast.success(`"${name.trim()}" added successfully!`);
@@ -242,6 +261,38 @@ export default function AdminProductForm() {
                       <SelectItem value="piece" className="text-sm">Piece</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Section: Inventory / Stock — Admin Only */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Warehouse className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Inventory</span>
+                <span className="text-xs text-gray-400">(Admin only — hidden from customers)</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="prod-stock" className="text-xs font-medium text-gray-700">
+                    {unitType ? getStockLabel(unitType) : 'Stock Quantity'}
+                  </Label>
+                  <Input
+                    id="prod-stock"
+                    type="number"
+                    placeholder="0"
+                    value={stock}
+                    onChange={(e) => setStock(e.target.value)}
+                    disabled={isSubmitting}
+                    min="0"
+                    step="1"
+                    className="h-9 text-sm"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Enter the current stock quantity. A low-stock alert will appear when stock falls below 5.
+                  </p>
                 </div>
               </div>
             </div>

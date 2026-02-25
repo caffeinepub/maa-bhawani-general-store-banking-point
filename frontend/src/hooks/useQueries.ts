@@ -180,6 +180,8 @@ export function useMarkAsOutForDelivery() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      // Refresh products so stock deductions are reflected
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
@@ -195,6 +197,8 @@ export function useMarkAsCompleted() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      // Refresh products so stock deductions are reflected
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
@@ -254,6 +258,7 @@ export function useAddProduct() {
       image,
       barcode,
       unitType,
+      stock,
     }: {
       name: string;
       category: string;
@@ -261,9 +266,10 @@ export function useAddProduct() {
       image: ExternalBlob;
       barcode: string;
       unitType: UnitType;
+      stock: bigint;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      const productId = await actor.addProduct(name, category, priceInRupees, image, barcode, unitType);
+      const productId = await actor.addProduct(name, category, priceInRupees, image, barcode, unitType, stock);
       return productId;
     },
     onSuccess: () => {
@@ -280,6 +286,21 @@ export function useRemoveProduct() {
     mutationFn: async (productId: bigint) => {
       if (!actor) throw new Error('Actor not available');
       await actor.removeProduct(productId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}
+
+export function useUpdateProductStock() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ productId, newStock }: { productId: bigint; newStock: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.updateProductStock(productId, newStock);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });

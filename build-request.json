@@ -1,94 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Redesign Admin Dashboard layout, fix Barcode field, and fix Add Product button hang",
-  "projectName": "Maa Bhawani Store Admin",
-  "priority": "high",
+  "title": "Free Delivery Threshold, Distance-Based Delivery Charge, and 'Delivery in 10 Mins' Label",
+  "projectName": "Maa Bhawani General Store",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Redesign the Admin Dashboard page (AdminPage.tsx) layout to professional standards: use a clean two-column or sidebar-main layout with clear visual hierarchy, consistent spacing, section headings, and card-based panels for each tab's content area.",
-      "target": "frontend",
+      "text": "Add a delivery charge logic to the backend: if the order total is below ₹51, apply a ₹5 delivery charge for delivery distances of 0.5km or under 1km. Orders of ₹51 or above qualify for free delivery regardless of distance within that range.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-8"
         ],
         "quotes": [
-          "Redesign the Admin Dashboard layout as per professional standards"
+          "Set the Minimum Order for Free Delivery to ₹51. If the order is below ₹51, add a delivery charge of ₹5 under 0.5km or 1km"
         ]
       },
       "acceptanceCriteria": [
-        "Admin Dashboard uses a professional layout with consistent spacing, clear headings, and card-based panels",
-        "Tab content areas are visually separated with proper padding and alignment",
-        "Layout is responsive and does not overflow on common screen sizes"
+        "Backend order placement logic applies a ₹5 delivery fee when order total < ₹51 and distance is ≤ 1km.",
+        "No delivery charge is applied when order total is ₹51 or above.",
+        "The delivery charge amount is returned as part of the order/checkout response so the frontend can display it."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Redesign the 'Add New Product' section in AdminProductForm.tsx as a clean, well-aligned card: use a single cohesive card container with proper label/input alignment (grid or flex layout), consistent input sizing, grouped sections (e.g., basic info, pricing, media), and clear visual separation between fields.",
+      "text": "Update the checkout page to display the delivery charge breakdown: show ₹5 delivery fee line item when the cart total is below ₹51 and distance is within 0.5km–1km, and show 'Free Delivery' when the order meets the ₹51 minimum. The final order total shown to the user must include the delivery charge where applicable.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-8"
         ],
         "quotes": [
-          "The 'Add New Product' section should be a clean card with better alignment"
+          "Set the Minimum Order for Free Delivery to ₹51. If the order is below ₹51, add a delivery charge of ₹5 under 0.5km or 1km"
         ]
       },
       "acceptanceCriteria": [
-        "'Add New Product' section is rendered inside a styled card component with clear header",
-        "All form fields are consistently aligned using a grid or flex layout",
-        "Related fields are visually grouped (e.g., name/category together, price/unit together)",
-        "The card has appropriate padding, border, and shadow consistent with the dashboard design"
+        "Checkout page shows a 'Delivery Charge: ₹5' line item when cart total < ₹51 and delivery distance is ≤ 1km.",
+        "Checkout page shows 'Free Delivery' when cart total is ₹51 or above.",
+        "The grand total displayed on checkout includes the ₹5 delivery charge when applicable.",
+        "The existing distance-based delivery fee logic for distances beyond 1km is preserved."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Fix the Barcode field in AdminProductForm.tsx to be fully functional: the barcode input must accept manual text entry, and the camera-based BarcodeScanner integration must correctly populate the barcode field value when a code is scanned. Ensure the scanned value is bound to the form state.",
+      "text": "On the shop/home page, display a small green text label 'Delivery in 10 Mins' directly below every product name in the product card component (ProductCard.tsx).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-8"
         ],
         "quotes": [
-          "Ensure that the 'Barcode' field is functional"
+          "add a small green text 'Delivery in 10 Mins' under every product name on the shop page"
         ]
       },
       "acceptanceCriteria": [
-        "Barcode text input accepts manual keyboard entry and updates form state correctly",
-        "Triggering the BarcodeScanner and scanning a barcode populates the barcode field with the scanned value",
-        "The barcode value is included in the product data submitted to the backend"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Fix the 'Add Product' button in AdminProductForm.tsx so it does not get stuck in the 'Adding Product...' loading state. Ensure the mutation's loading/pending state is properly reset on both success and error, the button returns to its default state after the operation completes, and success/error feedback is shown to the user.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3"
-        ],
-        "quotes": [
-          "the 'Add Product' button doesn't hang on 'Adding Product...'"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After a successful product addition, the button returns to its default 'Add Product' label and is re-enabled",
-        "After a failed product addition, the button returns to its default state and an error message is displayed",
-        "The button is disabled only while the mutation is actively in-flight",
-        "Form resets or shows a success notification after successful submission"
+        "Each product card on the shop page shows the text 'Delivery in 10 Mins' immediately below the product name.",
+        "The text is styled in a small green font (e.g., text-green-600 text-xs or similar).",
+        "The label appears for all products regardless of category."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "Backend API contracts (product schema, mutation signatures) must not be changed",
-    "Existing product management functionality (image upload, category selection, unit type) must remain intact"
+    "Do not remove or alter existing distance-based delivery fee logic for distances beyond 1km.",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Preserve the existing shop open/close toggle and admin login functionality — delivery charge logic must be independent."
   ],
   "nonGoals": [
-    "Redesigning pages other than the Admin Dashboard and its sub-components",
-    "Adding new product fields beyond what already exists",
-    "Changes to backend Motoko logic",
-    "Modifying the BillingPage or BillTemplate components"
+    "Customer Wallet System is out of scope for this build request.",
+    "No changes to the admin product management or billing pages.",
+    "No changes to order history or past bill displays."
   ],
   "imageRequirements": {
     "required": [],

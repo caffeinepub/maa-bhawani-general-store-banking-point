@@ -12,8 +12,6 @@ import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
-
-
 actor {
   // State
   include MixinStorage();
@@ -63,6 +61,7 @@ actor {
     image : Storage.ExternalBlob;
     barcode : Text;
     unitType : UnitType;
+    stock : Nat;
   };
 
   let products = Map.empty<Nat, Product>();
@@ -164,6 +163,7 @@ actor {
     image : Storage.ExternalBlob,
     barcode : Text,
     unitType : UnitType,
+    stock : Nat,
   ) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can add products");
@@ -177,11 +177,26 @@ actor {
       image;
       barcode;
       unitType;
+      stock;
     };
     products.add(nextProductId, product);
     let addedProductId = nextProductId;
     nextProductId += 1;
     addedProductId;
+  };
+
+  public shared ({ caller }) func updateProductStock(productId : Nat, newStock : Nat) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can update stock");
+    };
+
+    let product = switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product not found") };
+      case (?p) { p };
+    };
+
+    let updatedProduct : Product = { product with stock = newStock };
+    products.add(productId, updatedProduct);
   };
 
   public shared ({ caller }) func removeProduct(productId : Nat) : async () {
@@ -359,6 +374,7 @@ actor {
     carts.remove(caller);
   };
 
+  // Calculate total price including new delivery logic
   public shared ({ caller }) func calculateTotalPrice(distanceInKm : Nat) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can calculate total price");
@@ -370,10 +386,15 @@ actor {
     };
 
     let totalPrice = cart.toArray().foldLeft(0, func(acc, item) { acc + (item.product.priceInRupees * item.quantity) });
-    if (distanceInKm > 1) {
-      totalPrice + ((distanceInKm - 1) * deliveryFeePerKm);
+
+    if (distanceInKm <= 1) {
+      if (totalPrice < 51) {
+        totalPrice + 5; // Delivery charge for orders below ₹51 and within 1km
+      } else {
+        totalPrice; // Free delivery for orders >= ₹51 within 1km
+      };
     } else {
-      totalPrice;
+      totalPrice + ((distanceInKm - 1) * deliveryFeePerKm);
     };
   };
 
@@ -600,11 +621,11 @@ actor {
     isShopOpen;
   };
 
-  public shared ({ caller }) func setShopOpenStatus(status : Bool) : async Bool {
+  public shared ({ caller }) func setShopOpenStatus(isOpen : Bool) : async Bool {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can change shop open status");
+      Runtime.trap("Unauthorized: Only admins can set shop open status");
     };
-    isShopOpen := status;
+    isShopOpen := isOpen;
     isShopOpen;
   };
 };

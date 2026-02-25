@@ -1,45 +1,29 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project with Admin Dashboard that includes product management functionality. User wants a professional redesign of the Admin Dashboard layout.",
+  "summary": "E-commerce/delivery app with Admin Panel, shop page, checkout, and user management features. Building out wallet system, delivery charge logic, and product display enhancements.",
   "architectural_notes": [
-    "Admin Dashboard includes a product management section with barcode support and add product functionality"
+    "Wallet logic must not interfere with Shop Open/Close toggle or Login system; prioritize login session on conflict.",
+    "Do not delete existing user tables; add wallet_balance as a new column to the user database."
   ],
   "known_issues": [
-    "'Add Product' button gets stuck in 'Adding Product...' loading state",
-    "'Barcode' field in Add New Product section is non-functional"
+    "Customer Wallet System build failed (AI unable to complete); needs retry or rephrasing."
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-redesign-the-admin-dashboard-page-adminpage-tsx-layout-to-professional-standards-use-a-clean-two-column-or-sidebar-main-layout-with-clear-visual-hierarchy-consistent-spacing-section-headings-and-card-based-panels-for-each-tab-s-content-area",
-      "title": "Redesign the Admin Dashboard page (AdminPage.tsx) layout to professional standards: use a clean two-column or sidebar-main layout with clear visual hierarchy, consistent spacing, section headings, and card-based panels for each tab's content area.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-redesign-the-add-new-product-section-in-adminproductform-tsx-as-a-clean-well-aligned-card-use-a-single-cohesive-card-container-with-proper-label-input-alignment-grid-or-flex-layout-consistent-input-sizing-grouped-sections-e-g-basic-info-pricing-media-and-clear-visual-separation-between-fields",
-      "title": "Redesign the 'Add New Product' section in AdminProductForm.tsx as a clean, well-aligned card: use a single cohesive card container with proper label/input alignment (grid or flex layout), consistent input sizing, grouped sections (e.g., basic info, pricing, media), and clear visual separation between fields.",
+      "id": "feature-update-the-checkout-page-to-display-the-delivery-charge-breakdown-show-5-delivery-fee-line-item-when-the-cart-total-is-below-51-and-distance-is-within-0-5km-1km-and-show-free-delivery-when-the-order-meets-the-51-minimum-the-final-order-total-shown-to-the-user-must-include-the-delivery-charge-where-applicable",
+      "title": "Update the checkout page to display the delivery charge breakdown: show ₹5 delivery fee line item when the cart total is below ₹51 and distance is within 0.5km–1km, and show 'Free Delivery' when the order meets the ₹51 minimum. The final order total shown to the user must include the delivery charge where applicable.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-the-barcode-field-in-adminproductform-tsx-to-be-fully-functional-the-barcode-input-must-accept-manual-text-entry-and-the-camera-based-barcodescanner-integration-must-correctly-populate-the-barcode-field-value-when-a-code-is-scanned-ensure-the-scanned-value-is-bound-to-the-form-state",
-      "title": "Fix the Barcode field in AdminProductForm.tsx to be fully functional: the barcode input must accept manual text entry, and the camera-based BarcodeScanner integration must correctly populate the barcode field value when a code is scanned. Ensure the scanned value is bound to the form state.",
+      "id": "feature-on-the-shop-home-page-display-a-small-green-text-label-delivery-in-10-mins-directly-below-every-product-name-in-the-product-card-component-productcard-tsx",
+      "title": "On the shop/home page, display a small green text label 'Delivery in 10 Mins' directly below every product name in the product card component (ProductCard.tsx).",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-add-product-button-in-adminproductform-tsx-so-it-does-not-get-stuck-in-the-adding-product-loading-state-ensure-the-mutation-s-loading-pending-state-is-properly-reset-on-both-success-and-error-the-button-returns-to-its-default-state-after-the-operation-completes-and-success-error-feedback-is-shown-to-the-user",
-      "title": "Fix the 'Add Product' button in AdminProductForm.tsx so it does not get stuck in the 'Adding Product...' loading state. Ensure the mutation's loading/pending state is properly reset on both success and error, the button returns to its default state after the operation completes, and success/error feedback is shown to the user.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -47,25 +31,33 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Redesign Admin Dashboard layout to professional standards with clean card layout for 'Add New Product' section and better alignment",
+      "summary": "Customer Wallet System: replace old Recharge module, add wallet_balance column, admin credit/debit UI, and Pay via Wallet button at checkout",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Fix 'Barcode' field to be functional in the Add New Product section",
+      "summary": "Free delivery minimum order ₹51; delivery charge ₹5 for orders below ₹51 within 0.5km or 1km",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Fix 'Add Product' button hanging on 'Adding Product...' state",
+      "summary": "Show small green text 'Delivery in 10 Mins' under every product name on the shop page",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add a delivery charge logic to the backend: if the order total is below ₹51, apply a ₹5 delivery charge for delivery distances of 0.5km or under 1km. Orders of ₹51 or above qualify for free delivery regardless of distance within that range.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Maa Bhawani Store Admin",
+  "projectName": "Maa Bhawani General Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

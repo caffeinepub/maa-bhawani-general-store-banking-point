@@ -30,6 +30,7 @@ export const Product = IDL.Record({
   'id' : IDL.Nat,
   'unitType' : UnitType,
   'name' : IDL.Text,
+  'stock' : IDL.Nat,
   'barcode' : IDL.Text,
   'category' : IDL.Text,
   'image' : ExternalBlob,
@@ -134,7 +135,7 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addProduct' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text, UnitType],
+      [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text, UnitType, IDL.Nat],
       [IDL.Nat],
       [],
     ),
@@ -195,6 +196,7 @@ export const idlService = IDL.Service({
       [Bill],
       [],
     ),
+  'updateProductStock' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
 });
 
 export const idlInitArgs = [];
@@ -222,6 +224,7 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'unitType' : UnitType,
     'name' : IDL.Text,
+    'stock' : IDL.Nat,
     'barcode' : IDL.Text,
     'category' : IDL.Text,
     'image' : ExternalBlob,
@@ -320,7 +323,15 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addProduct' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Nat, ExternalBlob, IDL.Text, UnitType],
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Nat,
+          ExternalBlob,
+          IDL.Text,
+          UnitType,
+          IDL.Nat,
+        ],
         [IDL.Nat],
         [],
       ),
@@ -385,6 +396,7 @@ export const idlFactory = ({ IDL }) => {
         [Bill],
         [],
       ),
+    'updateProductStock' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   });
 };
 

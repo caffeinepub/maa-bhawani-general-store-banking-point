@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Redesign the Admin Dashboard layout to professional standards and fix two bugs in the Add Product form (stuck button and broken barcode field).
+**Goal:** Add a free delivery threshold (₹51), distance-based ₹5 delivery charge for orders below ₹51, and a "Delivery in 10 Mins" label on all product cards.
 
 **Planned changes:**
-- Redesign `AdminPage.tsx` to use a professional two-column or sidebar-main layout with card-based panels, clear section headings, consistent spacing, and responsive design
-- Redesign `AdminProductForm.tsx` "Add New Product" section as a clean card with grid/flex aligned fields grouped by category (basic info, pricing, media)
-- Fix the Barcode field in `AdminProductForm.tsx` so manual text entry and camera-based barcode scanning both correctly populate and bind the form state
-- Fix the "Add Product" button so it exits the "Adding Product…" loading state on both success and error, re-enables properly, and shows success/error feedback to the user
+- Backend: Apply a ₹5 delivery charge when order total is below ₹51 and delivery distance is ≤ 1km; no charge for orders ₹51 or above; return delivery charge in the order/checkout response.
+- Frontend (Checkout): Show a "Delivery Charge: ₹5" line item when cart total < ₹51 and distance is ≤ 1km; show "Free Delivery" when cart total is ₹51 or above; include delivery charge in the displayed grand total; preserve existing delivery fee logic for distances beyond 1km.
+- Frontend (ProductCard): Add a small green "Delivery in 10 Mins" label immediately below every product name on all product cards.
 
-**User-visible outcome:** Admins see a polished, professional dashboard layout with a well-structured Add Product form, a working barcode input, and an "Add Product" button that completes normally instead of hanging.
+**User-visible outcome:** Customers see a "Delivery in 10 Mins" badge under each product name, and at checkout they see either a ₹5 delivery charge or "Free Delivery" based on their cart total, with the grand total updated accordingly.

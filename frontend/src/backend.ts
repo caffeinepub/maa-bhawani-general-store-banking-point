@@ -150,6 +150,7 @@ export interface Product {
     id: bigint;
     unitType: UnitType;
     name: string;
+    stock: bigint;
     barcode: string;
     category: string;
     image: ExternalBlob;
@@ -194,7 +195,7 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string, unitType: UnitType): Promise<bigint>;
+    addProduct(name: string, category: string, priceInRupees: bigint, image: ExternalBlob, barcode: string, unitType: UnitType, stock: bigint): Promise<bigint>;
     addProductByBarcode(barcode: string, quantity: bigint): Promise<ProductWithAction>;
     addToCart(productId: bigint, quantity: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -224,10 +225,11 @@ export interface backendInterface {
     placeRechargeOrder(mobileNumber: string, operator: string, rechargeAmount: bigint): Promise<bigint>;
     removeProduct(productId: bigint): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    setShopOpenStatus(status: boolean): Promise<boolean>;
+    setShopOpenStatus(isOpen: boolean): Promise<boolean>;
     setShopSlogan(slogan: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
     updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;
+    updateProductStock(productId: bigint, newStock: bigint): Promise<void>;
 }
 import type { Bill as _Bill, BillItem as _BillItem, CartItem as _CartItem, ExternalBlob as _ExternalBlob, Order as _Order, OrderStatus as _OrderStatus, PaymentMethod as _PaymentMethod, PaymentStatus as _PaymentStatus, Product as _Product, ProductWithAction as _ProductWithAction, Time as _Time, UnitType as _UnitType, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -330,17 +332,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addProduct(arg0: string, arg1: string, arg2: bigint, arg3: ExternalBlob, arg4: string, arg5: UnitType): Promise<bigint> {
+    async addProduct(arg0: string, arg1: string, arg2: bigint, arg3: ExternalBlob, arg4: string, arg5: UnitType, arg6: bigint): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.addProduct(arg0, arg1, arg2, await to_candid_ExternalBlob_n8(this._uploadFile, this._downloadFile, arg3), arg4, to_candid_UnitType_n9(this._uploadFile, this._downloadFile, arg5));
+                const result = await this.actor.addProduct(arg0, arg1, arg2, await to_candid_ExternalBlob_n8(this._uploadFile, this._downloadFile, arg3), arg4, to_candid_UnitType_n9(this._uploadFile, this._downloadFile, arg5), arg6);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.addProduct(arg0, arg1, arg2, await to_candid_ExternalBlob_n8(this._uploadFile, this._downloadFile, arg3), arg4, to_candid_UnitType_n9(this._uploadFile, this._downloadFile, arg5));
+            const result = await this.actor.addProduct(arg0, arg1, arg2, await to_candid_ExternalBlob_n8(this._uploadFile, this._downloadFile, arg3), arg4, to_candid_UnitType_n9(this._uploadFile, this._downloadFile, arg5), arg6);
             return result;
         }
     }
@@ -806,6 +808,20 @@ export class Backend implements backendInterface {
             return from_candid_Bill_n21(this._uploadFile, this._downloadFile, result);
         }
     }
+    async updateProductStock(arg0: bigint, arg1: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateProductStock(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateProductStock(arg0, arg1);
+            return result;
+        }
+    }
 }
 function from_candid_Bill_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Bill): Bill {
     return from_candid_record_n22(_uploadFile, _downloadFile, value);
@@ -874,6 +890,7 @@ async function from_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promi
     id: bigint;
     unitType: _UnitType;
     name: string;
+    stock: bigint;
     barcode: string;
     category: string;
     image: _ExternalBlob;
@@ -882,6 +899,7 @@ async function from_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promi
     id: bigint;
     unitType: UnitType;
     name: string;
+    stock: bigint;
     barcode: string;
     category: string;
     image: ExternalBlob;
@@ -891,6 +909,7 @@ async function from_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promi
         id: value.id,
         unitType: from_candid_UnitType_n15(_uploadFile, _downloadFile, value.unitType),
         name: value.name,
+        stock: value.stock,
         barcode: value.barcode,
         category: value.category,
         image: await from_candid_ExternalBlob_n17(_uploadFile, _downloadFile, value.image),

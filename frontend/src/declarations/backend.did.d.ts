@@ -58,6 +58,7 @@ export interface Product {
   'id' : bigint,
   'unitType' : UnitType,
   'name' : string,
+  'stock' : bigint,
   'barcode' : string,
   'category' : string,
   'image' : ExternalBlob,
@@ -108,7 +109,7 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addProduct' : ActorMethod<
-    [string, string, bigint, ExternalBlob, string, UnitType],
+    [string, string, bigint, ExternalBlob, string, UnitType, bigint],
     bigint
   >,
   'addProductByBarcode' : ActorMethod<[string, bigint], ProductWithAction>,
@@ -153,6 +154,7 @@ export interface _SERVICE {
     [bigint, PaymentStatus, [] | [string], [] | [string]],
     Bill
   >,
+  'updateProductStock' : ActorMethod<[bigint, bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
 import { useGetCart, usePlaceOrder, useCalculateTotalPrice, useGetShopOpenStatus } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import DeliveryFeeInfo from '../components/DeliveryFeeInfo';
@@ -32,6 +33,11 @@ function formatQuantityWithUnit(quantity: number, unitType: string): string {
   const unitDisplay = unitType.charAt(0).toUpperCase() + unitType.slice(1);
   return `${quantity} ${unitDisplay}`;
 }
+
+// Minimum order amount for free delivery within 1km
+const FREE_DELIVERY_THRESHOLD = 51;
+// Delivery charge for orders below threshold within 1km
+const SMALL_ORDER_DELIVERY_FEE = 5;
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -132,7 +138,53 @@ export default function CheckoutPage() {
     }
   };
 
-  const deliveryFee = totalPrice !== null ? totalPrice - subtotal : 0;
+  // Determine delivery fee details based on distance and subtotal
+  const distanceNum = parseFloat(distance);
+  const isWithin1km = !isNaN(distanceNum) && distanceNum > 0 && Math.ceil(distanceNum) <= 1;
+  const isBeyond1km = !isNaN(distanceNum) && distanceNum > 0 && Math.ceil(distanceNum) > 1;
+
+  let deliveryFeeDisplay: React.ReactNode;
+  let deliveryFeeAmount = 0;
+
+  if (totalPrice !== null) {
+    deliveryFeeAmount = totalPrice - subtotal;
+    if (isWithin1km) {
+      if (subtotal >= FREE_DELIVERY_THRESHOLD) {
+        deliveryFeeDisplay = (
+          <span className="text-green-600 font-medium flex items-center gap-1">
+            Free
+            <Badge variant="outline" className="text-xs text-green-600 border-green-600 ml-1">
+              Min. ₹{FREE_DELIVERY_THRESHOLD} order
+            </Badge>
+          </span>
+        );
+      } else {
+        deliveryFeeDisplay = (
+          <span className="text-orange-600 font-medium">
+            ₹{SMALL_ORDER_DELIVERY_FEE}
+            <span className="text-xs text-muted-foreground ml-1">(Add ₹{FREE_DELIVERY_THRESHOLD - subtotal} more for free delivery)</span>
+          </span>
+        );
+      }
+    } else if (isBeyond1km) {
+      deliveryFeeDisplay = <span>₹{deliveryFeeAmount}</span>;
+    } else {
+      deliveryFeeDisplay = <span className="text-muted-foreground">—</span>;
+    }
+  } else {
+    // No distance entered yet — show preview based on subtotal
+    if (subtotal >= FREE_DELIVERY_THRESHOLD) {
+      deliveryFeeDisplay = (
+        <span className="text-green-600 font-medium">Free (within 1km)</span>
+      );
+    } else {
+      deliveryFeeDisplay = (
+        <span className="text-muted-foreground text-sm">
+          ₹{SMALL_ORDER_DELIVERY_FEE} (within 1km) · Enter distance to calculate
+        </span>
+      );
+    }
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -198,7 +250,7 @@ export default function CheckoutPage() {
                     type="number"
                     step="0.1"
                     min="0.1"
-                    placeholder="e.g., 1.5"
+                    placeholder="e.g., 0.5 or 1.5"
                     value={distance}
                     onChange={(e) => handleDistanceChange(e.target.value)}
                     required
@@ -277,10 +329,16 @@ export default function CheckoutPage() {
                   <span>Subtotal:</span>
                   <span>₹{subtotal}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Delivery Fee:</span>
-                  <span>{deliveryFee > 0 ? `₹${deliveryFee}` : 'Free'}</span>
+                <div className="flex justify-between items-center">
+                  <span>Delivery Charge:</span>
+                  <span>{deliveryFeeDisplay}</span>
                 </div>
+                {/* Free delivery nudge when subtotal is below threshold and within 1km */}
+                {subtotal < FREE_DELIVERY_THRESHOLD && isWithin1km && (
+                  <p className="text-xs text-green-700 bg-green-50 rounded px-2 py-1">
+                    🎉 Add ₹{FREE_DELIVERY_THRESHOLD - subtotal} more to get <strong>Free Delivery</strong>!
+                  </p>
+                )}
               </div>
 
               <Separator />
@@ -289,6 +347,12 @@ export default function CheckoutPage() {
                 <span>Total:</span>
                 <span>₹{totalPrice !== null ? totalPrice : subtotal}</span>
               </div>
+
+              {totalPrice === null && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Enter your distance above to see the final total
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>

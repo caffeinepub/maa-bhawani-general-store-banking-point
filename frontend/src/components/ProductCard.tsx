@@ -120,7 +120,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             {unitTypeDisplay}
           </Badge>
         </div>
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
+        <h3 className="font-semibold text-lg mb-0.5 line-clamp-2">{product.name}</h3>
+        <p className="text-xs text-green-600 font-medium mb-2">⚡ Delivery in 10 Mins</p>
         <p className="text-2xl font-bold text-primary">₹{Number(product.priceInRupees)}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">

@@ -6,7 +6,7 @@ export default function DeliveryFeeInfo() {
     <Alert>
       <Info className="h-4 w-4" />
       <AlertDescription>
-        <strong>Delivery Policy:</strong> Free delivery within 1km. Delivery charges of ₹20 per km apply for distances beyond 1km.
+        <strong>Delivery Policy:</strong> Free delivery on orders ₹51 and above (within 1km). Orders below ₹51 incur a ₹5 delivery charge (within 1km). Delivery charges of ₹20 per km apply for distances beyond 1km.
       </AlertDescription>
     </Alert>
   );

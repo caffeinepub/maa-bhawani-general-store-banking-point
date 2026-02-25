@@ -17,9 +17,10 @@ export default function ShopClosedBanner() {
     <Alert className="bg-orange-50 border-orange-200 mb-6">
       <AlertCircle className="h-5 w-5 text-orange-600" />
       <AlertDescription className="text-orange-900 font-medium ml-2">
-        <span className="font-semibold">Namaste!</span> MBG Store is currently <span className="font-semibold">Closed</span>. 
-        We are not accepting orders right now. We will open again at <span className="font-semibold">6:30 AM - 7:00 AM</span>. 
-        Thank you for your patience!
+        <span className="font-semibold">Namaste!</span> MBG Store is currently{' '}
+        <span className="font-semibold">Closed</span>. We are not accepting orders right now. We
+        will open again at <span className="font-semibold">6:30 AM - 7:00 AM</span>. Thank you for
+        your patience!
       </AlertDescription>
     </Alert>
   );
