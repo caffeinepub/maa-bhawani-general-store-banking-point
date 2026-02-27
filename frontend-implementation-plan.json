@@ -1,38 +1,102 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Free Delivery Threshold, Distance-Based Delivery Charge, and 'Delivery in 10 Mins' Label",
+  "title": "Home Page Redesign, 2-Column Product Grid, Sticky Bottom Nav & WhatsApp Help Button",
   "requirements": [
     {
-      "id": "REQ-2",
-      "summary": "Display delivery charge breakdown on checkout page showing ₹5 fee for orders below ₹51 within 1km, or 'Free Delivery' for orders ₹51 and above",
+      "id": "REQ-1",
+      "summary": "Redesign HomePage layout with compact auto-sliding banner, immediate ProductGrid below, and relocated MobileRechargeSection at bottom",
       "acceptanceCriteria": [
-        "Checkout page shows a 'Delivery Charge: ₹5' line item when cart total < ₹51 and delivery distance is ≤ 1km.",
-        "Checkout page shows 'Free Delivery' when cart total is ₹51 or above.",
-        "The grand total displayed on checkout includes the ₹5 delivery charge when applicable.",
-        "The existing distance-based delivery fee logic for distances beyond 1km is preserved."
+        "The homepage renders a horizontally auto-sliding banner carousel at the very top with a height of roughly 140–160px on mobile screens.",
+        "Product grid starts rendering immediately after the banner — no full-width sections interrupt between banner and products.",
+        "The Mobile Recharge section is displayed near the bottom of the page as a compact icon-grid card (small operator icons + label), not as a full-width form section.",
+        "No layout regression on the ShopClosedBanner, CategoryFilter, or CartDrawer components."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "path": "frontend/src/components/HeroBannerCarousel.tsx",
+          "operation": "create",
+          "description": "Create a new auto-sliding banner carousel component that renders at reduced height (140–160px on mobile). The carousel should horizontally auto-advance every 3–5 seconds, display the generated hero banner image (frontend/public/assets/generated/hero-banner.dim_1200x400.png), and use responsive styling to ensure compact rendering. Include navigation dots and optional swipe support for mobile."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Update the checkout page to calculate and display the delivery charge breakdown. When the cart subtotal is below ₹51 and the distance is ≤ 1km, show a 'Delivery Charge: ₹5' line item. When the cart subtotal is ₹51 or above, show 'Free Delivery' regardless of distance within 1km. Include the delivery charge in the grand total calculation. Preserve the existing distance-based delivery fee calculation for distances beyond 1km (₹20 per km beyond 1km). The backend method `calculateTotalPrice` returns the total including delivery charges, so parse the response to extract and display the delivery fee component separately before showing the final total."
+          "description": "Restructure the HomePage layout: (1) Replace the existing hero banner section with the new HeroBannerCarousel component at the top, (2) Move ShopClosedBanner immediately after the carousel, (3) Position ProductGrid (with CategoryFilter) immediately after ShopClosedBanner with no intervening sections, (4) Relocate MobileRechargeSection to the bottom of the page (above Footer) and wrap it in a compact card-style container with reduced padding and heading size. Remove any full-width section wrappers that create vertical spacing between banner and products."
+        },
+        {
+          "path": "frontend/src/components/MobileRechargeSection.tsx",
+          "operation": "modify",
+          "description": "Refactor the MobileRechargeSection to render as a compact icon-based grid suitable for bottom-of-page placement. Display operator logos/icons in a horizontal row with small labels (e.g., 'Airtel', 'Jio', 'Vi'). Show a collapsed preview state by default with an 'expand' button that reveals the full recharge form in a modal or expandable panel. Preserve all existing form logic and validation. Apply compact styling (smaller padding, reduced font sizes, minimal vertical space)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Redesign ProductGrid and ProductCard to use strict 2-column layout with clean imagery, bold product names, green delivery tag, prominent green '+ ADD' button, and a 'Coming Soon' empty state graphic",
+      "acceptanceCriteria": [
+        "ProductGrid renders exactly 2 columns on mobile and tablet viewports.",
+        "Each product card shows: product image (clean, object-cover), product name in font-bold, a green badge reading 'Delivery in 10 Mins', and a green '+ ADD' button that is visually prominent.",
+        "When the product list is empty (after filtering or initially), a styled 'Coming Soon' empty state with an illustration/graphic is rendered instead of plain text.",
+        "The '+ ADD' button is disabled when the shop is closed (existing behavior preserved)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProductGrid.tsx",
+          "operation": "modify",
+          "description": "Update ProductGrid to use a strict 2-column grid layout on all mobile and tablet viewports (use Tailwind classes like 'grid grid-cols-2 gap-4'). When the filtered product list is empty, render a visually styled empty state that displays the generated 'Coming Soon' illustration image (frontend/public/assets/generated/coming-soon.dim_400x300.png) along with descriptive text ('Products coming soon! Check back later.'). Remove any plain-text empty states. Ensure the grid layout is responsive and maintains 2 columns on small screens."
+        },
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Redesign ProductCard to display: (1) A clean product image using object-cover styling for consistent aspect ratio, (2) Product name in font-bold with appropriate text size, (3) A green badge/tag reading 'Delivery in 10 Mins' positioned prominently (e.g., below the product name or overlaying the image), (4) A visually prominent green '+ ADD' button with bold styling, rounded corners, and sufficient padding. Ensure the card layout is compact and works well in a 2-column grid. Preserve the existing quantity controls and shop-closed button-disable logic. Use Tailwind green variants (e.g., bg-green-600, text-green-700) for the delivery tag and button."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add 'Delivery in 10 Mins' label below product names on all product cards",
+      "summary": "Add a sticky bottom navigation bar with 4 tabs (Home, Search, My Orders, Wallet) and a floating WhatsApp help button, ensuring proper page padding and visibility on customer-facing pages only",
       "acceptanceCriteria": [
-        "Each product card on the shop page shows the text 'Delivery in 10 Mins' immediately below the product name.",
-        "The text is styled in a small green font (e.g., text-green-600 text-xs or similar).",
-        "The label appears for all products regardless of category."
+        "A sticky bottom nav bar is rendered fixed at the bottom with 4 tabs: Home, Search, My Orders, Wallet — each with an icon and text label.",
+        "Active tab is visually highlighted (e.g., green color).",
+        "A floating WhatsApp button (green circular FAB) is visible at the bottom-right, above the sticky nav, and opens a WhatsApp chat URL on tap.",
+        "Page content is padded at the bottom so it is not obscured by the sticky nav bar.",
+        "The sticky nav is not shown on admin pages (AdminPage, AdminSettingsPage, BillingPage)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProductCard.tsx",
+          "path": "frontend/src/components/BottomNavBar.tsx",
+          "operation": "create",
+          "description": "Create a new BottomNavBar component that renders a fixed bottom navigation bar with 4 navigation items: Home (icon: house), Search (icon: magnifying glass), My Orders (icon: shopping bag), and Wallet (icon: wallet). Each item should display an icon and a label. Highlight the active tab with green styling (text and icon). Use Tanstack Router's useLocation or useMatches to determine the active route. The nav bar should be positioned fixed at the bottom with a white/light background, subtle shadow, and safe-area-inset padding for notched devices. Use icons from lucide-react or react-icons."
+        },
+        {
+          "path": "frontend/src/components/WhatsAppHelpButton.tsx",
+          "operation": "create",
+          "description": "Create a floating WhatsApp help button component that renders as a green circular FAB (floating action button) positioned at the bottom-right corner of the viewport, above the sticky bottom nav (use z-index and bottom offset to position it ~80px from the bottom). The button should display the WhatsApp icon (from lucide-react or a WhatsApp logo SVG) in white. On click, it should open a WhatsApp chat URL (e.g., 'https://wa.me/91XXXXXXXXXX?text=Hi%20Maa%20Bhawani%20Store') in a new tab. Apply WhatsApp's brand green color (e.g., bg-green-500 or #25D366). Include hover and active states."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Add a small green text label 'Delivery in 10 Mins' directly below the product name in the ProductCard component. Use Tailwind classes such as 'text-green-600 text-xs' to style the label as small green text. Position the label immediately after the product name element and before the category badge, ensuring it appears on all product cards regardless of category."
+          "description": "Integrate the new BottomNavBar and WhatsAppHelpButton into the Layout component. Conditionally render BottomNavBar and WhatsAppHelpButton only on customer-facing pages (exclude routes like '/admin', '/admin/settings', '/billing'). Use useLocation or useMatches from Tanstack Router to detect the current route. Add bottom padding (e.g., pb-20 or pb-24) to the main content wrapper to ensure page content is not obscured by the sticky nav bar. Ensure Header and Footer remain unaffected."
+        },
+        {
+          "path": "frontend/src/pages/SearchPage.tsx",
+          "operation": "create",
+          "description": "Create a placeholder SearchPage component that will be navigated to from the Search tab in the bottom nav. Display a simple heading ('Search Products') and a message indicating that search functionality is coming soon or is a placeholder. Register this route in App.tsx as '/search'. This satisfies the wiring requirement for the Search nav item without implementing full search functionality."
+        },
+        {
+          "path": "frontend/src/pages/MyOrdersPage.tsx",
+          "operation": "create",
+          "description": "Create a placeholder MyOrdersPage component that will be navigated to from the My Orders tab in the bottom nav. Display a heading ('My Orders') and a message indicating that order history is coming soon or requires login. Register this route in App.tsx as '/my-orders'. This satisfies the wiring requirement for the My Orders nav item without implementing full order history functionality."
+        },
+        {
+          "path": "frontend/src/pages/WalletPage.tsx",
+          "operation": "create",
+          "description": "Create a placeholder WalletPage component that will be navigated to from the Wallet tab in the bottom nav. Display a heading ('Wallet') and a message indicating that wallet functionality is coming soon or is a placeholder. Register this route in App.tsx as '/wallet'. This satisfies the wiring requirement for the Wallet nav item without implementing full wallet functionality."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the new placeholder routes '/search', '/my-orders', and '/wallet' in the Tanstack Router configuration. Map each route to its respective page component (SearchPage, MyOrdersPage, WalletPage). Ensure these routes are accessible to all users (no admin guard required). This wiring step ensures the bottom nav tabs navigate to valid routes."
         }
       ]
     }

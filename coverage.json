@@ -1,55 +1,87 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T11:43:53.149Z",
+  "generatedAt": "2026-02-26T16:18:16.800Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 2,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a delivery charge logic to the backend: if the order total is below ₹51, apply a ₹5 delivery charge for delivery distances of 0.5km or under 1km. Orders of ₹51 or above qualify for free delivery regardless of distance within that range.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Redesign the HomePage layout so that: (1) a compact auto-sliding banner carousel appears at the very top (reduce banner height to approximately 140–160px on mobile), (2) the ProductGrid appears immediately below the banner with no intervening sections, and (3) the MobileRechargeSection is relocated to the bottom of the page as a compact icon-based grid or small card (e.g., a row of operator icons with a label), above the footer.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/HeroBannerCarousel.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/HeroBannerCarousel.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Update the checkout page to display the delivery charge breakdown: show ₹5 delivery fee line item when the cart total is below ₹51 and distance is within 0.5km–1km, and show 'Free Delivery' when the order meets the ₹51 minimum. The final order total shown to the user must include the delivery charge where applicable.",
+        "summary": "Redesign the product display in ProductGrid to use a strict 2-column grid layout. Each ProductCard must display: a clean product image, the product name in bold, a green 'Delivery in 10 Mins' tag, and a prominent green '+ ADD' button. When no products are found (empty state), render a visually appealing 'Coming Soon' graphic/illustration with descriptive text instead of plain text.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/components/ProductGrid.tsx",
+          "frontend/src/components/ProductCard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/components/ProductGrid.tsx",
+          "frontend/src/components/ProductCard.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "On the shop/home page, display a small green text label 'Delivery in 10 Mins' directly below every product name in the product card component (ProductCard.tsx).",
+        "summary": "Add a Sticky Bottom Navigation Bar fixed to the bottom of the viewport with 4 navigation items: Home, Search, My Orders, and Wallet — each with an appropriate icon and label. The bar must appear on all customer-facing pages. Also add a small floating WhatsApp Help button (WhatsApp green, bottom-right corner) that opens a WhatsApp chat link when tapped. Ensure the sticky nav does not overlap page content (add appropriate bottom padding to page layouts).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProductCard.tsx"
+          "frontend/src/components/BottomNavBar.tsx",
+          "frontend/src/components/WhatsAppHelpButton.tsx",
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/pages/SearchPage.tsx",
+          "frontend/src/pages/MyOrdersPage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/ProductCard.tsx"
+          "frontend/src/components/BottomNavBar.tsx",
+          "frontend/src/components/WhatsAppHelpButton.tsx",
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/pages/SearchPage.tsx",
+          "frontend/src/pages/MyOrdersPage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/App.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/DeliveryFeeInfo.tsx",
+    "frontend/public/assets/generated/coming-soon.dim_400x300.png",
+    "frontend/src/App.tsx",
+    "frontend/src/components/BottomNavBar.tsx",
+    "frontend/src/components/HeroBannerCarousel.tsx",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/components/MobileRechargeSection.tsx",
     "frontend/src/components/ProductCard.tsx",
-    "frontend/src/pages/CheckoutPage.tsx",
+    "frontend/src/components/ProductGrid.tsx",
+    "frontend/src/components/WhatsAppHelpButton.tsx",
+    "frontend/src/index.css",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/MyOrdersPage.tsx",
+    "frontend/src/pages/SearchPage.tsx",
+    "frontend/src/pages/WalletPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

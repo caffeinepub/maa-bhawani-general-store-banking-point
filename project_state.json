@@ -1,27 +1,31 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "E-commerce/delivery app with Admin Panel, shop page, checkout, and user management features. Building out wallet system, delivery charge logic, and product display enhancements.",
-  "architectural_notes": [
-    "Wallet logic must not interfere with Shop Open/Close toggle or Login system; prioritize login session on conflict.",
-    "Do not delete existing user tables; add wallet_balance as a new column to the user database."
-  ],
-  "known_issues": [
-    "Customer Wallet System build failed (AI unable to complete); needs retry or rephrasing."
-  ],
+  "summary": "Mobile app (likely grocery/delivery) with shop management features. User is redesigning the home page with a sliding banner, 2-column product grid, sticky bottom navigation, and relocated mobile recharge section.",
+  "architectural_notes": [],
+  "known_issues": [],
   "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Colorful 'Coming Soon' illustration with stars and a shopping basket on a light background, suitable for an empty product grid state (coming-soon.dim_400x300.png)",
   "existing_features": [
     {
-      "id": "feature-update-the-checkout-page-to-display-the-delivery-charge-breakdown-show-5-delivery-fee-line-item-when-the-cart-total-is-below-51-and-distance-is-within-0-5km-1km-and-show-free-delivery-when-the-order-meets-the-51-minimum-the-final-order-total-shown-to-the-user-must-include-the-delivery-charge-where-applicable",
-      "title": "Update the checkout page to display the delivery charge breakdown: show ₹5 delivery fee line item when the cart total is below ₹51 and distance is within 0.5km–1km, and show 'Free Delivery' when the order meets the ₹51 minimum. The final order total shown to the user must include the delivery charge where applicable.",
+      "id": "feature-redesign-the-homepage-layout-so-that-1-a-compact-auto-sliding-banner-carousel-appears-at-the-very-top-reduce-banner-height-to-approximately-140-160px-on-mobile-2-the-productgrid-appears-immediately-below-the-banner-with-no-intervening-sections-and-3-the-mobilerechargesection-is-relocated-to-the-bottom-of-the-page-as-a-compact-icon-based-grid-or-small-card-e-g-a-row-of-operator-icons-with-a-label-above-the-footer",
+      "title": "Redesign the HomePage layout so that: (1) a compact auto-sliding banner carousel appears at the very top (reduce banner height to approximately 140–160px on mobile), (2) the ProductGrid appears immediately below the banner with no intervening sections, and (3) the MobileRechargeSection is relocated to the bottom of the page as a compact icon-based grid or small card (e.g., a row of operator icons with a label), above the footer.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-product-display-in-productgrid-to-use-a-strict-2-column-grid-layout-each-productcard-must-display-a-clean-product-image-the-product-name-in-bold-a-green-delivery-in-10-mins-tag-and-a-prominent-green-add-button-when-no-products-are-found-empty-state-render-a-visually-appealing-coming-soon-graphic-illustration-with-descriptive-text-instead-of-plain-text",
+      "title": "Redesign the product display in ProductGrid to use a strict 2-column grid layout. Each ProductCard must display: a clean product image, the product name in bold, a green 'Delivery in 10 Mins' tag, and a prominent green '+ ADD' button. When no products are found (empty state), render a visually appealing 'Coming Soon' graphic/illustration with descriptive text instead of plain text.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-on-the-shop-home-page-display-a-small-green-text-label-delivery-in-10-mins-directly-below-every-product-name-in-the-product-card-component-productcard-tsx",
-      "title": "On the shop/home page, display a small green text label 'Delivery in 10 Mins' directly below every product name in the product card component (ProductCard.tsx).",
+      "id": "feature-add-a-sticky-bottom-navigation-bar-fixed-to-the-bottom-of-the-viewport-with-4-navigation-items-home-search-my-orders-and-wallet-each-with-an-appropriate-icon-and-label-the-bar-must-appear-on-all-customer-facing-pages-also-add-a-small-floating-whatsapp-help-button-whatsapp-green-bottom-right-corner-that-opens-a-whatsapp-chat-link-when-tapped-ensure-the-sticky-nav-does-not-overlap-page-content-add-appropriate-bottom-padding-to-page-layouts",
+      "title": "Add a Sticky Bottom Navigation Bar fixed to the bottom of the viewport with 4 navigation items: Home, Search, My Orders, and Wallet — each with an appropriate icon and label. The bar must appear on all customer-facing pages. Also add a small floating WhatsApp Help button (WhatsApp green, bottom-right corner) that opens a WhatsApp chat link when tapped. Ensure the sticky nav does not overlap page content (add appropriate bottom padding to page layouts).",
       "reqIds": [
         "REQ-3"
       ],
@@ -31,33 +35,25 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Customer Wallet System: replace old Recharge module, add wallet_balance column, admin credit/debit UI, and Pay via Wallet button at checkout",
+      "summary": "Redesign Home Page: sliding banner at top, move Mobile Recharge to small icon-grid/card at bottom, products appear immediately after banner, decrease banner height",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Free delivery minimum order ₹51; delivery charge ₹5 for orders below ₹51 within 0.5km or 1km",
+      "summary": "Product Grid: 2-column layout with clean image, bold product name, 'Delivery in 10 Mins' green tag, prominent green '+ADD' button, and 'Coming Soon' graphic when no products found",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Show small green text 'Delivery in 10 Mins' under every product name on the shop page",
+      "summary": "Sticky Bottom Navigation Bar with 4 icons (Home, Search, My Orders, Wallet) and a floating WhatsApp Help button on bottom right",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Add a delivery charge logic to the backend: if the order total is below ₹51, apply a ₹5 delivery charge for delivery distances of 0.5km or under 1km. Orders of ₹51 or above qualify for free delivery regardless of distance within that range.",
-      "reqIds": [
-        "REQ-1"
-      ],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Maa Bhawani General Store",
+  "projectName": "Maa Bhawani Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

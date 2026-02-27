@@ -1,14 +1,14 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { useGetShopOpenStatus } from '../hooks/useQueries';
+import { useGetShopStatus } from '../hooks/useQueries';
 
 export default function ShopClosedBanner() {
-  const { data: isShopOpen, isLoading, isFetched } = useGetShopOpenStatus();
+  const { data: isShopOpen, isLoading, isFetched } = useGetShopStatus();
 
   // Only show banner when:
   // 1. Data has been successfully fetched (isFetched is true)
   // 2. Not currently loading
-  // 3. Shop is confirmed closed (isShopOpen is false)
+  // 3. Shop is confirmed closed (isShopOpen is exactly false)
   if (!isFetched || isLoading || isShopOpen !== false) {
     return null;
   }

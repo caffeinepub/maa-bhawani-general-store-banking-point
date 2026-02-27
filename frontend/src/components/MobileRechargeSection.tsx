@@ -1,17 +1,26 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePlaceRechargeOrder } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { toast } from 'sonner';
-import { Smartphone } from 'lucide-react';
+import { Smartphone, ChevronRight } from 'lucide-react';
 
-const OPERATORS = ['Airtel', 'Jio', 'Vi (Vodafone Idea)', 'BSNL', 'MTNL'];
+const OPERATORS = [
+  { name: 'Airtel', color: 'bg-red-500', letter: 'A' },
+  { name: 'Jio', color: 'bg-blue-600', letter: 'J' },
+  { name: 'Vi', color: 'bg-purple-600', letter: 'V' },
+  { name: 'BSNL', color: 'bg-green-600', letter: 'B' },
+  { name: 'MTNL', color: 'bg-orange-500', letter: 'M' },
+];
+
+const OPERATOR_NAMES = ['Airtel', 'Jio', 'Vi (Vodafone Idea)', 'BSNL', 'MTNL'];
 
 export default function MobileRechargeSection() {
+  const [isOpen, setIsOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
   const [operator, setOperator] = useState('');
   const [amount, setAmount] = useState('');
@@ -52,85 +61,113 @@ export default function MobileRechargeSection() {
       setMobileNumber('');
       setOperator('');
       setAmount('');
+      setIsOpen(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to place recharge order');
     }
   };
 
   return (
-    <div className="my-12">
-      <div className="relative rounded-2xl overflow-hidden mb-6">
-        <img
-          src="/assets/generated/recharge-banner.dim_800x300.png"
-          alt="Mobile Recharge"
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40 flex items-center justify-center">
-          <div className="text-center text-primary-foreground">
-            <Smartphone className="h-12 w-12 mx-auto mb-2" />
-            <h2 className="text-3xl font-bold">Mobile Recharge</h2>
-            <p className="text-lg">Quick & Easy Recharge Service</p>
+    <div className="mt-6 mb-2">
+      {/* Compact Card */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-3 shadow-md">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-white" />
+            <span className="text-white font-semibold text-sm">Mobile Recharge</span>
           </div>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex items-center gap-1 bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1 rounded-full transition-colors"
+          >
+            Recharge Now <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+
+        {/* Operator Icons Row */}
+        <div className="flex items-center gap-2">
+          {OPERATORS.map((op) => (
+            <button
+              key={op.name}
+              onClick={() => {
+                setOperator(op.name === 'Vi' ? 'Vi (Vodafone Idea)' : op.name);
+                setIsOpen(true);
+              }}
+              className="flex flex-col items-center gap-0.5 group"
+            >
+              <div className={`w-8 h-8 rounded-full ${op.color} flex items-center justify-center text-white font-bold text-xs shadow-sm group-hover:scale-110 transition-transform`}>
+                {op.letter}
+              </div>
+              <span className="text-white/80 text-[10px]">{op.name}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recharge Your Mobile</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="mobile">Mobile Number</Label>
-                <Input
-                  id="mobile"
-                  type="tel"
-                  placeholder="10-digit number"
-                  value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="operator">Operator</Label>
-                <Select value={operator} onValueChange={setOperator} required>
-                  <SelectTrigger id="operator">
-                    <SelectValue placeholder="Select operator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {OPERATORS.map((op) => (
-                      <SelectItem key={op} value={op}>
-                        {op}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="amount">Recharge Amount (₹)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div className="flex items-end">
-                <Button type="submit" className="w-full" disabled={placeRecharge.isPending}>
-                  {placeRecharge.isPending ? 'Processing...' : 'Place Recharge Order'}
-                </Button>
-              </div>
+      {/* Recharge Form Dialog */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-blue-600" />
+              Mobile Recharge
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="mobile">Mobile Number</Label>
+              <Input
+                id="mobile"
+                type="tel"
+                placeholder="10-digit number"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                required
+              />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="operator">Operator</Label>
+              <Select value={operator} onValueChange={setOperator} required>
+                <SelectTrigger id="operator">
+                  <SelectValue placeholder="Select operator" />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPERATOR_NAMES.map((op) => (
+                    <SelectItem key={op} value={op}>
+                      {op}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="amount">Recharge Amount (₹)</Label>
+              <Input
+                id="amount"
+                type="number"
+                placeholder="Enter amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                min="1"
+                required
+              />
+            </div>
+
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={placeRecharge.isPending}>
+              {placeRecharge.isPending ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </span>
+              ) : (
+                'Place Recharge Order'
+              )}
+            </Button>
           </form>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

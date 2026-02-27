@@ -1,77 +1,90 @@
 {
   "kind": "build_request",
-  "title": "Free Delivery Threshold, Distance-Based Delivery Charge, and 'Delivery in 10 Mins' Label",
-  "projectName": "Maa Bhawani General Store",
-  "priority": "normal",
+  "title": "Home Page Redesign, 2-Column Product Grid, Sticky Bottom Nav & WhatsApp Help Button",
+  "projectName": "Maa Bhawani Store",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a delivery charge logic to the backend: if the order total is below ₹51, apply a ₹5 delivery charge for delivery distances of 0.5km or under 1km. Orders of ₹51 or above qualify for free delivery regardless of distance within that range.",
-      "target": "backend",
+      "text": "Redesign the HomePage layout so that: (1) a compact auto-sliding banner carousel appears at the very top (reduce banner height to approximately 140–160px on mobile), (2) the ProductGrid appears immediately below the banner with no intervening sections, and (3) the MobileRechargeSection is relocated to the bottom of the page as a compact icon-based grid or small card (e.g., a row of operator icons with a label), above the footer.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "Set the Minimum Order for Free Delivery to ₹51. If the order is below ₹51, add a delivery charge of ₹5 under 0.5km or 1km"
+          "Move the Mobile Recharge section to a small icon-based grid or a small card at the bottom",
+          "The top should have one sliding banner for offers, and Products must start appearing immediately after that",
+          "Decrease the height of the banners"
         ]
       },
       "acceptanceCriteria": [
-        "Backend order placement logic applies a ₹5 delivery fee when order total < ₹51 and distance is ≤ 1km.",
-        "No delivery charge is applied when order total is ₹51 or above.",
-        "The delivery charge amount is returned as part of the order/checkout response so the frontend can display it."
+        "The homepage renders a horizontally auto-sliding banner carousel at the very top with a height of roughly 140–160px on mobile screens.",
+        "Product grid starts rendering immediately after the banner — no full-width sections interrupt between banner and products.",
+        "The Mobile Recharge section is displayed near the bottom of the page as a compact icon-grid card (small operator icons + label), not as a full-width form section.",
+        "No layout regression on the ShopClosedBanner, CategoryFilter, or CartDrawer components."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the checkout page to display the delivery charge breakdown: show ₹5 delivery fee line item when the cart total is below ₹51 and distance is within 0.5km–1km, and show 'Free Delivery' when the order meets the ₹51 minimum. The final order total shown to the user must include the delivery charge where applicable.",
+      "text": "Redesign the product display in ProductGrid to use a strict 2-column grid layout. Each ProductCard must display: a clean product image, the product name in bold, a green 'Delivery in 10 Mins' tag, and a prominent green '+ ADD' button. When no products are found (empty state), render a visually appealing 'Coming Soon' graphic/illustration with descriptive text instead of plain text.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "Set the Minimum Order for Free Delivery to ₹51. If the order is below ₹51, add a delivery charge of ₹5 under 0.5km or 1km"
+          "Change the product display to a 2-column Grid Layout",
+          "A clean image. Product name in bold. The 'Delivery in 10 Mins' green tag. A very prominent '+ ADD' button in green color.",
+          "If no products are found, show a beautiful 'Coming Soon' graphic instead of plain text"
         ]
       },
       "acceptanceCriteria": [
-        "Checkout page shows a 'Delivery Charge: ₹5' line item when cart total < ₹51 and delivery distance is ≤ 1km.",
-        "Checkout page shows 'Free Delivery' when cart total is ₹51 or above.",
-        "The grand total displayed on checkout includes the ₹5 delivery charge when applicable.",
-        "The existing distance-based delivery fee logic for distances beyond 1km is preserved."
+        "ProductGrid renders exactly 2 columns on mobile and tablet viewports.",
+        "Each product card shows: product image (clean, object-cover), product name in font-bold, a green badge reading 'Delivery in 10 Mins', and a green '+ ADD' button that is visually prominent.",
+        "When the product list is empty (after filtering or initially), a styled 'Coming Soon' empty state with an illustration/graphic is rendered instead of plain text.",
+        "The '+ ADD' button is disabled when the shop is closed (existing behavior preserved)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "On the shop/home page, display a small green text label 'Delivery in 10 Mins' directly below every product name in the product card component (ProductCard.tsx).",
+      "text": "Add a Sticky Bottom Navigation Bar fixed to the bottom of the viewport with 4 navigation items: Home, Search, My Orders, and Wallet — each with an appropriate icon and label. The bar must appear on all customer-facing pages. Also add a small floating WhatsApp Help button (WhatsApp green, bottom-right corner) that opens a WhatsApp chat link when tapped. Ensure the sticky nav does not overlap page content (add appropriate bottom padding to page layouts).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "add a small green text 'Delivery in 10 Mins' under every product name on the shop page"
+          "Add a Sticky Bottom Navigation Bar with 4 icons: Home, Search, My Orders, and Wallet",
+          "add a small floating 'WhatsApp Help' button on the bottom right"
         ]
       },
       "acceptanceCriteria": [
-        "Each product card on the shop page shows the text 'Delivery in 10 Mins' immediately below the product name.",
-        "The text is styled in a small green font (e.g., text-green-600 text-xs or similar).",
-        "The label appears for all products regardless of category."
+        "A sticky bottom nav bar is rendered fixed at the bottom with 4 tabs: Home, Search, My Orders, Wallet — each with an icon and text label.",
+        "Active tab is visually highlighted (e.g., green color).",
+        "A floating WhatsApp button (green circular FAB) is visible at the bottom-right, above the sticky nav, and opens a WhatsApp chat URL on tap.",
+        "Page content is padded at the bottom so it is not obscured by the sticky nav bar.",
+        "The sticky nav is not shown on admin pages (AdminPage, AdminSettingsPage, BillingPage)."
       ]
     }
   ],
   "constraints": [
-    "Do not remove or alter existing distance-based delivery fee logic for distances beyond 1km.",
     "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Preserve the existing shop open/close toggle and admin login functionality — delivery charge logic must be independent."
+    "Preserve all existing backend logic — no backend changes required.",
+    "The MobileRechargeSection component logic (form, mutation hook) must be preserved; only its placement and visual wrapper change.",
+    "Shop closed state behavior and CartDrawer must remain fully functional."
   ],
   "nonGoals": [
-    "Customer Wallet System is out of scope for this build request.",
-    "No changes to the admin product management or billing pages.",
-    "No changes to order history or past bill displays."
+    "No backend schema or API changes.",
+    "No changes to admin pages layout or admin navigation.",
+    "No changes to the checkout, order confirmation, or billing flows.",
+    "No new backend features (Search, Wallet functionality are nav placeholders only — no full implementation required).",
+    "No changes to Internet Identity authentication flow."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Colorful 'Coming Soon' illustration with stars and a shopping basket on a light background, suitable for an empty product grid state (coming-soon.dim_400x300.png)"
+    ],
     "edits": []
   }
 }

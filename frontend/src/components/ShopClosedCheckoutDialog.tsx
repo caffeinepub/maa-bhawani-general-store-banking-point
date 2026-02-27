@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,37 +12,45 @@ import { useGetShopOpenStatus } from '../hooks/useQueries';
 import { useNavigate } from '@tanstack/react-router';
 import { AlertCircle } from 'lucide-react';
 
-export default function ShopClosedCheckoutDialog() {
+interface ShopClosedCheckoutDialogProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function ShopClosedCheckoutDialog({ open: externalOpen, onClose }: ShopClosedCheckoutDialogProps) {
   const { data: isShopOpen } = useGetShopOpenStatus();
   const navigate = useNavigate();
-  const [showDialog, setShowDialog] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const wasOpenRef = useRef<boolean | null>(null);
 
+  // Watch for shop status changing from open → closed
   useEffect(() => {
-    // Initialize the ref on first load
     if (wasOpenRef.current === null && isShopOpen !== undefined) {
       wasOpenRef.current = isShopOpen;
       return;
     }
-
-    // Check if shop status changed from open to closed
     if (wasOpenRef.current === true && isShopOpen === false) {
-      setShowDialog(true);
+      setInternalOpen(true);
     }
-
-    // Update the ref
     if (isShopOpen !== undefined) {
       wasOpenRef.current = isShopOpen;
     }
   }, [isShopOpen]);
 
+  // If caller controls open state externally, use that; otherwise use internal
+  const showDialog = externalOpen !== undefined ? externalOpen : internalOpen;
+
   const handleClose = () => {
-    setShowDialog(false);
-    navigate({ to: '/' });
+    setInternalOpen(false);
+    if (onClose) {
+      onClose();
+    } else {
+      navigate({ to: '/' });
+    }
   };
 
   return (
-    <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+    <AlertDialog open={showDialog} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-2 mb-2">
@@ -50,7 +58,7 @@ export default function ShopClosedCheckoutDialog() {
             <AlertDialogTitle className="text-xl">Shop Closed</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-base">
-            Sorry, the store just closed. Please place your order when we reopen!
+            Sorry, the store is currently closed. Please place your order when we reopen!
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

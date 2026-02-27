@@ -1,497 +1,497 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import AdminGuard from '../components/AdminGuard';
-import AdminProductForm from '../components/AdminProductForm';
-import AdminProductList from '../components/AdminProductList';
-import BillHistoryTable from '../components/BillHistoryTable';
-import ShopStatusToggle from '../components/ShopStatusToggle';
-import { useGetAllOrders, useGetAllRechargeOrders, useConfirmOrder, useMarkAsPacked, useMarkAsOutForDelivery, useMarkAsCompleted } from '../hooks/useQueries';
-import { OrderStatus, PaymentMethod } from '../backend';
-import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Settings,
-  Package,
-  ShoppingBag,
-  Receipt,
-  Smartphone,
-  LayoutDashboard,
-  ChevronRight,
-} from 'lucide-react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import {
+  Package, ShoppingBag, Settings, BarChart3, LogOut, Menu, X,
+  MapPin, Clock, Phone, User, ChevronDown, ChevronRight, Route,
+  AlertCircle, CheckCircle, Truck, PackageCheck, ExternalLink
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import {
+  useGetAllOrders,
+  useGetAllProducts,
+  useGetShopOpenStatus,
+  useConfirmOrder,
+  useMarkAsPacked,
+  useMarkAsOutForDelivery,
+  useMarkAsCompleted,
+} from '../hooks/useQueries';
+import { Order, OrderStatus } from '../backend';
+import AdminProductList from '../components/AdminProductList';
+import AdminProductForm from '../components/AdminProductForm';
+import ShopStatusToggle from '../components/ShopStatusToggle';
+import BillHistoryTable from '../components/BillHistoryTable';
+import AdminSettingsPage from './AdminSettingsPage';
 
-type TabKey = 'products' | 'orders' | 'recharge' | 'bills';
+function getStatusColor(status: OrderStatus): string {
+  switch (status) {
+    case OrderStatus.pending: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case OrderStatus.confirmed: return 'bg-blue-100 text-blue-800 border-blue-200';
+    case OrderStatus.packed: return 'bg-purple-100 text-purple-800 border-purple-200';
+    case OrderStatus.out_for_delivery: return 'bg-orange-100 text-orange-800 border-orange-200';
+    case OrderStatus.completed: return 'bg-green-100 text-green-800 border-green-200';
+    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+}
 
-const NAV_ITEMS: { key: TabKey; label: string; icon: React.ElementType; description: string }[] = [
-  { key: 'products', label: 'Products', icon: Package, description: 'Manage inventory' },
-  { key: 'orders', label: 'Orders', icon: ShoppingBag, description: 'Track customer orders' },
-  { key: 'recharge', label: 'Recharge', icon: Smartphone, description: 'Mobile recharge requests' },
-  { key: 'bills', label: 'Bills', icon: Receipt, description: 'Bill history & records' },
-];
+function getStatusLabel(status: OrderStatus): string {
+  switch (status) {
+    case OrderStatus.pending: return 'Pending';
+    case OrderStatus.confirmed: return 'Confirmed';
+    case OrderStatus.packed: return 'Packed';
+    case OrderStatus.out_for_delivery: return 'Out for Delivery';
+    case OrderStatus.completed: return 'Completed';
+    default: return 'Unknown';
+  }
+}
 
-export default function AdminPage() {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>('products');
-  const { data: orders = [], isLoading: ordersLoading } = useGetAllOrders();
-  const { data: rechargeOrders = [], isLoading: rechargeLoading } = useGetAllRechargeOrders();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-
+function OrderCard({ order }: { order: Order }) {
   const confirmOrder = useConfirmOrder();
   const markAsPacked = useMarkAsPacked();
   const markAsOutForDelivery = useMarkAsOutForDelivery();
   const markAsCompleted = useMarkAsCompleted();
 
-  const handleStatusChange = async (orderId: bigint, currentStatus: OrderStatus) => {
+  const hasGPS = order.latitude != null && order.longitude != null;
+
+  const handleViewOnMaps = () => {
+    if (hasGPS) {
+      window.open(`https://maps.google.com/?q=${order.latitude},${order.longitude}`, '_blank');
+    }
+  };
+
+  const handleStatusUpdate = async () => {
     try {
-      switch (currentStatus) {
+      switch (order.status) {
         case OrderStatus.pending:
-          await confirmOrder.mutateAsync(orderId);
-          toast.success('Order confirmed');
+          await confirmOrder.mutateAsync(order.id);
+          toast.success('Order confirmed!');
           break;
         case OrderStatus.confirmed:
-          await markAsPacked.mutateAsync(orderId);
-          toast.success('Order marked as packed');
+          await markAsPacked.mutateAsync(order.id);
+          toast.success('Order marked as packed!');
           break;
         case OrderStatus.packed:
-          await markAsOutForDelivery.mutateAsync(orderId);
-          toast.success('Order marked as out for delivery');
+          await markAsOutForDelivery.mutateAsync(order.id);
+          toast.success('Order out for delivery!');
           break;
         case OrderStatus.out_for_delivery:
-          await markAsCompleted.mutateAsync(orderId);
-          toast.success('Order completed');
+          await markAsCompleted.mutateAsync(order.id);
+          toast.success('Order completed!');
           break;
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update order status');
+      toast.error(error?.message || 'Failed to update order status');
     }
   };
 
-  const getStatusBadgeVariant = (status: OrderStatus) => {
-    switch (status) {
-      case OrderStatus.pending: return 'secondary';
-      case OrderStatus.confirmed: return 'default';
-      case OrderStatus.packed: return 'default';
-      case OrderStatus.out_for_delivery: return 'default';
-      case OrderStatus.completed: return 'outline';
-      default: return 'secondary';
-    }
-  };
-
-  const getStatusLabel = (status: OrderStatus) => {
-    switch (status) {
-      case OrderStatus.pending: return 'Pending';
-      case OrderStatus.confirmed: return 'Confirmed';
-      case OrderStatus.packed: return 'Packed';
-      case OrderStatus.out_for_delivery: return 'Out for Delivery';
-      case OrderStatus.completed: return 'Completed';
-      default: return status;
-    }
-  };
-
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case OrderStatus.pending: return 'bg-amber-100 text-amber-800 border-amber-200';
-      case OrderStatus.confirmed: return 'bg-blue-100 text-blue-800 border-blue-200';
-      case OrderStatus.packed: return 'bg-purple-100 text-purple-800 border-purple-200';
-      case OrderStatus.out_for_delivery: return 'bg-orange-100 text-orange-800 border-orange-200';
-      case OrderStatus.completed: return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getNextActionButton = (order: any) => {
-    const isProcessing = confirmOrder.isPending || markAsPacked.isPending ||
-      markAsOutForDelivery.isPending || markAsCompleted.isPending;
-
+  const getNextAction = () => {
     switch (order.status) {
-      case OrderStatus.pending:
+      case OrderStatus.pending: return 'Confirm Order';
+      case OrderStatus.confirmed: return 'Mark as Packed';
+      case OrderStatus.packed: return 'Out for Delivery';
+      case OrderStatus.out_for_delivery: return 'Mark Completed';
+      default: return null;
+    }
+  };
+
+  const nextAction = getNextAction();
+  const isUpdating = confirmOrder.isPending || markAsPacked.isPending || markAsOutForDelivery.isPending || markAsCompleted.isPending;
+
+  return (
+    <Card className="border border-border">
+      <CardContent className="p-4">
+        <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">Order #{Number(order.id)}</span>
+              <Badge className={`text-xs border ${getStatusColor(order.status)}`}>
+                {getStatusLabel(order.status)}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {new Date(Number(order.timestamp) / 1_000_000).toLocaleString('en-IN')}
+            </p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {hasGPS && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleViewOnMaps}
+                className="h-7 text-xs flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <MapPin className="w-3 h-3" />
+                View on Maps
+              </Button>
+            )}
+            {nextAction && (
+              <Button
+                size="sm"
+                onClick={handleStatusUpdate}
+                disabled={isUpdating}
+                className="h-7 text-xs"
+              >
+                {isUpdating ? (
+                  <span className="flex items-center gap-1">
+                    <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Updating...
+                  </span>
+                ) : nextAction}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-1">
+            <User className="w-3 h-3" />
+            <span>{order.customerName}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Phone className="w-3 h-3" />
+            <span>{order.phoneNumber}</span>
+          </div>
+          <div className="flex items-center gap-1 sm:col-span-2">
+            <MapPin className="w-3 h-3" />
+            <span>{order.deliveryAddress}</span>
+          </div>
+        </div>
+
+        <div className="border-t pt-2">
+          <p className="text-xs font-medium text-foreground mb-1">Items:</p>
+          <div className="space-y-0.5">
+            {order.products.map((product, i) => (
+              <p key={i} className="text-xs text-muted-foreground">• {product.name}</p>
+            ))}
+          </div>
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-xs text-muted-foreground">
+              Payment: {order.paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery'}
+            </span>
+            <span className="text-sm font-bold text-primary">₹{Number(order.totalPrice)}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BatchRoutingView({ orders }: { orders: Order[] }) {
+  const pendingOrders = orders.filter(o => o.status === OrderStatus.pending);
+
+  // Group by delivery address
+  const grouped = pendingOrders.reduce<Record<string, Order[]>>((acc, order) => {
+    const area = order.deliveryAddress.trim() || 'Unknown Location';
+    if (!acc[area]) acc[area] = [];
+    acc[area].push(order);
+    return acc;
+  }, {});
+
+  const groupEntries = Object.entries(grouped);
+
+  if (pendingOrders.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Route className="w-12 h-12 mx-auto mb-3 opacity-30" />
+        <p className="font-medium">No pending orders</p>
+        <p className="text-sm">All orders have been processed!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-700 font-medium flex items-center gap-2">
+          <Route className="w-4 h-4" />
+          Batch Routing — {pendingOrders.length} pending order{pendingOrders.length !== 1 ? 's' : ''} across {groupEntries.length} location{groupEntries.length !== 1 ? 's' : ''}
+        </p>
+        <p className="text-xs text-blue-600 mt-1">Orders are grouped by delivery address to help you plan one trip per route.</p>
+      </div>
+
+      <Accordion type="multiple" defaultValue={groupEntries.map(([key]) => key)} className="space-y-2">
+        {groupEntries.map(([area, areaOrders]) => (
+          <AccordionItem key={area} value={area} className="border border-border rounded-lg overflow-hidden">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30">
+              <div className="flex items-center gap-3 text-left">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-foreground">{area}</p>
+                  <p className="text-xs text-muted-foreground">{areaOrders.length} order{areaOrders.length !== 1 ? 's' : ''}</p>
+                </div>
+                <Badge className="ml-auto mr-2 bg-primary/10 text-primary border-0 text-xs">
+                  ₹{areaOrders.reduce((sum, o) => sum + Number(o.totalPrice), 0)} total
+                </Badge>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <div className="space-y-3 pt-2">
+                {areaOrders.map((order) => (
+                  <div key={Number(order.id)} className="p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Order #{Number(order.id)}</span>
+                      <div className="flex items-center gap-2">
+                        {order.latitude != null && order.longitude != null && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(`https://maps.google.com/?q=${order.latitude},${order.longitude}`, '_blank')}
+                            className="h-6 text-xs px-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                          >
+                            <MapPin className="w-3 h-3 mr-1" />
+                            Maps
+                          </Button>
+                        )}
+                        <span className="text-sm font-bold text-primary">₹{Number(order.totalPrice)}</span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p className="flex items-center gap-1"><User className="w-3 h-3" /> {order.customerName}</p>
+                      <p className="flex items-center gap-1"><Phone className="w-3 h-3" /> {order.phoneNumber}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-border/50">
+                      <p className="text-xs font-medium mb-1">Items:</p>
+                      {order.products.map((p, i) => (
+                        <p key={i} className="text-xs text-muted-foreground">• {p.name}</p>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+export default function AdminPage() {
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('orders');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [ordersTab, setOrdersTab] = useState('all');
+
+  const { data: orders = [], isLoading: ordersLoading } = useGetAllOrders();
+  const { data: products = [] } = useGetAllProducts();
+
+  // Force fresh shop status fetch
+  useGetShopOpenStatus();
+
+  const pendingOrders = orders.filter(o => o.status === OrderStatus.pending);
+  const activeOrders = orders.filter(o => o.status !== OrderStatus.completed);
+
+  const navItems = [
+    { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrders.length },
+    { id: 'products', label: 'Products', icon: Package },
+    { id: 'billing', label: 'Billing', icon: BarChart3 },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('adminAuthTime');
+    navigate({ to: '/admin' });
+  };
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'orders':
         return (
-          <Button size="sm" onClick={() => handleStatusChange(order.id, order.status)} disabled={isProcessing}
-            className="bg-primary hover:bg-primary/90 text-white text-xs">
-            Confirm
-          </Button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">Orders</h2>
+              <div className="flex gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {pendingOrders.length} pending
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {orders.length} total
+                </Badge>
+              </div>
+            </div>
+
+            <Tabs value={ordersTab} onValueChange={setOrdersTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="all">All Orders</TabsTrigger>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="routing" className="flex items-center gap-1">
+                  <Route className="w-3 h-3" />
+                  Batch Routing
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="mt-4">
+                {ordersLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading orders...</div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>No orders yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {[...orders].reverse().map((order) => (
+                      <OrderCard key={Number(order.id)} order={order} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="active" className="mt-4">
+                {activeOrders.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>No active orders</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {activeOrders.map((order) => (
+                      <OrderCard key={Number(order.id)} order={order} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="routing" className="mt-4">
+                <BatchRoutingView orders={orders} />
+              </TabsContent>
+            </Tabs>
+          </div>
         );
-      case OrderStatus.confirmed:
+
+      case 'products':
         return (
-          <Button size="sm" onClick={() => handleStatusChange(order.id, order.status)} disabled={isProcessing}
-            className="bg-primary hover:bg-primary/90 text-white text-xs">
-            Pack
-          </Button>
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold">Products</h2>
+            <AdminProductForm />
+            <AdminProductList />
+          </div>
         );
-      case OrderStatus.packed:
+
+      case 'billing':
         return (
-          <Button size="sm" onClick={() => handleStatusChange(order.id, order.status)} disabled={isProcessing}
-            className="bg-primary hover:bg-primary/90 text-white text-xs">
-            Dispatch
-          </Button>
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">Billing</h2>
+            <BillHistoryTable />
+          </div>
         );
-      case OrderStatus.out_for_delivery:
-        return (
-          <Button size="sm" onClick={() => handleStatusChange(order.id, order.status)} disabled={isProcessing}
-            className="bg-success hover:bg-success/90 text-white text-xs">
-            Complete
-          </Button>
-        );
-      case OrderStatus.completed:
-        return <span className="text-xs font-medium text-success">✓ Done</span>;
+
+      case 'settings':
+        return <AdminSettingsPage />;
+
       default:
         return null;
     }
   };
 
-  const filteredOrders = statusFilter === 'all'
-    ? orders
-    : orders.filter(order => order.status === statusFilter);
-
-  const pendingOrdersCount = orders.filter(o => o.status === OrderStatus.pending).length;
-
   return (
-    <AdminGuard>
-      <div className="min-h-screen bg-gray-50/50">
-        {/* Page Header */}
-        <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <LayoutDashboard className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
-                <p className="text-xs text-muted-foreground">Manage your store</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate({ to: '/admin/settings' })}
-              className="gap-2 hover:bg-primary/5 hover:text-primary hover:border-primary text-sm"
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden md:flex flex-col w-56 bg-card border-r border-border shrink-0">
+        <div className="p-4 border-b border-border">
+          <h1 className="font-bold text-foreground text-sm">Admin Panel</h1>
+          <p className="text-xs text-muted-foreground">Maa Bhawani Store</p>
+        </div>
+
+        <nav className="flex-1 p-3 space-y-1">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                activeSection === item.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
             >
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
-            </Button>
-          </div>
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span>{item.label}</span>
+              {item.badge != null && item.badge > 0 && (
+                <Badge className="ml-auto text-xs h-5 min-w-5 flex items-center justify-center bg-destructive text-destructive-foreground">
+                  {item.badge}
+                </Badge>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-3 border-t border-border space-y-2">
+          <ShopStatusToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="w-full justify-start text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
         </div>
+      </aside>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Shop Status Card */}
-          <div className="mb-6">
-            <ShopStatusToggle />
-          </div>
-
-          {/* Dashboard Layout: Sidebar + Content */}
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar Navigation */}
-            <aside className="lg:w-56 shrink-0">
-              <Card className="bg-white shadow-sm border border-gray-200 overflow-hidden">
-                <CardHeader className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                  <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Navigation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-2">
-                  <nav className="space-y-1">
-                    {NAV_ITEMS.map(({ key, label, icon: Icon, description }) => (
-                      <button
-                        key={key}
-                        onClick={() => setActiveTab(key)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group ${
-                          activeTab === key
-                            ? 'bg-primary text-white shadow-sm'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <Icon className={`h-4 w-4 shrink-0 ${activeTab === key ? 'text-white' : 'text-gray-500 group-hover:text-primary'}`} />
-                        <div className="flex-1 min-w-0">
-                          <div className={`text-sm font-medium leading-none ${activeTab === key ? 'text-white' : ''}`}>
-                            {label}
-                            {key === 'orders' && pendingOrdersCount > 0 && (
-                              <span className={`ml-2 inline-flex items-center justify-center w-4 h-4 text-xs rounded-full ${
-                                activeTab === key ? 'bg-white text-primary' : 'bg-primary text-white'
-                              }`}>
-                                {pendingOrdersCount}
-                              </span>
-                            )}
-                          </div>
-                          <div className={`text-xs mt-0.5 ${activeTab === key ? 'text-white/70' : 'text-gray-400'}`}>
-                            {description}
-                          </div>
-                        </div>
-                        <ChevronRight className={`h-3 w-3 shrink-0 ${activeTab === key ? 'text-white/70' : 'text-gray-300'}`} />
-                      </button>
-                    ))}
-                  </nav>
-                </CardContent>
-              </Card>
-
-              {/* Quick Stats */}
-              <Card className="bg-white shadow-sm border border-gray-200 mt-4">
-                <CardHeader className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                  <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Quick Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 space-y-2">
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-md bg-gray-50">
-                    <span className="text-xs text-gray-600">Total Orders</span>
-                    <span className="text-sm font-bold text-gray-900">{orders.length}</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-md bg-amber-50">
-                    <span className="text-xs text-amber-700">Pending</span>
-                    <span className="text-sm font-bold text-amber-700">{pendingOrdersCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-md bg-green-50">
-                    <span className="text-xs text-green-700">Completed</span>
-                    <span className="text-sm font-bold text-green-700">
-                      {orders.filter(o => o.status === OrderStatus.completed).length}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-md bg-blue-50">
-                    <span className="text-xs text-blue-700">Recharge Req.</span>
-                    <span className="text-sm font-bold text-blue-700">{rechargeOrders.length}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="flex-1 min-w-0">
-              {/* Mobile Tab Bar */}
-              <div className="lg:hidden flex gap-1 mb-4 bg-white border border-gray-200 rounded-xl p-1 shadow-sm overflow-x-auto">
-                {NAV_ITEMS.map(({ key, label, icon: Icon }) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveTab(key)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                      activeTab === key
-                        ? 'bg-primary text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                    {key === 'orders' && pendingOrdersCount > 0 && (
-                      <span className={`inline-flex items-center justify-center w-4 h-4 text-xs rounded-full ${
-                        activeTab === key ? 'bg-white text-primary' : 'bg-primary text-white'
-                      }`}>
-                        {pendingOrdersCount}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab: Products */}
-              {activeTab === 'products' && (
-                <div className="space-y-6">
-                  <AdminProductForm />
-                  <Card className="bg-white shadow-sm border border-gray-200">
-                    <CardHeader className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                      <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-primary" />
-                        <div>
-                          <CardTitle className="text-base font-semibold text-gray-900">Product Inventory</CardTitle>
-                          <CardDescription className="text-xs mt-0.5">Manage your product catalog</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <AdminProductList />
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* Tab: Orders */}
-              {activeTab === 'orders' && (
-                <Card className="bg-white shadow-sm border border-gray-200">
-                  <CardHeader className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <ShoppingBag className="h-4 w-4 text-primary" />
-                        <div>
-                          <CardTitle className="text-base font-semibold text-gray-900">Customer Orders</CardTitle>
-                          <CardDescription className="text-xs mt-0.5">Manage and track customer orders</CardDescription>
-                        </div>
-                      </div>
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs">
-                          <SelectValue placeholder="Filter by status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Orders</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="packed">Packed</SelectItem>
-                          <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {ordersLoading ? (
-                      <div className="p-6 space-y-3">
-                        {[1, 2, 3].map((i) => (
-                          <Skeleton key={i} className="h-14 w-full rounded-lg" />
-                        ))}
-                      </div>
-                    ) : filteredOrders.length === 0 ? (
-                      <div className="text-center py-16">
-                        <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                          <ShoppingBag className="h-8 w-8 text-gray-400" />
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">No orders found</p>
-                        <p className="text-xs text-gray-400 mt-1">Orders will appear here once placed</p>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="bg-gray-50/80 hover:bg-gray-50/80 border-b border-gray-200">
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 pl-6">Order</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3">Customer</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 hidden md:table-cell">Phone</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 hidden lg:table-cell">Address</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3">Total</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 hidden sm:table-cell">Payment</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3">Status</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 pr-6">Action</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredOrders.map((order) => (
-                              <TableRow key={Number(order.id)} className="hover:bg-gray-50/60 border-b border-gray-100">
-                                <TableCell className="py-3 pl-6">
-                                  <span className="text-xs font-bold text-gray-900">#{Number(order.id)}</span>
-                                </TableCell>
-                                <TableCell className="py-3">
-                                  <span className="text-xs font-medium text-gray-800">{order.customerName}</span>
-                                </TableCell>
-                                <TableCell className="py-3 hidden md:table-cell">
-                                  <span className="text-xs text-gray-600">{order.phoneNumber}</span>
-                                </TableCell>
-                                <TableCell className="py-3 hidden lg:table-cell max-w-[160px]">
-                                  <span className="text-xs text-gray-600 truncate block">{order.deliveryAddress}</span>
-                                </TableCell>
-                                <TableCell className="py-3">
-                                  <span className="text-xs font-bold text-primary">₹{Number(order.totalPrice)}</span>
-                                </TableCell>
-                                <TableCell className="py-3 hidden sm:table-cell">
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
-                                    order.paymentMethod === PaymentMethod.upi
-                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                      : 'bg-gray-50 text-gray-700 border-gray-200'
-                                  }`}>
-                                    {order.paymentMethod === PaymentMethod.upi ? 'UPI' : 'COD'}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="py-3">
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
-                                    {getStatusLabel(order.status)}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="py-3 pr-6">{getNextActionButton(order)}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Tab: Recharge */}
-              {activeTab === 'recharge' && (
-                <Card className="bg-white shadow-sm border border-gray-200">
-                  <CardHeader className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="h-4 w-4 text-primary" />
-                      <div>
-                        <CardTitle className="text-base font-semibold text-gray-900">Mobile Recharge Orders</CardTitle>
-                        <CardDescription className="text-xs mt-0.5">View and manage mobile recharge requests</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {rechargeLoading ? (
-                      <div className="p-6 space-y-3">
-                        {[1, 2, 3].map((i) => (
-                          <Skeleton key={i} className="h-14 w-full rounded-lg" />
-                        ))}
-                      </div>
-                    ) : rechargeOrders.length === 0 ? (
-                      <div className="text-center py-16">
-                        <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                          <Smartphone className="h-8 w-8 text-gray-400" />
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">No recharge orders</p>
-                        <p className="text-xs text-gray-400 mt-1">Recharge requests will appear here</p>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="bg-gray-50/80 hover:bg-gray-50/80 border-b border-gray-200">
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 pl-6">Order ID</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3">Mobile Number</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3">Operator</TableHead>
-                              <TableHead className="text-xs font-semibold text-gray-600 py-3 pr-6">Amount</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {rechargeOrders.map((order) => (
-                              <TableRow key={Number(order.id)} className="hover:bg-gray-50/60 border-b border-gray-100">
-                                <TableCell className="py-3 pl-6">
-                                  <span className="text-xs font-bold text-gray-900">#{Number(order.id)}</span>
-                                </TableCell>
-                                <TableCell className="py-3">
-                                  <span className="text-xs font-medium text-gray-800">{order.mobileNumber}</span>
-                                </TableCell>
-                                <TableCell className="py-3">
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
-                                    {order.operator}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="py-3 pr-6">
-                                  <span className="text-xs font-bold text-primary">₹{Number(order.rechargeAmount)}</span>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Tab: Bills */}
-              {activeTab === 'bills' && (
-                <Card className="bg-white shadow-sm border border-gray-200">
-                  <CardHeader className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <Receipt className="h-4 w-4 text-primary" />
-                      <div>
-                        <CardTitle className="text-base font-semibold text-gray-900">Bill History</CardTitle>
-                        <CardDescription className="text-xs mt-0.5">View and manage generated bills</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <BillHistoryTable />
-                  </CardContent>
-                </Card>
-              )}
-            </main>
-          </div>
-        </div>
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+        <h1 className="font-bold text-sm">Admin Panel</h1>
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
-    </AdminGuard>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-background pt-14">
+          <nav className="p-4 space-y-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => { setActiveSection(item.id); setMobileMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  activeSection === item.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <item.icon className="w-4 h-4" />
+                <span>{item.label}</span>
+                {item.badge != null && item.badge > 0 && (
+                  <Badge className="ml-auto text-xs bg-destructive text-destructive-foreground">
+                    {item.badge}
+                  </Badge>
+                )}
+              </button>
+            ))}
+            <div className="pt-4 border-t border-border space-y-2">
+              <ShopStatusToggle />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start text-muted-foreground"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto md:p-6 p-4 pt-16 md:pt-6">
+        {renderContent()}
+      </main>
+    </div>
   );
 }

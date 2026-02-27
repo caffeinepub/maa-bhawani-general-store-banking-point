@@ -4,53 +4,56 @@
 
 @layer base {
   :root {
-    /* Clean dashboard theme with royal blue and emerald green */
-    --background: oklch(100% 0 0);
-    --foreground: oklch(20% 0.01 240);
-    --card: oklch(100% 0 0);
-    --card-foreground: oklch(20% 0.01 240);
-    --popover: oklch(100% 0 0);
-    --popover-foreground: oklch(20% 0.01 240);
-    --primary: oklch(55% 0.20 264);
-    --primary-foreground: oklch(100% 0 0);
-    --secondary: oklch(60% 0.18 166);
-    --secondary-foreground: oklch(100% 0 0);
-    --muted: oklch(96% 0.01 240);
-    --muted-foreground: oklch(50% 0.01 240);
-    --accent: oklch(95% 0.02 240);
-    --accent-foreground: oklch(20% 0.01 240);
-    --destructive: oklch(55% 0.22 25);
-    --destructive-foreground: oklch(100% 0 0);
-    --border: oklch(90% 0.01 240);
-    --input: oklch(90% 0.01 240);
-    --ring: oklch(55% 0.20 264);
-    --radius: 0.5rem;
-    --success: oklch(60% 0.18 166);
-    --success-foreground: oklch(100% 0 0);
+    --background: oklch(0.98 0.005 240);
+    --foreground: oklch(0.15 0.02 240);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.02 240);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.02 240);
+    --primary: oklch(0.45 0.18 240);
+    --primary-foreground: oklch(0.98 0.005 240);
+    --secondary: oklch(0.94 0.01 240);
+    --secondary-foreground: oklch(0.25 0.05 240);
+    --muted: oklch(0.94 0.01 240);
+    --muted-foreground: oklch(0.55 0.03 240);
+    --accent: oklch(0.94 0.01 240);
+    --accent-foreground: oklch(0.25 0.05 240);
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.98 0.005 240);
+    --border: oklch(0.88 0.01 240);
+    --input: oklch(0.88 0.01 240);
+    --ring: oklch(0.45 0.18 240);
+    --success: oklch(0.55 0.18 145);
+    --success-foreground: oklch(0.98 0.005 145);
+    --warning: oklch(0.75 0.18 75);
+    --warning-foreground: oklch(0.15 0.02 75);
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: oklch(15% 0.02 240);
-    --foreground: oklch(98% 0.01 240);
-    --card: oklch(18% 0.02 240);
-    --card-foreground: oklch(98% 0.01 240);
-    --popover: oklch(18% 0.02 240);
-    --popover-foreground: oklch(98% 0.01 240);
-    --primary: oklch(65% 0.20 264);
-    --primary-foreground: oklch(100% 0 0);
-    --secondary: oklch(65% 0.18 166);
-    --secondary-foreground: oklch(100% 0 0);
-    --muted: oklch(25% 0.02 240);
-    --muted-foreground: oklch(70% 0.01 240);
-    --accent: oklch(25% 0.02 240);
-    --accent-foreground: oklch(98% 0.01 240);
-    --destructive: oklch(55% 0.22 25);
-    --destructive-foreground: oklch(98% 0.01 240);
-    --border: oklch(30% 0.02 240);
-    --input: oklch(30% 0.02 240);
-    --ring: oklch(65% 0.20 264);
-    --success: oklch(65% 0.18 166);
-    --success-foreground: oklch(100% 0 0);
+    --background: oklch(0.12 0.02 240);
+    --foreground: oklch(0.95 0.005 240);
+    --card: oklch(0.17 0.02 240);
+    --card-foreground: oklch(0.95 0.005 240);
+    --popover: oklch(0.17 0.02 240);
+    --popover-foreground: oklch(0.95 0.005 240);
+    --primary: oklch(0.65 0.18 240);
+    --primary-foreground: oklch(0.12 0.02 240);
+    --secondary: oklch(0.22 0.03 240);
+    --secondary-foreground: oklch(0.85 0.01 240);
+    --muted: oklch(0.22 0.03 240);
+    --muted-foreground: oklch(0.65 0.03 240);
+    --accent: oklch(0.22 0.03 240);
+    --accent-foreground: oklch(0.85 0.01 240);
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.98 0.005 240);
+    --border: oklch(0.28 0.03 240);
+    --input: oklch(0.28 0.03 240);
+    --ring: oklch(0.65 0.18 240);
+    --success: oklch(0.55 0.18 145);
+    --success-foreground: oklch(0.98 0.005 145);
+    --warning: oklch(0.75 0.18 75);
+    --warning-foreground: oklch(0.15 0.02 75);
   }
 }
 
@@ -64,75 +67,43 @@
   }
 }
 
-/* Touch-friendly utilities */
+/* Touch utilities */
 @layer utilities {
-  .touch-target {
-    min-width: 44px;
-    min-height: 44px;
+  .touch-manipulation {
+    touch-action: manipulation;
   }
-
-  .touch-target-lg {
-    min-width: 64px;
-    min-height: 64px;
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
-/* Print styles for thermal printer (80mm width) */
+/* Barcode scanner laser animation */
+@keyframes laser-scan {
+  0% { top: 10%; }
+  50% { top: 85%; }
+  100% { top: 10%; }
+}
+
+.laser-line {
+  animation: laser-scan 2s ease-in-out infinite;
+}
+
+/* Print styles */
 @media print {
-  @page {
-    size: 80mm auto;
-    margin: 0;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-  }
-
   body * {
     visibility: hidden;
   }
-
   .print-area,
   .print-area * {
     visibility: visible;
   }
-
   .print-area {
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm;
+    width: 100%;
   }
-
-  .bill-template {
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    max-width: 80mm !important;
-    margin: 0 !important;
-    padding: 5mm !important;
+  .no-print {
+    display: none !important;
   }
-}
-
-/* Laser line animation for barcode scanner */
-@keyframes scan-line {
-  0% {
-    top: 0;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
-  }
-}
-
-.animate-scan-line {
-  animation: scan-line 2s ease-in-out infinite;
 }

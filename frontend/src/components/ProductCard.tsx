@@ -1,169 +1,179 @@
-import { ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
+import { Plus, Minus, Zap, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import type { Product } from '../backend';
-import { useAddToCart, useGetShopOpenStatus } from '../hooks/useQueries';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { Product, UnitType } from '../backend';
+import { useAddToCart } from '../hooks/useQueries';
 import { toast } from 'sonner';
-import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
+  shopIsClosed?: boolean;
 }
 
-// Helper function to parse weight input (e.g., "100g", "0.5kg", "1.5kg", "250g")
-function parseWeightToGrams(input: string): number | null {
-  const trimmed = input.trim().toLowerCase();
-  
-  // Match patterns like "100g", "0.5kg", "1.5kg"
-  const kgMatch = trimmed.match(/^(\d+\.?\d*)\s*kg$/);
-  const gramMatch = trimmed.match(/^(\d+\.?\d*)\s*g$/);
-  
-  if (kgMatch) {
-    const kg = parseFloat(kgMatch[1]);
-    if (!isNaN(kg) && kg > 0) {
-      return Math.round(kg * 1000); // Convert kg to grams
-    }
-  } else if (gramMatch) {
-    const grams = parseFloat(gramMatch[1]);
-    if (!isNaN(grams) && grams > 0) {
-      return Math.round(grams);
-    }
-  }
-  
-  return null;
-}
-
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, shopIsClosed = false }: ProductCardProps) {
+  const [quantity, setQuantity] = useState(1);
+  const [kgValue, setKgValue] = useState('');
   const addToCart = useAddToCart();
-  const { identity } = useInternetIdentity();
-  const { data: isShopOpen } = useGetShopOpenStatus();
-  const [weightInput, setWeightInput] = useState('');
 
-  const isWeightBased = product.unitType === 'kg' || product.unitType === 'gram';
+  const isKgOrGram = product.unitType === UnitType.kg || product.unitType === UnitType.gram;
+
+  const getUnitLabel = () => {
+    switch (product.unitType) {
+      case UnitType.kg: return 'kg';
+      case UnitType.gram: return 'g';
+      case UnitType.packet: return 'pkt';
+      default: return 'pc';
+    }
+  };
 
   const handleAddToCart = async () => {
-    if (!identity) {
-      toast.error('Please login to add items to cart');
+    if (shopIsClosed) {
+      toast.error('Shop is currently closed. Cannot add to cart.');
       return;
     }
-
-    if (!isShopOpen) {
-      toast.error('Shop is currently closed. Cannot add items to cart.');
-      return;
-    }
-
     try {
-      await addToCart.mutateAsync({ productId: product.id, quantity: BigInt(1) });
+      let qty = quantity;
+      if (isKgOrGram) {
+        const parsed = parseFloat(kgValue);
+        if (!kgValue || isNaN(parsed) || parsed <= 0) {
+          toast.error('Please enter a valid quantity');
+          return;
+        }
+        qty = product.unitType === UnitType.kg ? Math.round(parsed * 1000) : Math.round(parsed);
+      }
+      await addToCart.mutateAsync({ productId: product.id, quantity: BigInt(qty) });
       toast.success(`${product.name} added to cart!`);
+      if (isKgOrGram) setKgValue('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add to cart');
+      toast.error(error?.message || 'Failed to add to cart');
     }
   };
 
-  const handleAddWeightToCart = async () => {
-    if (!identity) {
-      toast.error('Please login to add items to cart');
-      return;
-    }
-
-    if (!isShopOpen) {
-      toast.error('Shop is currently closed. Cannot add items to cart.');
-      return;
-    }
-
-    if (!weightInput.trim()) {
-      toast.error('Please enter a weight');
-      return;
-    }
-
-    const grams = parseWeightToGrams(weightInput);
-    if (grams === null) {
-      toast.error('Invalid weight format. Use formats like "100g", "0.5kg", "1.5kg"');
-      return;
-    }
-
-    try {
-      // Store weight in grams as quantity
-      await addToCart.mutateAsync({ productId: product.id, quantity: BigInt(grams) });
-      toast.success(`${product.name} (${weightInput}) added to cart!`);
-      setWeightInput('');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to add to cart');
-    }
-  };
-
-  const imageUrl = product.image.getDirectURL();
-
-  // Format unit type for display
-  const unitTypeDisplay = product.unitType.charAt(0).toUpperCase() + product.unitType.slice(1);
-
-  const isDisabled = !isShopOpen || addToCart.isPending;
+  const isAddDisabled = addToCart.isPending || shopIsClosed;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
-      <div className="aspect-square overflow-hidden bg-gray-100">
+    <div className={`bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col ${shopIsClosed ? 'opacity-75' : ''}`}>
+      {/* Product Image */}
+      <div className="relative">
         <img
-          src={imageUrl}
+          src={product.image.getDirectURL()}
           alt={product.name}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full object-cover"
+          style={{ aspectRatio: '1/1' }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/assets/generated/product-rice.dim_300x300.png';
+          }}
         />
-      </div>
-      <CardContent className="p-4">
-        <div className="flex gap-2 mb-2">
-          <Badge variant="secondary" className="text-xs bg-secondary text-white">
-            {product.category}
-          </Badge>
-          <Badge variant="outline" className="text-xs border-primary text-primary">
-            {unitTypeDisplay}
-          </Badge>
+        {/* Delivery Badge */}
+        <div className="absolute top-1.5 left-1.5">
+          <span className="inline-flex items-center gap-0.5 bg-green-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full shadow-sm">
+            <Zap className="w-2.5 h-2.5" />
+            10 Mins
+          </span>
         </div>
-        <h3 className="font-semibold text-lg mb-0.5 line-clamp-2">{product.name}</h3>
-        <p className="text-xs text-green-600 font-medium mb-2">⚡ Delivery in 10 Mins</p>
-        <p className="text-2xl font-bold text-primary">₹{Number(product.priceInRupees)}</p>
-      </CardContent>
-      <CardFooter className="p-4 pt-0">
-        {isWeightBased ? (
-          <div className="w-full space-y-2">
+        {/* Shop Closed Overlay */}
+        {shopIsClosed && (
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+            <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+              <Lock className="w-3 h-3" />
+              Closed
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Product Info */}
+      <div className="p-2.5 flex flex-col flex-1">
+        <h3 className="font-bold text-card-foreground text-sm leading-tight mb-0.5 line-clamp-2">
+          {product.name}
+        </h3>
+
+        {/* Delivery tag below name */}
+        <span className="inline-flex items-center gap-0.5 text-green-700 text-[10px] font-semibold mb-1.5">
+          <Zap className="w-2.5 h-2.5" />
+          Delivery in 10 Mins
+        </span>
+
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-bold text-primary">
+            ₹{Number(product.priceInRupees)}
+            <span className="text-[10px] font-normal text-muted-foreground ml-0.5">/{getUnitLabel()}</span>
+          </span>
+        </div>
+
+        {/* Quantity Controls */}
+        {isKgOrGram ? (
+          <div className="flex gap-1.5 mt-auto">
             <Input
-              placeholder="e.g., 100g, 0.5kg, 1.5kg"
-              value={weightInput}
-              onChange={(e) => setWeightInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddWeightToCart();
-                }
-              }}
-              disabled={!isShopOpen}
+              type="number"
+              placeholder={`Qty (${getUnitLabel()})`}
+              value={kgValue}
+              onChange={(e) => setKgValue(e.target.value)}
+              className="h-9 text-xs"
+              min="0"
+              step="0.1"
+              disabled={shopIsClosed}
             />
-            <Button
-              onClick={handleAddWeightToCart}
-              disabled={isDisabled}
-              title={!isShopOpen ? 'Shop is closed' : ''}
-              className={`w-full gap-2 bg-primary hover:bg-primary/90 text-white min-h-[44px] ${
-                !isShopOpen ? 'opacity-50 cursor-not-allowed' : ''
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddDisabled}
+              className={`h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors flex items-center gap-1 ${
+                shopIsClosed
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
               }`}
             >
-              <ShoppingCart className="h-4 w-4" />
-              {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
-            </Button>
+              {shopIsClosed ? <Lock className="w-3.5 h-3.5" /> : '+ ADD'}
+            </button>
           </div>
         ) : (
-          <Button
-            onClick={handleAddToCart}
-            disabled={isDisabled}
-            title={!isShopOpen ? 'Shop is closed' : ''}
-            className={`w-full gap-2 bg-primary hover:bg-primary/90 text-white min-h-[44px] ${
-              !isShopOpen ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
-          </Button>
+          <div className="mt-auto">
+            {/* Quantity stepper */}
+            <div className={`flex items-center justify-between border border-border rounded-lg overflow-hidden mb-1.5 ${shopIsClosed ? 'opacity-50' : ''}`}>
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-2.5 py-1.5 hover:bg-muted transition-colors disabled:cursor-not-allowed"
+                disabled={shopIsClosed}
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <span className="text-sm font-semibold min-w-[1.5rem] text-center">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-2.5 py-1.5 hover:bg-muted transition-colors disabled:cursor-not-allowed"
+                disabled={shopIsClosed}
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* ADD button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddDisabled}
+              className={`w-full h-9 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1 ${
+                shopIsClosed
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 active:bg-green-800 text-white shadow-sm'
+              }`}
+            >
+              {addToCart.isPending ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Adding...
+                </span>
+              ) : shopIsClosed ? (
+                <span className="flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5" />
+                  Shop Closed
+                </span>
+              ) : (
+                '+ ADD'
+              )}
+            </button>
+          </div>
         )}
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

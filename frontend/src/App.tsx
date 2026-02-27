@@ -7,6 +7,9 @@ import StoreDetailsPage from './pages/StoreDetailsPage';
 import AdminPage from './pages/AdminPage';
 import BillingPage from './pages/BillingPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
+import SearchPage from './pages/SearchPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import WalletPage from './pages/WalletPage';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -64,6 +67,24 @@ const adminSettingsRoute = createRoute({
   component: AdminSettingsPage,
 });
 
+const searchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/search',
+  component: SearchPage,
+});
+
+const myOrdersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-orders',
+  component: MyOrdersPage,
+});
+
+const walletRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/wallet',
+  component: WalletPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   checkoutRoute,
@@ -73,6 +94,9 @@ const routeTree = rootRoute.addChildren([
   adminDashboardRoute,
   billingRoute,
   adminSettingsRoute,
+  searchRoute,
+  myOrdersRoute,
+  walletRoute,
 ]);
 
 const router = createRouter({ routeTree });

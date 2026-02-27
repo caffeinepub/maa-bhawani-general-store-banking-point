@@ -6,11 +6,14 @@ import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
+
+
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+
 
 actor {
   // State
@@ -34,7 +37,7 @@ actor {
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile");
+      Runtime.trap("Unauthorized: Unauthorized: Can only view your own profile");
     };
     userProfiles.get(user);
   };
@@ -90,6 +93,8 @@ actor {
     timestamp : Time.Time;
     status : OrderStatus;
     paymentMethod : PaymentMethod;
+    latitude : ?Float;
+    longitude : ?Float;
   };
 
   let orders = Map.empty<Nat, Order>();
@@ -149,8 +154,25 @@ actor {
   var shopSlogan : Text = "Welcome to our shop!";
   var excludedProducts = Set.empty<Nat>();
 
-  // Shop Open/Closed Feature
-  var isShopOpen : Bool = true;
+  var upiId : ?Text = null; // Now persistent across upgrades
+
+  // Improve Shop Open/Closed ShopStatus
+  // Bool = Open/Closed
+  var shopStatus : Bool = true;
+
+  public shared ({ caller }) func setStoreUpiId(upi : Text) : async () {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can set UPI ID");
+    };
+    upiId := ?upi;
+  };
+
+  public query ({ caller }) func getStoreUpiId() : async ?Text {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can view UPI ID");
+    };
+    upiId;
+  };
 
   public query ({ caller }) func isAdmin() : async Bool {
     AccessControl.isAdmin(accessControlState, caller);
@@ -195,7 +217,9 @@ actor {
       case (?p) { p };
     };
 
-    let updatedProduct : Product = { product with stock = newStock };
+    let updatedProduct : Product = {
+      product with stock = newStock
+    };
     products.add(productId, updatedProduct);
   };
 
@@ -204,6 +228,10 @@ actor {
       Runtime.trap("Unauthorized: Only admins can remove products");
     };
 
+    let product = switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product not found") };
+      case (?p) { p };
+    };
     products.remove(productId);
   };
 
@@ -404,12 +432,14 @@ actor {
     phoneNumber : Text,
     distanceInKm : Nat,
     paymentMethod : PaymentMethod,
+    latitude : ?Float,
+    longitude : ?Float,
   ) : async Nat {
     if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
       Runtime.trap("Unauthorized: Only users can place orders");
     };
 
-    if (not isShopOpen) {
+    if (not shopStatus) {
       Runtime.trap("Shop is currently closed. No orders can be placed at the moment.");
     };
 
@@ -433,6 +463,8 @@ actor {
       timestamp = Time.now();
       status = #pending;
       paymentMethod;
+      latitude;
+      longitude;
     };
 
     orders.add(nextOrderId, order);
@@ -447,7 +479,7 @@ actor {
       Runtime.trap("Unauthorized: Only users can place recharge orders");
     };
 
-    if (not isShopOpen) {
+    if (not shopStatus) {
       Runtime.trap("Shop is currently closed. No orders can be placed at the moment.");
     };
 
@@ -514,6 +546,10 @@ actor {
   ) : async Bill {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can generate bills");
+    };
+
+    if (upiId == null) {
+      Runtime.trap("UPI ID not set. Please set UPI ID first in admin settings.");
     };
 
     let billNumber = nextBillId.toText();
@@ -616,16 +652,18 @@ actor {
     excludedProducts.toArray();
   };
 
-  // Shop Open/Closed Feature Methods
-  public query ({ caller }) func getShopOpenStatus() : async Bool {
-    isShopOpen;
+  // Fully persistent Shop Open/Closed Feature methods
+  public shared ({ caller }) func setShopStatus(status : Bool) : async Bool {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can set shop status");
+    };
+
+    shopStatus := status;
+    status;
   };
 
-  public shared ({ caller }) func setShopOpenStatus(isOpen : Bool) : async Bool {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can set shop open status");
-    };
-    isShopOpen := isOpen;
-    isShopOpen;
+  public query ({ caller }) func getShopStatus() : async Bool {
+    shopStatus;
   };
 };
+

@@ -1,167 +1,223 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import React, { useState } from 'react';
+import { Bill } from '../backend';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Receipt, Search, Download, Eye, Printer } from 'lucide-react';
 import BillTemplate from './BillTemplate';
 import { useGetAllBills } from '../hooks/useQueries';
-import { Printer, Eye, Download } from 'lucide-react';
-import type { Bill } from '../backend';
 
-export default function BillHistoryTable() {
-  const { data: bills = [] } = useGetAllBills();
-  const [searchTerm, setSearchTerm] = useState('');
+const formatDate = (timestamp: bigint) => {
+  const date = new Date(Number(timestamp) / 1_000_000);
+  return date.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+const formatTime = (timestamp: bigint) => {
+  const date = new Date(Number(timestamp) / 1_000_000);
+  return date.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
+const paymentStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  switch (status) {
+    case 'completed': return 'default';
+    case 'pending': return 'secondary';
+    case 'failed': return 'destructive';
+    case 'refunded': return 'outline';
+    default: return 'secondary';
+  }
+};
+
+const BillHistoryTable: React.FC = () => {
+  const { data: bills = [], isLoading } = useGetAllBills();
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [showBillDialog, setShowBillDialog] = useState(false);
 
-  const formatDate = (timestamp: bigint) => {
-    const date = new Date(Number(timestamp) / 1000000);
-    return date.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const formatTime = (timestamp: bigint) => {
-    const date = new Date(Number(timestamp) / 1000000);
-    return date.toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const filteredBills = bills.filter(bill =>
-    bill.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (bill.customerName && bill.customerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (bill.customerPhone && bill.customerPhone.includes(searchTerm))
-  );
+  const filteredBills = bills.filter((bill) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      bill.billNumber.toLowerCase().includes(q) ||
+      (bill.customerName?.toLowerCase().includes(q) ?? false) ||
+      (bill.customerPhone?.includes(q) ?? false)
+    );
+  });
 
   const handleViewBill = (bill: Bill) => {
     setSelectedBill(bill);
-    setViewDialogOpen(true);
+    setShowBillDialog(true);
   };
 
   const handlePrintBill = (bill: Bill) => {
     setSelectedBill(bill);
-    setViewDialogOpen(true);
-    setTimeout(() => {
-      window.print();
-    }, 100);
+    setShowBillDialog(true);
+    setTimeout(() => window.print(), 300);
   };
 
-  const handleExportCSV = () => {
-    const headers = ['Bill Number', 'Date', 'Customer Name', 'Customer Phone', 'Items Count', 'Total Amount'];
-    const rows = bills.map(bill => [
-      `BILL-${bill.billNumber}`,
+  const exportToCSV = () => {
+    const headers = ['Bill No', 'Date', 'Time', 'Customer', 'Phone', 'Items', 'Total', 'Status'];
+    const rows = filteredBills.map((bill) => [
+      bill.billNumber,
       formatDate(bill.timestamp),
-      bill.customerName || 'N/A',
-      bill.customerPhone || 'N/A',
-      bill.items.length,
-      Number(bill.totalAmount),
+      formatTime(bill.timestamp),
+      bill.customerName ?? '',
+      bill.customerPhone ?? '',
+      bill.items.length.toString(),
+      Number(bill.totalAmount).toString(),
+      bill.paymentStatus,
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(',')),
-    ].join('\n');
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell}"`).join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bills-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bills-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Bill History</CardTitle>
-            <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <div className="space-y-4">
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
-            placeholder="Search by bill number, customer name, or phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by bill no, customer name or phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
           />
+        </div>
+        <Button variant="outline" size="sm" onClick={exportToCSV} disabled={bills.length === 0}>
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
+      </div>
 
-          {filteredBills.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              {searchTerm ? 'No bills found matching your search' : 'No bills generated yet'}
-            </p>
-          ) : (
-            <div className="border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Bill Number</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead className="text-center">Items</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBills.map((bill) => (
-                    <TableRow key={Number(bill.id)}>
-                      <TableCell className="font-medium">BILL-{bill.billNumber}</TableCell>
-                      <TableCell>{formatDate(bill.timestamp)}</TableCell>
-                      <TableCell>{formatTime(bill.timestamp)}</TableCell>
-                      <TableCell>
-                        {bill.customerName || 'Walk-in'}
+      {/* Table */}
+      {isLoading ? (
+        <div className="text-center py-12 text-gray-400">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
+          <p>Loading bills...</p>
+        </div>
+      ) : filteredBills.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <Receipt className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>{searchQuery ? 'No bills match your search' : 'No bills generated yet'}</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="text-left px-4 py-3 font-semibold text-gray-600">Bill No</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-600">Date &amp; Time</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-600">Customer</th>
+                <th className="text-right px-4 py-3 font-semibold text-gray-600">Items</th>
+                <th className="text-right px-4 py-3 font-semibold text-gray-600">Total</th>
+                <th className="text-center px-4 py-3 font-semibold text-gray-600">Status</th>
+                <th className="text-center px-4 py-3 font-semibold text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBills.map((bill, index) => (
+                <tr
+                  key={bill.id.toString()}
+                  className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                  }`}
+                >
+                  <td className="px-4 py-3 font-mono font-medium text-primary">
+                    #{bill.billNumber}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    <div>{formatDate(bill.timestamp)}</div>
+                    <div className="text-xs text-gray-400">{formatTime(bill.timestamp)}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {bill.customerName ? (
+                      <div>
+                        <div className="font-medium text-gray-800">{bill.customerName}</div>
                         {bill.customerPhone && (
-                          <div className="text-xs text-muted-foreground">{bill.customerPhone}</div>
+                          <div className="text-xs text-gray-400">{bill.customerPhone}</div>
                         )}
-                      </TableCell>
-                      <TableCell className="text-center">{bill.items.length}</TableCell>
-                      <TableCell className="text-right font-semibold">₹{Number(bill.totalAmount)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleViewBill(bill)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handlePrintBill(bill)}
-                          >
-                            <Printer className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 italic">Walk-in</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-600">
+                    {bill.items.length}
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-gray-900">
+                    ₹{Number(bill.totalAmount)}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Badge variant={paymentStatusVariant(bill.paymentStatus)}>
+                      {bill.paymentStatus}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewBill(bill)}
+                        className="h-8 w-8 p-0"
+                        title="View Bill"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePrintBill(bill)}
+                        className="h-8 w-8 p-0"
+                        title="Print Bill"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-md">
+      {/* Bill Preview Dialog */}
+      <Dialog open={showBillDialog} onOpenChange={setShowBillDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Bill Details</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-primary" />
+              Bill #{selectedBill?.billNumber}
+            </DialogTitle>
           </DialogHeader>
-          {selectedBill && <BillTemplate bill={selectedBill} />}
+          {selectedBill && (
+            <BillTemplate
+              bill={selectedBill}
+              onClose={() => setShowBillDialog(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
-}
+};
+
+export default BillHistoryTable;
