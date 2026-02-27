@@ -1,259 +1,278 @@
-import { useState } from 'react';
-import { Trash2, AlertTriangle, Package, Pencil, Check, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { useGetAllProducts, useUpdateProductStock, useRemoveProduct, useToggleProductExclusion, useGetExcludedProducts } from '../hooks/useQueries';
+import { Product } from '../backend';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useGetAllProducts, useRemoveProduct, useUpdateProductStock } from '../hooks/useQueries';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle, Loader2, Pencil, Trash2, Check, X } from 'lucide-react';
 
-const LOW_STOCK_THRESHOLD = 5;
+interface StockEditState {
+  productId: bigint;
+  value: string;
+}
 
 export default function AdminProductList() {
-  const { data: products = [], isLoading } = useGetAllProducts();
-  const removeProduct = useRemoveProduct();
-  const updateStock = useUpdateProductStock();
+  const { data: products, isLoading: productsLoading } = useGetAllProducts();
+  const { data: excludedProducts } = useGetExcludedProducts();
+  const updateStockMutation = useUpdateProductStock();
+  const removeProductMutation = useRemoveProduct();
+  const toggleExclusionMutation = useToggleProductExclusion();
 
-  // Track which product is being edited for stock
-  const [editingStockId, setEditingStockId] = useState<bigint | null>(null);
-  const [editingStockValue, setEditingStockValue] = useState<string>('');
+  const [editingStock, setEditingStock] = useState<StockEditState | null>(null);
+  const [stockErrors, setStockErrors] = useState<Record<string, string>>({});
+  const [removeErrors, setRemoveErrors] = useState<Record<string, string>>({});
 
-  const handleRemove = async (productId: bigint, productName: string) => {
-    try {
-      await removeProduct.mutateAsync(productId);
-      toast.success(`${productName} removed successfully`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to remove product');
-    }
+  const isExcluded = (productId: bigint) =>
+    excludedProducts?.some((id) => id === productId) ?? false;
+
+  const handleEditStock = (product: Product) => {
+    setEditingStock({ productId: product.id, value: product.stock.toString() });
+    setStockErrors((prev) => {
+      const next = { ...prev };
+      delete next[product.id.toString()];
+      return next;
+    });
   };
 
-  const handleStartEditStock = (productId: bigint, currentStock: bigint) => {
-    setEditingStockId(productId);
-    setEditingStockValue(Number(currentStock).toString());
+  const handleCancelEdit = () => {
+    setEditingStock(null);
   };
 
-  const handleCancelEditStock = () => {
-    setEditingStockId(null);
-    setEditingStockValue('');
-  };
-
-  const handleSaveStock = async (productId: bigint, productName: string) => {
-    const newStock = parseInt(editingStockValue);
+  const handleSaveStock = async (productId: bigint) => {
+    if (!editingStock) return;
+    const newStock = parseInt(editingStock.value, 10);
     if (isNaN(newStock) || newStock < 0) {
-      toast.error('Please enter a valid stock quantity (0 or more)');
+      setStockErrors((prev) => ({ ...prev, [productId.toString()]: 'Invalid stock value' }));
       return;
     }
     try {
-      await updateStock.mutateAsync({ productId, newStock: BigInt(newStock) });
-      toast.success(`Stock updated for "${productName}"`);
-      setEditingStockId(null);
-      setEditingStockValue('');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update stock');
+      await updateStockMutation.mutateAsync({ productId, newStock: BigInt(newStock) });
+      setEditingStock(null);
+      setStockErrors((prev) => {
+        const next = { ...prev };
+        delete next[productId.toString()];
+        return next;
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update stock';
+      setStockErrors((prev) => ({ ...prev, [productId.toString()]: msg }));
     }
   };
 
-  // Format unit type for display
-  const formatUnitType = (unitType: string) => {
-    switch (unitType) {
-      case 'kg': return 'Kg';
-      case 'gram': return 'g';
-      case 'packet': return 'Pkt';
-      case 'piece': return 'Pcs';
-      default: return unitType.charAt(0).toUpperCase() + unitType.slice(1);
+  const handleRemoveProduct = async (productId: bigint) => {
+    if (!window.confirm('Are you sure you want to remove this product?')) return;
+    try {
+      await removeProductMutation.mutateAsync(productId);
+      setRemoveErrors((prev) => {
+        const next = { ...prev };
+        delete next[productId.toString()];
+        return next;
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to remove product';
+      setRemoveErrors((prev) => ({ ...prev, [productId.toString()]: msg }));
     }
   };
 
-  const lowStockCount = products.filter(p => Number(p.stock) < LOW_STOCK_THRESHOLD).length;
+  const handleToggleExclusion = async (productId: bigint) => {
+    try {
+      await toggleExclusionMutation.mutateAsync(productId);
+    } catch {
+      // silently handled
+    }
+  };
 
-  if (isLoading) {
+  if (productsLoading) {
     return (
-      <Card className="shadow-md">
-        <CardHeader className="border-b bg-gray-50">
-          <CardTitle className="text-xl">All Products</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-16 w-full rounded-lg" />
+        ))}
+      </div>
     );
   }
 
+  const lowStockProducts = products?.filter((p) => Number(p.stock) < 5) ?? [];
+
   return (
-    <TooltipProvider>
-      <Card className="shadow-md">
-        <CardHeader className="border-b bg-gray-50">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-xl">All Products ({products.length})</CardTitle>
-            {lowStockCount > 0 && (
-              <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-md px-3 py-1.5">
-                <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
-                <span className="text-sm font-semibold text-red-700">
-                  {lowStockCount} item{lowStockCount > 1 ? 's' : ''} low on stock
-                </span>
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-6">
-          {products.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No products added yet.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold">Image</TableHead>
-                    <TableHead className="font-semibold">Name</TableHead>
-                    <TableHead className="font-semibold">Category</TableHead>
-                    <TableHead className="font-semibold">Unit</TableHead>
-                    <TableHead className="font-semibold">Price</TableHead>
-                    <TableHead className="font-semibold">Stock</TableHead>
-                    <TableHead className="font-semibold">Barcode</TableHead>
-                    <TableHead className="text-right font-semibold">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => {
-                    const stockNum = Number(product.stock);
-                    const isLowStock = stockNum < LOW_STOCK_THRESHOLD;
-                    const isEditingThis = editingStockId === product.id;
-                    const isSavingThis = updateStock.isPending && editingStockId === product.id;
+    <div className="space-y-4">
+      {lowStockProducts.length > 0 && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {lowStockProducts.length} product(s) have low stock (below 5 units): {lowStockProducts.map((p) => p.name).join(', ')}
+          </AlertDescription>
+        </Alert>
+      )}
 
-                    return (
-                      <TableRow
-                        key={Number(product.id)}
-                        className={isLowStock ? 'bg-red-50/40 hover:bg-red-50/60' : 'hover:bg-gray-50'}
-                      >
-                        <TableCell>
-                          <img
-                            src={product.image.getDirectURL()}
-                            alt={product.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>{formatUnitType(product.unitType)}</TableCell>
-                        <TableCell className="font-semibold text-primary">₹{Number(product.priceInRupees)}</TableCell>
+      {updateStockMutation.isError && !editingStock && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to update stock: {updateStockMutation.error?.message ?? 'Unknown error'}
+          </AlertDescription>
+        </Alert>
+      )}
 
-                        {/* Stock Cell */}
-                        <TableCell>
-                          {isEditingThis ? (
-                            <div className="flex items-center gap-1">
-                              <Input
-                                type="number"
-                                min="0"
-                                value={editingStockValue}
-                                onChange={(e) => setEditingStockValue(e.target.value)}
-                                className="h-7 w-20 text-sm px-2"
-                                autoFocus
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') handleSaveStock(product.id, product.name);
-                                  if (e.key === 'Escape') handleCancelEditStock();
-                                }}
-                                disabled={isSavingThis}
-                              />
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                onClick={() => handleSaveStock(product.id, product.name)}
-                                disabled={isSavingThis}
-                                title="Save stock"
-                              >
-                                <Check className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-gray-500 hover:text-gray-700"
-                                onClick={handleCancelEditStock}
-                                disabled={isSavingThis}
-                                title="Cancel"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button
-                                    onClick={() => handleStartEditStock(product.id, product.stock)}
-                                    className="flex items-center gap-1.5 group"
-                                    title="Click to edit stock"
-                                  >
-                                    <span className={`text-sm font-semibold ${isLowStock ? 'text-red-700' : 'text-gray-800'}`}>
-                                      {stockNum}
-                                    </span>
-                                    <Pencil className="h-3 w-3 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p className="text-xs">Click to update stock</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              {isLowStock && (
-                                <Badge
-                                  className="bg-red-600 hover:bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none flex items-center gap-0.5 shrink-0"
-                                >
-                                  <AlertTriangle className="h-2.5 w-2.5" />
-                                  Low Stock
-                                </Badge>
+      {removeProductMutation.isError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to remove product: {removeProductMutation.error?.message ?? 'Unknown error'}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {(!products || products.length === 0) ? (
+        <div className="text-center py-12 text-gray-400">
+          <p className="text-lg font-medium">No products yet</p>
+          <p className="text-sm">Add your first product using the form above.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-slate-700">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-800 text-slate-300">
+              <tr>
+                <th className="px-4 py-3 text-left">Product</th>
+                <th className="px-4 py-3 text-left">Category</th>
+                <th className="px-4 py-3 text-left">Price</th>
+                <th className="px-4 py-3 text-left">Stock</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-700">
+              {products.map((product) => {
+                const isLowStock = Number(product.stock) < 5;
+                const isEditing = editingStock?.productId === product.id;
+                const isSaving = updateStockMutation.isPending && isEditing;
+                const isRemoving = removeProductMutation.isPending;
+                const stockError = stockErrors[product.id.toString()];
+                const removeError = removeErrors[product.id.toString()];
+                const excluded = isExcluded(product.id);
+
+                return (
+                  <tr
+                    key={product.id.toString()}
+                    className={`${isLowStock ? 'bg-red-950/30' : 'bg-slate-900'} hover:bg-slate-800/50 transition-colors`}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.image.getDirectURL()}
+                          alt={product.name}
+                          className="w-10 h-10 rounded object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/assets/generated/product-aata.dim_300x300.png';
+                          }}
+                        />
+                        <div>
+                          <p className="font-medium text-white">{product.name}</p>
+                          <p className="text-xs text-slate-400">{product.barcode || 'No barcode'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-300">{product.category}</td>
+                    <td className="px-4 py-3 text-slate-300">₹{product.priceInRupees.toString()}</td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-1">
+                        {isEditing ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              value={editingStock.value}
+                              onChange={(e) =>
+                                setEditingStock({ productId: product.id, value: e.target.value })
+                              }
+                              className="w-20 h-7 text-xs bg-slate-700 border-slate-600 text-white"
+                              min="0"
+                              disabled={isSaving}
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => handleSaveStock(product.id)}
+                              disabled={isSaving}
+                              className="p-1 text-green-400 hover:text-green-300 disabled:opacity-50"
+                              title="Save"
+                            >
+                              {isSaving ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="h-4 w-4" />
                               )}
-                            </div>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="font-mono text-sm">{product.barcode || '-'}</TableCell>
-                        <TableCell className="text-right">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Remove Product</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to remove "{product.name}"? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleRemove(product.id, product.name)}
-                                  className="bg-destructive hover:bg-destructive/90"
-                                >
-                                  Remove
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </TooltipProvider>
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              disabled={isSaving}
+                              className="p-1 text-red-400 hover:text-red-300 disabled:opacity-50"
+                              title="Cancel"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleEditStock(product)}
+                            className="flex items-center gap-1 group"
+                            disabled={updateStockMutation.isPending}
+                          >
+                            <span className={`font-medium ${isLowStock ? 'text-red-400' : 'text-white'}`}>
+                              {product.stock.toString()}
+                            </span>
+                            <Pencil className="h-3 w-3 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                          </button>
+                        )}
+                        {isLowStock && (
+                          <Badge variant="destructive" className="text-xs px-1 py-0">
+                            Low Stock
+                          </Badge>
+                        )}
+                        {stockError && (
+                          <p className="text-xs text-red-400">{stockError}</p>
+                        )}
+                        {removeError && (
+                          <p className="text-xs text-red-400">{removeError}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleToggleExclusion(product.id)}
+                        disabled={toggleExclusionMutation.isPending}
+                        className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
+                          excluded
+                            ? 'bg-red-900/50 text-red-300 hover:bg-red-800/50'
+                            : 'bg-green-900/50 text-green-300 hover:bg-green-800/50'
+                        } disabled:opacity-50`}
+                      >
+                        {excluded ? 'Hidden' : 'Visible'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveProduct(product.id)}
+                        disabled={isRemoving || updateStockMutation.isPending}
+                        className="h-7 text-xs"
+                      >
+                        {isRemoving ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
+                        <span className="ml-1">Remove</span>
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }

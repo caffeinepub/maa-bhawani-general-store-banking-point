@@ -1,15 +1,12 @@
-import { useGetCart, useClearCart, useGetShopStatus } from '../hooks/useQueries';
-import { useNavigate } from '@tanstack/react-router';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet';
+import React, { useState } from 'react';
+import { useGetCart, useClearCart, useShopStatus } from '../hooks/useQueries';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, Trash2, AlertTriangle, Truck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ShoppingCart, Trash2, Loader2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 
 interface CartDrawerProps {
   open: boolean;
@@ -17,151 +14,138 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ open, onClose }: CartDrawerProps) {
+  const { data: cartItems, isLoading: cartLoading } = useGetCart();
+  const clearCartMutation = useClearCart();
+  const shopStatusQuery = useShopStatus();
   const navigate = useNavigate();
-  const { data: cartItems, isLoading } = useGetCart();
-  const clearCart = useClearCart();
-  const { data: isOpen } = useGetShopStatus();
 
-  const isShopClosed = isOpen === false;
+  const isShopClosed = shopStatusQuery.data === false;
 
-  const subtotal = (cartItems ?? []).reduce(
+  const total = cartItems?.reduce(
     (sum, item) => sum + Number(item.product.priceInRupees) * Number(item.quantity),
     0
-  );
-
-  const FREE_DELIVERY_THRESHOLD = 51;
-  const DELIVERY_FEE = 5;
-  const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : subtotal > 0 ? DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee;
+  ) ?? 0;
 
   const handleCheckout = () => {
-    if (isShopClosed) return;
     onClose();
     navigate({ to: '/checkout' });
   };
 
   const handleClearCart = async () => {
     try {
-      await clearCart.mutateAsync();
-    } catch (err) {
-      console.error('Failed to clear cart:', err);
+      await clearCartMutation.mutateAsync();
+    } catch {
+      // handled by mutation
     }
   };
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="right" className="w-full max-w-sm flex flex-col">
+    <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <ShoppingCart size={20} />
+            <ShoppingCart className="h-5 w-5 text-[#0056b3]" />
             Your Cart
           </SheetTitle>
         </SheetHeader>
 
-        {/* Shop Closed Warning */}
-        {isShopClosed && (
-          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-700 text-sm">
-            <AlertTriangle size={16} className="shrink-0" />
-            <span>Shop is currently closed. You cannot checkout right now.</span>
-          </div>
-        )}
-
-        {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto py-2 space-y-3">
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-3">
-                <Skeleton className="w-14 h-14 rounded-lg" />
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-3 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              </div>
-            ))
-          ) : (cartItems ?? []).length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-              <ShoppingCart size={40} className="mb-2 opacity-30" />
-              <p className="text-sm">Your cart is empty</p>
+        <div className="flex-1 overflow-y-auto py-4 space-y-3">
+          {cartLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : !cartItems || cartItems.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Your cart is empty</p>
+              <p className="text-sm">Add some products to get started!</p>
             </div>
           ) : (
-            (cartItems ?? []).map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3">
+            cartItems.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <img
                   src={item.product.image.getDirectURL()}
                   alt={item.product.name}
-                  className="w-14 h-14 rounded-lg object-cover bg-gray-100"
+                  className="w-12 h-12 rounded object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      '/assets/generated/coming-soon.dim_400x300.png';
+                    (e.target as HTMLImageElement).src = '/assets/generated/product-aata.dim_300x300.png';
                   }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{item.product.name}</p>
-                  <p className="text-xs text-gray-500">
-                    ₹{item.product.priceInRupees.toString()} × {item.quantity.toString()}
-                  </p>
+                  <p className="font-medium text-sm text-gray-800 truncate">{item.product.name}</p>
+                  <p className="text-xs text-gray-500">Qty: {item.quantity.toString()}</p>
                 </div>
-                <span className="text-sm font-bold text-[#0056b3]">
+                <p className="font-bold text-[#0056b3] text-sm">
                   ₹{(Number(item.product.priceInRupees) * Number(item.quantity)).toFixed(0)}
-                </span>
+                </p>
               </div>
             ))
           )}
         </div>
 
-        {/* Price Breakdown */}
-        {(cartItems ?? []).length > 0 && (
+        {cartItems && cartItems.length > 0 && (
           <>
             <Separator />
-            <div className="space-y-2 py-2 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>Subtotal</span>
-                <span>₹{subtotal.toFixed(0)}</span>
+            <div className="py-3 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Subtotal</span>
+                <span className="font-bold text-lg text-gray-800">₹{total.toFixed(0)}</span>
               </div>
-              <div className="flex justify-between items-center text-gray-500">
-                <span className="flex items-center gap-1">
-                  <Truck size={13} />
-                  Delivery Fee
-                </span>
-                {deliveryFee === 0 ? (
-                  <span className="text-emerald-600 font-semibold">FREE</span>
-                ) : (
-                  <span>₹{deliveryFee}</span>
-                )}
-              </div>
-              {subtotal > 0 && subtotal < FREE_DELIVERY_THRESHOLD && (
-                <p className="text-xs text-amber-600 bg-amber-50 rounded px-2 py-1">
-                  Add ₹{FREE_DELIVERY_THRESHOLD - subtotal} more for FREE delivery!
-                </p>
+              <p className="text-xs text-gray-500">* Delivery charges calculated at checkout</p>
+
+              {isShopClosed && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <p className="text-red-600 text-sm font-medium">🔴 Shop is currently closed</p>
+                  <p className="text-red-500 text-xs mt-1">Checkout is unavailable until the shop reopens.</p>
+                </div>
               )}
-              <Separator />
-              <div className="flex justify-between font-bold text-base">
-                <span>Total</span>
-                <span className="text-[#0056b3]">₹{total.toFixed(0)}</span>
-              </div>
             </div>
+
+            <SheetFooter className="flex flex-col gap-2 pt-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="w-full">
+                      <Button
+                        onClick={handleCheckout}
+                        disabled={isShopClosed}
+                        className="w-full bg-[#0056b3] hover:bg-[#004494] text-white font-bold py-3 text-base disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isShopClosed ? 'Checkout Unavailable' : `Proceed to Checkout — ₹${total.toFixed(0)}`}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {isShopClosed && (
+                    <TooltipContent>
+                      <p>Checkout unavailable: Shop is currently closed</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button
+                variant="outline"
+                onClick={handleClearCart}
+                disabled={clearCartMutation.isPending}
+                className="w-full border-red-300 text-red-600 hover:bg-red-50 font-medium"
+              >
+                {clearCartMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Clearing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clear Cart
+                  </>
+                )}
+              </Button>
+            </SheetFooter>
           </>
         )}
-
-        <SheetFooter className="flex flex-col gap-2 pt-2">
-          {(cartItems ?? []).length > 0 && (
-            <button
-              onClick={handleClearCart}
-              disabled={clearCart.isPending}
-              className="w-full py-2 rounded-lg border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
-            >
-              <Trash2 size={14} />
-              Clear Cart
-            </button>
-          )}
-          <button
-            onClick={handleCheckout}
-            disabled={isShopClosed || (cartItems ?? []).length === 0}
-            className="w-full py-2.5 rounded-lg bg-[#0056b3] text-white text-sm font-bold hover:bg-[#004494] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isShopClosed ? 'Shop Closed' : 'Proceed to Checkout'}
-          </button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

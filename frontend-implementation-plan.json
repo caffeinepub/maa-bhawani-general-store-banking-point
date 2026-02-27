@@ -1,117 +1,138 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Critical UI Fix: Restore Button Visibility (White-on-White Bug)",
+  "title": "Admin-to-Web Full System Sync with Reliable State & Error Handling",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Force all primary action buttons across the entire app to use solid #0056b3 background with bold white text, overriding any conflicting Tailwind or CSS custom properties",
+      "summary": "Fix shop status toggle to await backend confirmation and immediately refetch on both admin and website",
       "acceptanceCriteria": [
-        "All primary action buttons display a solid #0056b3 blue background.",
-        "All button labels are clearly legible with white text.",
-        "No button is invisible or blends into a white/light background.",
-        "Fix applies consistently across HomePage, CheckoutPage, OrderConfirmationPage, MobileRechargeSection, ProductCard, CartDrawer, and all other pages with buttons."
+        "Toggling shop status in Admin saves the new value to the backend before the UI reflects success.",
+        "After a successful toggle, the customer-facing website shows the updated shop status (open or closed) within one query refresh cycle.",
+        "The 'Reverting to Open' bug no longer occurs after toggling closed — the closed state persists across page reloads.",
+        "The ShopStatusToggle component does not revert to the previous value unless the backend explicitly returns an error."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ui/button.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Override the 'default' button variant to use bg-[#0056b3] text-white font-bold, ensuring all primary buttons render with the correct colors. Add !important-style inline overrides if necessary to defeat any CSS variable conflicts."
+          "description": "Update useSetShopStatus mutation to remove optimistic update logic, properly await actor.setShopStatus() backend confirmation, and explicitly invalidate the shopStatus query on success. Ensure onMutate does not pre-emptively update the cache. On success callback, call queryClient.invalidateQueries(['shopStatus']) to force immediate refetch across all components. On error, display a visible error message via onError callback."
         },
         {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "path": "frontend/src/components/ShopStatusToggle.tsx",
           "operation": "modify",
-          "description": "Ensure the 'Place Order' button uses the fixed button variant with explicit bg-[#0056b3] text-white font-bold classes, making it clearly visible and clickable."
-        },
-        {
-          "path": "frontend/src/components/MobileRechargeSection.tsx",
-          "operation": "modify",
-          "description": "Ensure the 'Place Recharge Order' button in the dialog uses bg-[#0056b3] text-white font-bold, making it clearly visible and clickable."
-        },
-        {
-          "path": "frontend/src/components/ProductCard.tsx",
-          "operation": "modify",
-          "description": "Ensure the 'Add to Cart' button uses bg-[#0056b3] text-white font-bold, making it clearly visible against the product card background."
-        },
-        {
-          "path": "frontend/src/components/CartDrawer.tsx",
-          "operation": "modify",
-          "description": "Ensure the 'Checkout' button uses bg-[#0056b3] text-white font-bold, making it clearly visible in the cart drawer."
-        },
-        {
-          "path": "frontend/src/pages/OrderConfirmationPage.tsx",
-          "operation": "modify",
-          "description": "Ensure any CTA buttons (e.g., 'Continue Shopping' or payment confirmation actions) use bg-[#0056b3] text-white font-bold."
+          "description": "Remove local optimistic state logic. Rely entirely on the mutation's isLoading state to show a loading spinner during toggle. Disable the toggle switch while mutation.isLoading is true. Display mutation.error.message in an inline error alert or toast notification if mutation.isError is true after the mutation completes. Do not manually revert the toggle; let the invalidated query refetch the authoritative backend value. Reference the workspace file path frontend/public/assets/generated/store-logo.dim_200x200.png for any static branding assets if needed."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Fix Header component so 'Logout' and 'Cart' buttons are clearly visible with sufficient color contrast",
+      "summary": "Ensure all admin write mutations await backend confirmation and propagate errors to the UI",
       "acceptanceCriteria": [
-        "'Logout' button in Header is visible and has readable text.",
-        "'Cart' icon button in Header is visible with its item count badge clearly displayed.",
-        "Both buttons pass basic contrast requirements against the header background."
+        "Adding or updating product stock in AdminProductList/AdminProductForm only shows success after the backend confirms the write.",
+        "Updating an order status in AdminPage only marks the order as updated after receiving backend confirmation.",
+        "Submitting a recharge order in MobileRechargeSection only closes the dialog and shows success after backend confirmation.",
+        "No admin mutation silently swallows errors or resolves prematurely."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Ensure the 'Logout' button uses bg-[#0056b3] text-white font-bold. Ensure the 'Cart' icon button (ShoppingCart icon and badge) has a visible stroke/fill color (e.g., text-gray-800 or text-[#0056b3]) and the badge has a contrasting background (e.g., bg-red-500 text-white) so it stands out against the header background."
+          "description": "Review and fix all admin mutation hooks (useAddProduct, useUpdateProductStock, useRemoveProduct, useConfirmOrder, useMarkAsPacked, useMarkAsOutForDelivery, useMarkAsCompleted, usePlaceRechargeOrder) to ensure each mutation properly awaits the actor method call, does not use optimistic updates unless also awaiting confirmation, and includes an onError callback that exposes error.message to the calling component. Remove any fire-and-forget patterns. Ensure each mutation invalidates the relevant query (e.g., invalidate ['products'] after stock changes, ['orders'] after order status changes, ['rechargeOrders'] after recharge submission) on success."
+        },
+        {
+          "path": "frontend/src/components/AdminProductList.tsx",
+          "operation": "modify",
+          "description": "Update inline stock editing and product removal flows to display mutation.isLoading state (disable input/button during mutation) and show mutation.error.message in an inline error alert or toast if mutation.isError is true. Do not allow the user to edit the stock input or click Remove while a mutation is pending. After a successful stock update or product removal, the mutation success callback will invalidate the products query, causing the table to refetch and display the updated list."
+        },
+        {
+          "path": "frontend/src/components/AdminProductForm.tsx",
+          "operation": "modify",
+          "description": "Ensure the Add Product form awaits the useAddProduct mutation completion before closing the form or resetting fields. Display mutation.isLoading as a disabled state on the submit button ('Adding Product...' text). If mutation.isError is true, display mutation.error.message in an inline error alert above the form. On mutation success, invalidate the products query and close/reset the form. Reference the workspace file path frontend/public/assets/generated/product-aata.dim_300x300.png and similar product images as examples when handling image uploads."
+        },
+        {
+          "path": "frontend/src/components/MobileRechargeSection.tsx",
+          "operation": "modify",
+          "description": "Update the recharge order submission flow to await the usePlaceRechargeOrder mutation. Disable the submit button and show 'Submitting...' text while mutation.isLoading is true. If mutation.isError, display mutation.error.message in an inline error alert within the dialog. Only close the dialog and reset the form on mutation success (onSuccess callback). Ensure the mutation invalidates ['rechargeOrders'] query on success so the admin can see the new order immediately in the recharge orders list."
+        },
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "For order status mutation buttons (Confirm, Mark as Packed, Mark as Out for Delivery, Mark as Completed), display the mutation.isLoading state by disabling the button and showing a spinner or 'Updating...' text. If mutation.isError, display mutation.error.message in an inline error alert next to the order row or as a toast notification. On mutation success, the orders query will be invalidated and refetch, updating the order's status badge in the table. Ensure all mutation hooks (useConfirmOrder, useMarkAsPacked, etc.) are called with proper error handling wired to the UI."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Restore Sign-In page so the login button is NOT white and is clearly clickable with #0056b3 background and white text",
+      "summary": "Replace all fake or silent loading states on admin mutations with real error feedback",
       "acceptanceCriteria": [
-        "Sign-In page renders with a clearly visible login button in #0056b3 with white text.",
-        "The button is not white, transparent, or blended into the background.",
-        "User can identify and click the Sign-In button without any confusion."
+        "When a backend write fails, the admin sees a visible error message describing the failure within the same UI context (inline or toast).",
+        "The loading/spinner state is dismissed when an error occurs — it does not spin indefinitely.",
+        "The ShopStatusToggle reverts to the original value and shows an error message if the backend update fails.",
+        "All admin mutation onError handlers display a human-readable error string rather than swallowing the error silently."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Ensure the 'Login' button (rendered when user is not authenticated) uses bg-[#0056b3] text-white font-bold, making it clearly visible and clickable on the sign-in/home page."
+          "description": "Add or enhance onError callbacks for all admin mutations. Each onError should log the error to console and optionally trigger a global toast notification or set an error state that components can read via mutation.error. Ensure no mutation uses an empty catch block or a silent .catch(() => {}). Every mutation must expose error.message to the component layer. For mutations that previously had optimistic updates, ensure the cache rollback happens on error so the UI reflects the true backend state."
+        },
+        {
+          "path": "frontend/src/components/ShopStatusToggle.tsx",
+          "operation": "modify",
+          "description": "Add an inline error display below the toggle switch. If mutation.isError, render an alert with the text 'Failed to update shop status: {mutation.error.message}'. The toggle switch will automatically reflect the correct backend state after the query refetch triggered by invalidation, so no manual revert logic is needed. Ensure the loading spinner or disabled state is cleared when the mutation completes (either success or error)."
+        },
+        {
+          "path": "frontend/src/components/AdminProductList.tsx",
+          "operation": "modify",
+          "description": "Add inline error alerts next to the stock input and Remove button. If updateStockMutation.isError, display 'Failed to update stock: {updateStockMutation.error.message}' in red text. If removeProductMutation.isError, display 'Failed to remove product: {removeProductMutation.error.message}' in red text. Ensure the input and button are re-enabled after the mutation completes (success or error)."
+        },
+        {
+          "path": "frontend/src/components/AdminProductForm.tsx",
+          "operation": "modify",
+          "description": "Add an error alert section at the top of the form. If addProductMutation.isError, render an alert component displaying 'Failed to add product: {addProductMutation.error.message}'. Dismiss the error when the user starts editing the form again or when the mutation succeeds. Ensure the submit button is re-enabled after error so the user can retry."
+        },
+        {
+          "path": "frontend/src/components/MobileRechargeSection.tsx",
+          "operation": "modify",
+          "description": "Add an error alert inside the recharge order dialog. If mutation.isError, display 'Failed to submit recharge order: {mutation.error.message}' in a visible alert above the form fields. Do not close the dialog on error; allow the user to retry or cancel. Ensure the submit button is re-enabled after the mutation completes (success or error)."
+        },
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "For each order status mutation (Confirm, Packed, Out for Delivery, Completed), add inline error feedback. If mutation.isError, display 'Failed to update order status: {mutation.error.message}' in a small red alert next to the order row or as a toast notification. Ensure the button is re-enabled after the mutation completes so the admin can retry if needed."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Fix CategoryFilter component so category buttons are visible with legible labels, using #0056b3 for active and light gray for inactive",
+      "summary": "Implement global shop status polling and refetch-on-focus on the customer-facing website",
       "acceptanceCriteria": [
-        "All category filter buttons are visible with readable labels.",
-        "Active/selected category button is highlighted in #0056b3 with white text.",
-        "Unselected category buttons use a clearly visible style distinct from the page background."
+        "The shop status query on the website has a refetchInterval of 30 seconds or less.",
+        "The shop status query refetches on window focus (refetchOnWindowFocus: true).",
+        "The ShopClosedBanner, CartDrawer checkout disable, and ProductCard Add-to-Cart disable all react to the refreshed shop status.",
+        "No stale open/closed state is shown to customers more than 30 seconds after an admin toggle."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/CategoryFilter.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Ensure active category buttons use bg-[#0056b3] text-white font-bold. Ensure inactive buttons use bg-gray-200 text-gray-800 or similar to remain visible and distinct from the page background."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Audit and fix global CSS custom properties and Tailwind theme to ensure --primary resolves to #0056b3 and --primary-foreground to #ffffff in light theme",
-      "acceptanceCriteria": [
-        "CSS custom property --primary resolves to #0056b3 (or equivalent) in light theme.",
-        "CSS custom property --primary-foreground resolves to #ffffff.",
-        "No button component inherits a white-on-white style from the theme tokens.",
-        "Dark mode tokens, if defined, also maintain readable button contrast."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Update the :root CSS custom properties to set --primary to the OKLCH equivalent of #0056b3 and --primary-foreground to the OKLCH equivalent of #ffffff. Verify that no --background, --card, or other token resolves to white/near-white in a way that causes buttons to become invisible."
+          "description": "Update the useShopStatus query to include refetchInterval: 30000 (30 seconds) and refetchOnWindowFocus: true. This ensures the query automatically refetches every 30 seconds and also refetches when the user switches back to the browser tab. The query will return the latest shop open/closed status from the backend, and all components using this hook will reactively update their UI based on the new value."
         },
         {
-          "path": "frontend/tailwind.config.js",
+          "path": "frontend/src/components/ShopClosedBanner.tsx",
           "operation": "modify",
-          "description": "Ensure the Tailwind theme extends colors.primary to reference var(--primary) and colors.primary-foreground to reference var(--primary-foreground). Confirm that the default button variant in the design system will pick up these corrected values."
+          "description": "Verify the component already uses useShopStatus() and conditionally renders the banner only when shopStatus.data === false and shopStatus.isFetched === true. No changes needed if already correct. If the banner is not reactive to query updates, ensure it reads shopStatus.data directly and rerenders when the query refetches. Reference the workspace file path frontend/public/assets/generated/store-banner.dim_1200x500.png for any branding assets if needed."
+        },
+        {
+          "path": "frontend/src/components/CartDrawer.tsx",
+          "operation": "modify",
+          "description": "Verify the Checkout button disables when shopStatus.data === false. Ensure the component uses useShopStatus() and reactively disables the checkout button based on the latest query value. If the shop transitions from open to closed while the cart is open, the button should immediately disable without requiring a page reload. Add a tooltip or inline message explaining 'Checkout unavailable: Shop is currently closed' when the button is disabled due to shop status."
+        },
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Verify the Add to Cart button disables when shopStatus.data === false. Ensure the component uses useShopStatus() and reactively disables the button based on the latest query value. If the shop transitions from open to closed, the button should immediately disable across all product cards without requiring a page reload. Add a tooltip or visual indicator on the button explaining 'Shop is currently closed' when disabled due to shop status."
         }
       ]
     }

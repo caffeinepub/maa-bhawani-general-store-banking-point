@@ -1,21 +1,21 @@
-import { useGetShopStatus } from '../hooks/useQueries';
+import React from 'react';
+import { useShopStatus } from '../hooks/useQueries';
 import { AlertTriangle } from 'lucide-react';
 
 export default function ShopClosedBanner() {
-  const { data: isOpen, isFetched } = useGetShopStatus();
+  const shopStatusQuery = useShopStatus();
 
-  // Only render when we have confirmed data and shop is closed
-  if (!isFetched || isOpen !== false) return null;
+  // Only show when we have confirmed data and shop is closed
+  if (!shopStatusQuery.isFetched || shopStatusQuery.data !== false) {
+    return null;
+  }
 
   return (
-    <div className="w-full bg-red-600 text-white px-4 py-3 flex items-center gap-3 rounded-lg shadow-md">
-      <AlertTriangle size={20} className="shrink-0" />
-      <div>
-        <p className="font-bold text-sm">Shop is Currently Closed</p>
-        <p className="text-xs text-red-100">
-          We'll be back soon! Opening hours: 6:30 AM – 10:00 PM
-        </p>
-      </div>
+    <div className="w-full bg-red-600 text-white py-3 px-4 flex items-center justify-center gap-2 text-sm font-medium shadow-md">
+      <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+      <span>
+        🔴 Shop is currently <strong>CLOSED</strong>. We will reopen soon. Thank you for your patience!
+      </span>
     </div>
   );
 }

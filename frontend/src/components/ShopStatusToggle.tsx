@@ -1,62 +1,67 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useGetShopStatus, useSetShopStatus } from '../hooks/useQueries';
+import React from 'react';
 import { Switch } from '@/components/ui/switch';
-import { Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useShopStatus, useSetShopStatus } from '../hooks/useQueries';
 
 export default function ShopStatusToggle() {
-  const queryClient = useQueryClient();
-  const { data: isOpen, isLoading: statusLoading } = useGetShopStatus();
-  const setShopStatus = useSetShopStatus();
+  const shopStatusQuery = useShopStatus();
+  const setShopStatusMutation = useSetShopStatus();
 
-  const handleToggle = async (newValue: boolean) => {
-    // Optimistic update — immediately reflect in UI
-    queryClient.setQueryData(['shopStatus'], newValue);
+  const isOpen = shopStatusQuery.data ?? true;
+  const isLoading = shopStatusQuery.isLoading || setShopStatusMutation.isPending;
 
+  const handleToggle = async (checked: boolean) => {
+    if (setShopStatusMutation.isPending) return;
     try {
-      await setShopStatus.mutateAsync(newValue);
-    } catch (err) {
-      // Revert on error
-      queryClient.setQueryData(['shopStatus'], !newValue);
-      console.error('Failed to update shop status:', err);
+      await setShopStatusMutation.mutateAsync(checked);
+    } catch {
+      // Error is handled via mutation.isError
     }
   };
 
-  if (statusLoading) {
-    return (
-      <div className="flex items-center gap-2 text-slate-400">
-        <Loader2 size={16} className="animate-spin" />
-        <span className="text-sm">Loading status…</span>
-      </div>
-    );
-  }
-
-  const open = isOpen ?? true;
-
   return (
-    <div className="flex items-center gap-3">
-      <Switch
-        checked={open}
-        onCheckedChange={handleToggle}
-        disabled={setShopStatus.isPending}
-        className={open ? 'data-[state=checked]:bg-emerald-500' : 'data-[state=unchecked]:bg-red-500'}
-      />
-      <div className="flex flex-col">
-        <span className={`text-sm font-bold ${open ? 'text-emerald-400' : 'text-red-400'}`}>
-          {setShopStatus.isPending ? (
-            <span className="flex items-center gap-1">
-              <Loader2 size={12} className="animate-spin" />
-              Updating…
+    <div className="space-y-2">
+      <div className="flex items-center gap-3">
+        <Switch
+          id="shop-status"
+          checked={isOpen}
+          onCheckedChange={handleToggle}
+          disabled={isLoading}
+          className={isOpen ? 'data-[state=checked]:bg-green-500' : ''}
+        />
+        <Label htmlFor="shop-status" className="flex items-center gap-2 cursor-pointer select-none">
+          {isLoading ? (
+            <span className="flex items-center gap-1 text-sm text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Updating...
             </span>
-          ) : open ? (
-            '🟢 Store is OPEN'
           ) : (
-            '🔴 Store is CLOSED'
+            <span className={`text-sm font-semibold ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
+              {isOpen ? '🟢 Shop is OPEN' : '🔴 Shop is CLOSED'}
+            </span>
           )}
-        </span>
-        <span className="text-xs text-slate-400">
-          {open ? 'Customers can place orders' : 'Orders are disabled'}
-        </span>
+        </Label>
       </div>
+
+      {setShopStatusMutation.isError && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to update shop status: {setShopStatusMutation.error?.message ?? 'Unknown error'}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {shopStatusQuery.isError && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to fetch shop status: {(shopStatusQuery.error as Error)?.message ?? 'Unknown error'}
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

@@ -1,112 +1,98 @@
 {
   "kind": "build_request",
-  "title": "Critical UI Fix: Restore Button Visibility (White-on-White Bug)",
-  "projectName": "Maa Bhawani General Store",
+  "title": "Admin-to-Web Full System Sync with Reliable State & Error Handling",
+  "projectName": "Maa Bhawani Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Force all primary action buttons across the entire app (including 'Sign In', 'Place Order', 'Place Recharge Order', 'Add to Cart', 'Checkout', and any other CTA buttons) to use a solid #0056b3 background with bold white (#ffffff) text. Override any conflicting Tailwind utility classes or CSS custom properties that are currently rendering buttons with white or near-white backgrounds.",
-      "target": "frontend",
+      "text": "Fix the 'Reverting to Open' bug in shop status toggling: when the admin toggles shop open/closed status, the backend must persist the new status with an authoritative write (no optimistic-only update). The toggle must await backend confirmation before treating the update as complete. If the write succeeds, immediately invalidate and refetch the shop status query on both the admin panel and the website so the customer-facing view reflects the change without stale data.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Force Button Colors: Set all buttons to a Solid Blue (#0056b3) background with Bold White text."
+          "Shop Status: When I toggle the shop status in Admin, the website must update instantly without errors.",
+          "Database Integrity: Every action in the Admin Panel (adding stock, changing status, recharge updates) must be written to the database with a high-priority 'Write' command to prevent the 'Reverting to Open' bug."
         ]
       },
       "acceptanceCriteria": [
-        "All primary action buttons display a solid #0056b3 blue background.",
-        "All button labels are clearly legible with white text.",
-        "No button is invisible or blends into a white/light background.",
-        "Fix applies consistently across HomePage, CheckoutPage, OrderConfirmationPage, MobileRechargeSection, ProductCard, CartDrawer, and all other pages with buttons."
+        "Toggling shop status in Admin saves the new value to the backend before the UI reflects success.",
+        "After a successful toggle, the customer-facing website shows the updated shop status (open or closed) within one query refresh cycle.",
+        "The 'Reverting to Open' bug no longer occurs after toggling closed — the closed state persists across page reloads.",
+        "The ShopStatusToggle component does not revert to the previous value unless the backend explicitly returns an error."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Fix the Header component so that the 'Logout' and 'Cart' (with item count badge) buttons are clearly visible against the header background. Ensure these buttons have sufficient color contrast — use #0056b3 fill or a visually distinct outlined style with white/dark text so they are never invisible.",
-      "target": "frontend",
+      "text": "Ensure all admin write actions — including adding/editing product stock, updating order status, and submitting recharge orders — await backend confirmation before marking the operation as successful. Remove any fire-and-forget or optimistic-only patterns that can silently fail. Each mutation in useQueries.ts must properly await the actor call result and propagate errors to the calling component.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Header Fix: Make sure the 'Logout' and 'Cart' buttons are clearly visible against the header."
+          "Every action in the Admin Panel (adding stock, changing status, recharge updates) must be written to the database with a high-priority 'Write' command to prevent the 'Reverting to Open' bug."
         ]
       },
       "acceptanceCriteria": [
-        "'Logout' button in Header is visible and has readable text.",
-        "'Cart' icon button in Header is visible with its item count badge clearly displayed.",
-        "Both buttons pass basic contrast requirements against the header background."
+        "Adding or updating product stock in AdminProductList/AdminProductForm only shows success after the backend confirms the write.",
+        "Updating an order status in AdminPage only marks the order as updated after receiving backend confirmation.",
+        "Submitting a recharge order in MobileRechargeSection only closes the dialog and shows success after backend confirmation.",
+        "No admin mutation silently swallows errors or resolves prematurely."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Restore the Sign-In page (Internet Identity login screen) so that all buttons — including the 'Sign In' / 'Login' button — are NOT white. Apply the same #0056b3 solid background with white bold text. Ensure the button is clearly clickable and visually prominent on the page.",
+      "text": "Replace all fake or silent loading states on admin mutations with real error feedback. When any admin write operation (shop status toggle, stock update, order status change, recharge submission) fails, display a clear, visible error message (e.g., a toast notification or inline error text) stating what failed. Do not show a spinner or 'Updating…' animation that never resolves or never reports the actual failure to the user.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Sign-In Restoration: Ensure the Sign-In page buttons are NOT white. They must be easily clickable."
+          "Error Handling: If a database update fails, show me a clear error message instead of showing a fake 'Updating' animation."
         ]
       },
       "acceptanceCriteria": [
-        "Sign-In page renders with a clearly visible login button in #0056b3 with white text.",
-        "The button is not white, transparent, or blended into the background.",
-        "User can identify and click the Sign-In button without any confusion."
+        "When a backend write fails, the admin sees a visible error message describing the failure within the same UI context (inline or toast).",
+        "The loading/spinner state is dismissed when an error occurs — it does not spin indefinitely.",
+        "The ShopStatusToggle reverts to the original value and shows an error message if the backend update fails.",
+        "All admin mutation onError handlers display a human-readable error string rather than swallowing the error silently."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Fix the category filter buttons in the CategoryFilter component so they are rendered with a visible background and legible label text. Selected/active category buttons should use #0056b3 with white text; unselected buttons should use a light gray background with dark text — ensuring none are invisible.",
+      "text": "Implement a global shop status polling or query invalidation strategy on the customer-facing website so that the shop open/closed state stays in sync with the backend. The website should refetch shop status at a short interval (e.g., every 30 seconds) and also refetch immediately on window focus, so customers always see the current status without a full page reload.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "All buttons (Sign In, Categories, Place Order) are currently invisible (White on White)."
+          "Shop Status: When I toggle the shop status in Admin, the website must update instantly without errors.",
+          "Perform a Full System Sync between the Admin Panel and the Website. Use a 'Global State' logic"
         ]
       },
       "acceptanceCriteria": [
-        "All category filter buttons are visible with readable labels.",
-        "Active/selected category button is highlighted in #0056b3 with white text.",
-        "Unselected category buttons use a clearly visible style distinct from the page background."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Audit and fix the global CSS custom properties and Tailwind theme in frontend/src/index.css and frontend/tailwind.config.js to ensure that no --primary, --background, or button-related CSS variables resolve to white or near-white values that cause buttons to disappear. Set --primary to #0056b3 and --primary-foreground to #ffffff in the light theme token definitions.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "Reset the UI immediately"
-        ]
-      },
-      "acceptanceCriteria": [
-        "CSS custom property --primary resolves to #0056b3 (or equivalent) in light theme.",
-        "CSS custom property --primary-foreground resolves to #ffffff.",
-        "No button component inherits a white-on-white style from the theme tokens.",
-        "Dark mode tokens, if defined, also maintain readable button contrast."
+        "The shop status query on the website has a refetchInterval of 30 seconds or less.",
+        "The shop status query refetches on window focus (refetchOnWindowFocus: true).",
+        "The ShopClosedBanner, CartDrawer checkout disable, and ProductCard Add-to-Cart disable all react to the refreshed shop status.",
+        "No stale open/closed state is shown to customers more than 30 seconds after an admin toggle."
       ]
     }
   ],
   "constraints": [
+    "All Motoko logic must remain in backend/main.mo — no new actor files.",
     "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Do not change backend logic, data models, or Motoko files.",
-    "Button color fix must be applied globally — do not patch only one page or component in isolation."
+    "Error messages shown to the admin must be in English."
   ],
   "nonGoals": [
-    "Fixing the 'Place Recharge Order' backend linkage (separate issue).",
-    "Fixing the Admin Panel shop status 'Reverting to Open' bug (separate issue).",
-    "Adding new features (search, wallet, invoice QR code, WhatsApp share).",
-    "Dark mode redesign beyond fixing contrast tokens."
+    "WebSocket or real-time push — polling and query invalidation are sufficient.",
+    "Customer-facing error messages for backend failures (only admin-facing errors are in scope).",
+    "Redesigning the Admin UI layout or navigation.",
+    "Adding new admin features beyond fixing existing sync and error-handling gaps."
   ],
   "imageRequirements": {
     "required": [],

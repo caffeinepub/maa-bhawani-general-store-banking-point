@@ -1,176 +1,220 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { usePlaceRechargeOrder, useShopStatus } from '../hooks/useQueries';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { usePlaceRechargeOrder } from '../hooks/useQueries';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { toast } from 'sonner';
-import { Smartphone, ChevronRight, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Smartphone } from 'lucide-react';
 
-const OPERATORS = [
-  { name: 'Airtel', color: 'bg-red-500', letter: 'A' },
-  { name: 'Jio', color: 'bg-blue-600', letter: 'J' },
-  { name: 'Vi', color: 'bg-purple-600', letter: 'V' },
-  { name: 'BSNL', color: 'bg-green-600', letter: 'B' },
-  { name: 'MTNL', color: 'bg-orange-500', letter: 'M' },
-];
+const OPERATORS = ['Jio', 'Airtel', 'Vi (Vodafone Idea)', 'BSNL', 'MTNL'];
 
-const OPERATOR_NAMES = ['Airtel', 'Jio', 'Vi (Vodafone Idea)', 'BSNL', 'MTNL'];
+const DEFAULT_FORM = {
+  mobileNumber: '',
+  operator: '',
+  rechargeAmount: '',
+};
 
 export default function MobileRechargeSection() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [operator, setOperator] = useState('');
-  const [amount, setAmount] = useState('');
-  const placeRecharge = usePlaceRechargeOrder();
-  const { identity } = useInternetIdentity();
+  const shopStatusQuery = useShopStatus();
+  const placeRechargeOrderMutation = usePlaceRechargeOrder();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successOrderId, setSuccessOrderId] = useState<bigint | null>(null);
+
+  const isShopClosed = shopStatusQuery.data === false;
+
+  const handleChange = (field: keyof typeof DEFAULT_FORM, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (formError) setFormError(null);
+    if (placeRechargeOrderMutation.isError) placeRechargeOrderMutation.reset();
+  };
+
+  const handleOpenDialog = () => {
+    setForm(DEFAULT_FORM);
+    setFormError(null);
+    setSuccessOrderId(null);
+    placeRechargeOrderMutation.reset();
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    if (placeRechargeOrderMutation.isPending) return;
+    setDialogOpen(false);
+    setForm(DEFAULT_FORM);
+    setFormError(null);
+    setSuccessOrderId(null);
+    placeRechargeOrderMutation.reset();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
-    if (!identity) {
-      toast.error('Please login to place a recharge order');
+    if (!/^\d{10}$/.test(form.mobileNumber)) {
+      setFormError('Please enter a valid 10-digit mobile number.');
       return;
     }
-
-    if (!/^\d{10}$/.test(mobileNumber)) {
-      toast.error('Please enter a valid 10-digit mobile number');
+    if (!form.operator) {
+      setFormError('Please select an operator.');
       return;
     }
-
-    if (!operator) {
-      toast.error('Please select an operator');
-      return;
-    }
-
-    const rechargeAmount = parseInt(amount);
-    if (isNaN(rechargeAmount) || rechargeAmount <= 0) {
-      toast.error('Please enter a valid recharge amount');
+    const amount = parseInt(form.rechargeAmount, 10);
+    if (isNaN(amount) || amount <= 0) {
+      setFormError('Please enter a valid recharge amount.');
       return;
     }
 
     try {
-      const orderId = await placeRecharge.mutateAsync({
-        mobileNumber,
-        operator,
-        rechargeAmount: BigInt(rechargeAmount),
+      const orderId = await placeRechargeOrderMutation.mutateAsync({
+        mobileNumber: form.mobileNumber,
+        operator: form.operator,
+        rechargeAmount: BigInt(amount),
       });
-      toast.success(`Recharge order placed! Order ID: ${orderId}`);
-      setMobileNumber('');
-      setOperator('');
-      setAmount('');
-      setIsOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to place recharge order');
+      setSuccessOrderId(orderId);
+      setForm(DEFAULT_FORM);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to submit recharge order';
+      setFormError(msg);
     }
   };
 
   return (
-    <div className="mt-6 mb-2">
-      {/* Compact Card */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-3 shadow-md">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-white" />
-            <span className="text-white font-semibold text-sm">Mobile Recharge</span>
-          </div>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="flex items-center gap-1 bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1 rounded-full transition-colors"
-          >
-            Recharge Now <ChevronRight className="w-3 h-3" />
-          </button>
+    <section className="py-8 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <Smartphone className="h-6 w-6 text-[#0056b3]" />
+          <h2 className="text-xl font-bold text-gray-800">Mobile Recharge</h2>
         </div>
-
-        {/* Operator Icons Row */}
-        <div className="flex items-center gap-2">
-          {OPERATORS.map((op) => (
-            <button
-              key={op.name}
-              onClick={() => {
-                setOperator(op.name === 'Vi' ? 'Vi (Vodafone Idea)' : op.name);
-                setIsOpen(true);
-              }}
-              className="flex flex-col items-center gap-0.5 group"
-            >
-              <div className={`w-8 h-8 rounded-full ${op.color} flex items-center justify-center text-white font-bold text-xs shadow-sm group-hover:scale-110 transition-transform`}>
-                {op.letter}
-              </div>
-              <span className="text-white/80 text-[10px]">{op.name}</span>
-            </button>
-          ))}
-        </div>
+        <p className="text-gray-600 mb-4 text-sm">
+          Recharge your mobile instantly. All major operators supported.
+        </p>
+        <img
+          src="/assets/generated/recharge-banner.dim_800x300.png"
+          alt="Mobile Recharge"
+          className="w-full max-w-md mx-auto rounded-xl mb-4 object-cover"
+          style={{ maxHeight: 150 }}
+        />
+        <Button
+          onClick={handleOpenDialog}
+          disabled={isShopClosed}
+          className="bg-[#0056b3] hover:bg-[#004494] text-white font-bold px-8 py-3 rounded-full text-base disabled:opacity-60"
+        >
+          {isShopClosed ? 'Shop Closed' : 'Place Recharge Order'}
+        </Button>
+        {isShopClosed && (
+          <p className="text-red-500 text-xs mt-2">Recharge orders are unavailable while the shop is closed.</p>
+        )}
       </div>
 
-      {/* Recharge Form Dialog */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-sm mx-auto">
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) handleCloseDialog(); }}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-blue-600" />
-              Mobile Recharge
+              <Smartphone className="h-5 w-5 text-[#0056b3]" />
+              Mobile Recharge Order
             </DialogTitle>
+            <DialogDescription>
+              Fill in the details below to place your recharge order.
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="mobile">Mobile Number</Label>
-              <Input
-                id="mobile"
-                type="tel"
-                placeholder="10-digit number"
-                value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                required
-              />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="operator">Operator</Label>
-              <Select value={operator} onValueChange={setOperator} required>
-                <SelectTrigger id="operator">
-                  <SelectValue placeholder="Select operator" />
-                </SelectTrigger>
-                <SelectContent>
-                  {OPERATOR_NAMES.map((op) => (
-                    <SelectItem key={op} value={op}>
-                      {op}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {successOrderId !== null ? (
+            <div className="py-6 text-center space-y-3">
+              <div className="text-5xl">✅</div>
+              <p className="text-green-600 font-semibold text-lg">Recharge Order Placed!</p>
+              <p className="text-gray-600 text-sm">Order ID: #{successOrderId.toString()}</p>
+              <p className="text-gray-500 text-xs">We will process your recharge shortly.</p>
+              <Button onClick={handleCloseDialog} className="bg-[#0056b3] text-white font-bold w-full">
+                Close
+              </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="amount">Recharge Amount (₹)</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                min="1"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={placeRecharge.isPending}
-              className="w-full py-3 rounded-lg bg-[#0056b3] text-white font-bold text-sm hover:bg-[#004494] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {placeRecharge.isPending ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Place Recharge Order'
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {(formError || placeRechargeOrderMutation.isError) && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {formError ?? (placeRechargeOrderMutation.error?.message ?? 'Failed to submit recharge order')}
+                  </AlertDescription>
+                </Alert>
               )}
-            </button>
-          </form>
+
+              <div className="space-y-1">
+                <Label htmlFor="mobile-number">Mobile Number *</Label>
+                <Input
+                  id="mobile-number"
+                  type="tel"
+                  value={form.mobileNumber}
+                  onChange={(e) => handleChange('mobileNumber', e.target.value)}
+                  placeholder="10-digit mobile number"
+                  maxLength={10}
+                  disabled={placeRechargeOrderMutation.isPending}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="operator">Operator *</Label>
+                <Select
+                  value={form.operator}
+                  onValueChange={(v) => handleChange('operator', v)}
+                  disabled={placeRechargeOrderMutation.isPending}
+                >
+                  <SelectTrigger id="operator">
+                    <SelectValue placeholder="Select operator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {OPERATORS.map((op) => (
+                      <SelectItem key={op} value={op}>{op}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="recharge-amount">Recharge Amount (₹) *</Label>
+                <Input
+                  id="recharge-amount"
+                  type="number"
+                  value={form.rechargeAmount}
+                  onChange={(e) => handleChange('rechargeAmount', e.target.value)}
+                  placeholder="e.g. 199"
+                  min="1"
+                  disabled={placeRechargeOrderMutation.isPending}
+                />
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseDialog}
+                  disabled={placeRechargeOrderMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={placeRechargeOrderMutation.isPending}
+                  className="bg-[#0056b3] hover:bg-[#004494] text-white font-bold"
+                >
+                  {placeRechargeOrderMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Place Recharge Order'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 }

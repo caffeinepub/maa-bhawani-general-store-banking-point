@@ -1,78 +1,83 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T02:44:44.623Z",
+  "generatedAt": "2026-02-27T12:48:35.018Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Force all primary action buttons across the entire app (including 'Sign In', 'Place Order', 'Place Recharge Order', 'Add to Cart', 'Checkout', and any other CTA buttons) to use a solid #0056b3 background with bold white (#ffffff) text. Override any conflicting Tailwind utility classes or CSS custom properties that are currently rendering buttons with white or near-white backgrounds.",
+        "summary": "Fix the 'Reverting to Open' bug in shop status toggling: when the admin toggles shop open/closed status, the backend must persist the new status with an authoritative write (no optimistic-only update). The toggle must await backend confirmation before treating the update as complete. If the write succeeds, immediately invalidate and refetch the shop status query on both the admin panel and the website so the customer-facing view reflects the change without stale data.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ui/button.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/components/MobileRechargeSection.tsx",
-          "frontend/src/components/ProductCard.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/pages/OrderConfirmationPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ShopStatusToggle.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/components/MobileRechargeSection.tsx",
-          "frontend/src/components/ProductCard.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/pages/OrderConfirmationPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ShopStatusToggle.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Fix the Header component so that the 'Logout' and 'Cart' (with item count badge) buttons are clearly visible against the header background. Ensure these buttons have sufficient color contrast — use #0056b3 fill or a visually distinct outlined style with white/dark text so they are never invisible.",
+        "summary": "Ensure all admin write actions — including adding/editing product stock, updating order status, and submitting recharge orders — await backend confirmation before marking the operation as successful. Remove any fire-and-forget or optimistic-only patterns that can silently fail. Each mutation in useQueries.ts must properly await the actor call result and propagate errors to the calling component.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/AdminProductList.tsx",
+          "frontend/src/components/AdminProductForm.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx",
+          "frontend/src/pages/AdminPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/AdminProductList.tsx",
+          "frontend/src/components/AdminProductForm.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx",
+          "frontend/src/pages/AdminPage.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Restore the Sign-In page (Internet Identity login screen) so that all buttons — including the 'Sign In' / 'Login' button — are NOT white. Apply the same #0056b3 solid background with white bold text. Ensure the button is clearly clickable and visually prominent on the page.",
+        "summary": "Replace all fake or silent loading states on admin mutations with real error feedback. When any admin write operation (shop status toggle, stock update, order status change, recharge submission) fails, display a clear, visible error message (e.g., a toast notification or inline error text) stating what failed. Do not show a spinner or 'Updating…' animation that never resolves or never reports the actual failure to the user.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ShopStatusToggle.tsx",
+          "frontend/src/components/AdminProductList.tsx",
+          "frontend/src/components/AdminProductForm.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx",
+          "frontend/src/pages/AdminPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/Header.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ShopStatusToggle.tsx",
+          "frontend/src/components/AdminProductList.tsx",
+          "frontend/src/components/AdminProductForm.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx",
+          "frontend/src/pages/AdminPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Fix the category filter buttons in the CategoryFilter component so they are rendered with a visible background and legible label text. Selected/active category buttons should use #0056b3 with white text; unselected buttons should use a light gray background with dark text — ensuring none are invisible.",
+        "summary": "Implement a global shop status polling or query invalidation strategy on the customer-facing website so that the shop open/closed state stays in sync with the backend. The website should refetch shop status at a short interval (e.g., every 30 seconds) and also refetch immediately on window focus, so customers always see the current status without a full page reload.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/CategoryFilter.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ShopClosedBanner.tsx",
+          "frontend/src/components/CartDrawer.tsx",
+          "frontend/src/components/ProductCard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/CategoryFilter.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Audit and fix the global CSS custom properties and Tailwind theme in frontend/src/index.css and frontend/tailwind.config.js to ensure that no --primary, --background, or button-related CSS variables resolve to white or near-white values that cause buttons to disappear. Set --primary to #0056b3 and --primary-foreground to #ffffff in the light theme token definitions.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/index.css",
-          "frontend/tailwind.config.js"
-        ],
-        "matchedFiles": [
-          "frontend/src/index.css"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ShopClosedBanner.tsx",
+          "frontend/src/components/CartDrawer.tsx",
+          "frontend/src/components/ProductCard.tsx"
         ]
       }
     ]
@@ -82,14 +87,15 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/components/AdminProductForm.tsx",
+    "frontend/src/components/AdminProductList.tsx",
     "frontend/src/components/CartDrawer.tsx",
-    "frontend/src/components/CategoryFilter.tsx",
-    "frontend/src/components/Header.tsx",
     "frontend/src/components/MobileRechargeSection.tsx",
     "frontend/src/components/ProductCard.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/OrderConfirmationPage.tsx",
+    "frontend/src/components/ShopClosedBanner.tsx",
+    "frontend/src/components/ShopStatusToggle.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/AdminPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

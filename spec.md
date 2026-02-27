@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix a critical white-on-white button visibility bug across the entire app by enforcing solid blue (#0056b3) backgrounds with white text on all primary action buttons.
+**Goal:** Fix admin-to-website sync issues by ensuring all admin write operations await backend confirmation, adding real error feedback, and keeping the customer-facing shop status fresh via polling.
 
 **Planned changes:**
-- Update global CSS custom properties (`--primary` → `#0056b3`, `--primary-foreground` → `#ffffff`) in `index.css` and `tailwind.config.js` so no button inherits a white-on-white style from theme tokens
-- Force all primary action buttons (Sign In, Add to Cart, Place Order, Place Recharge Order, Checkout, etc.) to use `#0056b3` background with bold white text across all pages and components
-- Fix the Header so that the Logout and Cart (with badge) buttons are clearly visible against the header background using sufficient color contrast
-- Fix the Sign-In page login button to display `#0056b3` with white text and be visually prominent
-- Fix CategoryFilter buttons so active/selected ones use `#0056b3` with white text and unselected ones use a visible light gray with dark text
+- Fix the shop status toggle so it awaits backend confirmation before updating the UI, and invalidates/refetches the shop status query on both admin and website after a successful toggle
+- Ensure all admin mutations (stock updates, order status changes, recharge submissions) await backend confirmation before showing success, removing any fire-and-forget or optimistic-only patterns
+- Replace silent/fake loading states with visible error messages (toast or inline) for all admin write failures; revert UI state and dismiss spinners when an error occurs
+- Add a 30-second polling interval and refetch-on-window-focus to the shop status query on the customer-facing website so open/closed state stays current
 
-**User-visible outcome:** All buttons throughout the app are clearly visible and clickable — no button blends into the background, and users can easily identify and interact with all call-to-action elements.
+**User-visible outcome:** Admin toggles and writes reliably persist to the backend with clear success or error feedback, and customers always see the current shop open/closed status within 30 seconds of an admin change.
