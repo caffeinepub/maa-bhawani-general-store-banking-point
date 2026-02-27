@@ -1,89 +1,104 @@
 {
   "kind": "build_request",
-  "title": "Home Page Redesign, 2-Column Product Grid, Sticky Bottom Nav & WhatsApp Help Button",
-  "projectName": "Maa Bhawani Store",
+  "title": "Banner Replacement, Shop Toggle Fix, Admin Redesign & Delivery Logic",
+  "projectName": "Maa Bhawani General Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Redesign the HomePage layout so that: (1) a compact auto-sliding banner carousel appears at the very top (reduce banner height to approximately 140–160px on mobile), (2) the ProductGrid appears immediately below the banner with no intervening sections, and (3) the MobileRechargeSection is relocated to the bottom of the page as a compact icon-based grid or small card (e.g., a row of operator icons with a label), above the footer.",
+      "text": "Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with professional general grocery banners showcasing Rice, Oil, Biscuits, and Snacks. Remove any vegetable or sabji imagery from the homepage entirely.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-7"
         ],
         "quotes": [
-          "Move the Mobile Recharge section to a small icon-based grid or a small card at the bottom",
-          "The top should have one sliding banner for offers, and Products must start appearing immediately after that",
-          "Decrease the height of the banners"
+          "Remove all images and banners related to vegetables/sabji. This is a General Grocery Store. Replace them with professional grocery banners (Rice, Oil, Biscuits, Snacks)."
         ]
       },
       "acceptanceCriteria": [
-        "The homepage renders a horizontally auto-sliding banner carousel at the very top with a height of roughly 140–160px on mobile screens.",
-        "Product grid starts rendering immediately after the banner — no full-width sections interrupt between banner and products.",
-        "The Mobile Recharge section is displayed near the bottom of the page as a compact icon-grid card (small operator icons + label), not as a full-width form section.",
-        "No layout regression on the ShopClosedBanner, CategoryFilter, or CartDrawer components."
+        "No vegetable or sabji images appear anywhere on the homepage",
+        "HeroBannerCarousel displays at least 2 banners featuring Rice, Oil, Biscuits, or Snacks themes",
+        "New banners look professional and match a general grocery store aesthetic"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Redesign the product display in ProductGrid to use a strict 2-column grid layout. Each ProductCard must display: a clean product image, the product name in bold, a green 'Delivery in 10 Mins' tag, and a prominent green '+ ADD' button. When no products are found (empty state), render a visually appealing 'Coming Soon' graphic/illustration with descriptive text instead of plain text.",
-      "target": "frontend",
+      "text": "Delete the existing ShopStatusToggle component code entirely and rewrite it from scratch. The new toggle must call the backend mutation directly and optimistically update UI. When the shop is set to 'Closed': (1) immediately display the ShopClosedBanner on the homepage, (2) disable all 'Add to Cart' buttons across every ProductCard, and (3) block checkout navigation from the CartDrawer. When set to 'Open', all restrictions are lifted immediately.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-7"
         ],
         "quotes": [
-          "Change the product display to a 2-column Grid Layout",
-          "A clean image. Product name in bold. The 'Delivery in 10 Mins' green tag. A very prominent '+ ADD' button in green color.",
-          "If no products are found, show a beautiful 'Coming Soon' graphic instead of plain text"
+          "The On/Off toggle is still not working. Delete the old toggle code and rewrite it. It must link directly to the database. When I click 'Close', the website must immediately show the 'Shop Closed' banner and disable all 'Add to Cart' buttons."
         ]
       },
       "acceptanceCriteria": [
-        "ProductGrid renders exactly 2 columns on mobile and tablet viewports.",
-        "Each product card shows: product image (clean, object-cover), product name in font-bold, a green badge reading 'Delivery in 10 Mins', and a green '+ ADD' button that is visually prominent.",
-        "When the product list is empty (after filtering or initially), a styled 'Coming Soon' empty state with an illustration/graphic is rendered instead of plain text.",
-        "The '+ ADD' button is disabled when the shop is closed (existing behavior preserved)."
+        "Toggling to 'Closed' in the admin panel immediately persists the closed state to the backend",
+        "ShopClosedBanner appears on the homepage without requiring a page reload after closing",
+        "All 'Add to Cart' buttons are visually disabled and non-functional when shop is closed",
+        "CartDrawer prevents navigation to checkout when shop is closed",
+        "Toggling back to 'Open' re-enables all Add to Cart buttons and hides the closed banner immediately"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a Sticky Bottom Navigation Bar fixed to the bottom of the viewport with 4 navigation items: Home, Search, My Orders, and Wallet — each with an appropriate icon and label. The bar must appear on all customer-facing pages. Also add a small floating WhatsApp Help button (WhatsApp green, bottom-right corner) that opens a WhatsApp chat link when tapped. Ensure the sticky nav does not overlap page content (add appropriate bottom padding to page layouts).",
+      "text": "Redesign the AdminPage with a dark/blue dashboard theme. Replace the current layout with a stats overview row at the top containing three clean metric cards: 'Total Orders' (showing order count), 'Active Users' (showing distinct users with orders), and 'Shop Status' (showing current open/closed state with color indicator). Apply a dark navy/slate background, white/light text, and blue accent colors throughout the admin panel tabs and cards.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-7"
         ],
         "quotes": [
-          "Add a Sticky Bottom Navigation Bar with 4 icons: Home, Search, My Orders, and Wallet",
-          "add a small floating 'WhatsApp Help' button on the bottom right"
+          "The Admin Panel looks unprofessional. Redesign it using a Dark/Blue Dashboard Theme. Use clean cards for 'Total Orders', 'Active Users', and 'Shop Status'."
         ]
       },
       "acceptanceCriteria": [
-        "A sticky bottom nav bar is rendered fixed at the bottom with 4 tabs: Home, Search, My Orders, Wallet — each with an icon and text label.",
-        "Active tab is visually highlighted (e.g., green color).",
-        "A floating WhatsApp button (green circular FAB) is visible at the bottom-right, above the sticky nav, and opens a WhatsApp chat URL on tap.",
-        "Page content is padded at the bottom so it is not obscured by the sticky nav bar.",
-        "The sticky nav is not shown on admin pages (AdminPage, AdminSettingsPage, BillingPage)."
+        "Admin panel uses a dark navy/slate background with blue accent colors",
+        "Three stat cards are visible at the top: Total Orders, Active Users, Shop Status",
+        "Each stat card displays a live value fetched from the backend",
+        "Shop Status card shows green when open and red when closed",
+        "All tabs (Orders, Products, Settings, Bills) are restyled to match the dark/blue theme",
+        "Admin panel looks professional and clean on both desktop and mobile"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Ensure the 'Delivery in 10 Mins' badge is rendered on every ProductCard without exception. Verify that the free delivery threshold logic (free delivery for orders ₹51 and above, ₹5 charge below ₹51 within 1km) is enforced in the CartDrawer total calculation and on the CheckoutPage order summary.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-7"
+        ],
+        "quotes": [
+          "Ensure the 'Delivery in 10 Mins' badge is visible on every product and the ₹51 free delivery logic is active"
+        ]
+      },
+      "acceptanceCriteria": [
+        "'Delivery in 10 Mins' badge is visible on every product card in the grid",
+        "Cart total below ₹51 shows a ₹5 delivery charge",
+        "Cart total of ₹51 or above shows free delivery (₹0 delivery charge)",
+        "Delivery fee dynamically updates as items are added or removed from cart",
+        "CheckoutPage order summary reflects the correct delivery fee"
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Preserve all existing backend logic — no backend changes required.",
-    "The MobileRechargeSection component logic (form, mutation hook) must be preserved; only its placement and visual wrapper change.",
-    "Shop closed state behavior and CartDrawer must remain fully functional."
+    "Do not modify files in frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "All backend state changes must go through the existing single Motoko actor in backend/main.mo",
+    "Shop open/closed state must be persisted to the backend — do not use localStorage or sessionStorage as the source of truth for shop status"
   ],
   "nonGoals": [
-    "No backend schema or API changes.",
-    "No changes to admin pages layout or admin navigation.",
-    "No changes to the checkout, order confirmation, or billing flows.",
-    "No new backend features (Search, Wallet functionality are nav placeholders only — no full implementation required).",
-    "No changes to Internet Identity authentication flow."
+    "Adding new backend data fields beyond what is needed for shop status toggle and stats",
+    "Redesigning the customer-facing pages (checkout, my orders, wallet)",
+    "Implementing real-time WebSocket updates",
+    "Changing the store name or PWA manifest"
   ],
   "imageRequirements": {
     "required": [
-      "Colorful 'Coming Soon' illustration with stars and a shopping basket on a light background, suitable for an empty product grid state (coming-soon.dim_400x300.png)"
+      "Professional grocery store promotional banner featuring a bag of Basmati rice, cooking oil bottle, and warm golden tones on a clean white background (grocery-banner-rice-oil.dim_1200x400.png)",
+      "Professional grocery store promotional banner featuring biscuit packets and snack bags arranged neatly with a vibrant orange and yellow background (grocery-banner-biscuits-snacks.dim_1200x400.png)"
     ],
     "edits": []
   }

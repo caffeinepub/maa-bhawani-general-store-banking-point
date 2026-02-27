@@ -1,25 +1,37 @@
-import { useGetShopStatus } from '../hooks/useQueries';
+import { useState } from 'react';
+import HeroBannerCarousel from '../components/HeroBannerCarousel';
 import ShopClosedBanner from '../components/ShopClosedBanner';
 import ProductGrid from '../components/ProductGrid';
+import CategoryFilter from '../components/CategoryFilter';
 import MobileRechargeSection from '../components/MobileRechargeSection';
-import HeroBannerCarousel from '../components/HeroBannerCarousel';
+import { useGetAllProducts } from '../hooks/useQueries';
 
 export default function HomePage() {
-  // Force fresh shop status fetch on every HomePage load
-  useGetShopStatus();
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const { data: products = [] } = useGetAllProducts();
+
+  // Build category list from fetched products
+  const categories = ['All', ...Array.from(new Set(products.map((p) => p.category)))];
 
   return (
-    <div className="pb-2">
-      {/* Sliding Hero Banner */}
+    <div className="px-3 py-3 space-y-4 pb-24">
+      {/* Hero Banner Carousel */}
       <HeroBannerCarousel />
 
-      {/* Shop Closed Banner — only shown when confirmed closed */}
+      {/* Shop Closed Banner — shown prominently above products */}
       <ShopClosedBanner />
 
-      {/* Product Grid (manages its own category filter and shop status internally) */}
-      <ProductGrid />
+      {/* Category Filter */}
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
 
-      {/* Mobile Recharge Section — compact card at the bottom */}
+      {/* Product Grid */}
+      <ProductGrid selectedCategory={selectedCategory} />
+
+      {/* Mobile Recharge Section at bottom */}
       <MobileRechargeSection />
     </div>
   );

@@ -1,45 +1,56 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T16:18:16.794Z",
-  "summary": "The diff implements all three major requirements. REQ-1 (HomePage redesign with compact banner, product grid immediately after, MobileRechargeSection at bottom) is fully addressed. REQ-2 (2-column product grid, styled ProductCard, Coming Soon empty state) is fully addressed. REQ-3 (sticky BottomNavBar with 4 tabs, WhatsApp FAB, bottom padding, hidden on admin pages) is fully addressed. One minor gap: the image asset for coming-soon.dim_400x300.png is referenced but not shown as added. Overall implementation is comprehensive.",
+  "generatedAt": "2026-02-27T01:47:10.305Z",
+  "summary": "The diff implements most of the requested requirements. REQ-1 (banner replacement) is implemented with new grocery-themed banners. REQ-2 (ShopStatusToggle rewrite with backend persistence and UI restrictions) is implemented. REQ-3 (Admin dark/blue redesign with stat cards) is implemented. REQ-4 (delivery badge and fee logic) is implemented. However, there are some gaps: the 'Active Users' stat card uses phone number deduplication instead of distinct users with orders from the backend, and the required banner image files themselves are not added in the diff. The third banner still references 'hero-banner.dim_1200x400.png' which may be vegetable/sabji themed.",
   "missing_requirements": [
     {
-      "requirement": "Colorful 'Coming Soon' illustration image asset (coming-soon.dim_400x300.png) must be provided/added",
-      "reason": "The diff references '/assets/generated/coming-soon.dim_400x300.png' in ProductGrid.tsx but no image asset file is shown as added in the diff. The image is listed as a required asset in the build request.",
+      "id": "REQ-1",
+      "requirement": "Remove any vegetable or sabji imagery from the homepage entirely",
+      "reason": "HeroBannerCarousel still includes a third banner referencing '/assets/generated/hero-banner.dim_1200x400.png'. If the existing hero-banner image is vegetable/sabji themed, it violates this requirement. Additionally, the two new banner image files (grocery-banner-rice-oil.dim_1200x400.png and grocery-banner-biscuits-snacks.dim_1200x400.png) are not listed as added files in the diff.",
       "evidence": [
-        "frontend/src/components/ProductGrid.tsx"
+        "frontend/src/components/HeroBannerCarousel.tsx"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Each stat card displays a live value fetched from the backend for Active Users showing distinct users with orders",
+      "reason": "The AdminPage computes uniqueCustomers using frontend phone number deduplication on the already-fetched orders array rather than fetching a dedicated distinct user count from the backend.",
+      "evidence": [
+        "frontend/src/pages/AdminPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Placeholder pages created for Search, My Orders, and Wallet (SearchPage.tsx, MyOrdersPage.tsx, WalletPage.tsx) with routes registered in App.tsx",
-      "reason": "While REQ-3 mentions Search, My Orders, and Wallet as nav placeholders, the build request non-goals explicitly state these are nav placeholders only with no full implementation required. Creating dedicated page components and routes goes slightly beyond what was strictly requested, though it is functionally reasonable for nav links to have destinations.",
+      "description": "Batch routing feature in AdminPage that groups active orders by delivery address",
+      "reason": "The diff includes a batch order filter and batchGroups logic grouping orders by delivery address. This feature was not requested in the build request.",
       "evidence": [
-        "frontend/src/pages/SearchPage.tsx",
-        "frontend/src/pages/MyOrdersPage.tsx",
-        "frontend/src/pages/WalletPage.tsx",
-        "frontend/src/App.tsx"
+        "frontend/src/pages/AdminPage.tsx"
+      ]
+    },
+    {
+      "description": "CheckoutPage renders a full blocked UI page when shop is closed instead of just relying on CartDrawer navigation block",
+      "reason": "The build request only requires CartDrawer to block checkout navigation when shop is closed. The CheckoutPage additionally renders a complete blocked state UI, which goes beyond the stated requirements.",
+      "evidence": [
+        "frontend/src/pages/CheckoutPage.tsx"
       ]
     }
   ],
-  "confidence": 0.85,
+  "confidence": 0.75,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BottomNavBar.tsx",
+    "frontend/src/components/CartDrawer.tsx",
+    "frontend/src/components/Header.tsx",
     "frontend/src/components/HeroBannerCarousel.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/MobileRechargeSection.tsx",
     "frontend/src/components/ProductCard.tsx",
     "frontend/src/components/ProductGrid.tsx",
-    "frontend/src/components/WhatsAppHelpButton.tsx",
-    "frontend/src/index.css",
+    "frontend/src/components/ShopClosedBanner.tsx",
+    "frontend/src/components/ShopStatusToggle.tsx",
+    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/pages/CheckoutPage.tsx",
     "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/MyOrdersPage.tsx",
-    "frontend/src/pages/SearchPage.tsx",
-    "frontend/src/pages/WalletPage.tsx",
     "project_state.json"
   ]
 }

@@ -2,12 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-redesign-the-homepage-layout-so-that-1-a-compact-auto-sliding-banner-carousel-appears-at-the-very-top-reduce-banner-height-to-approximately-140-160px-on-mobile-2-the-productgrid-appears-immediately-below-the-banner-with-no-intervening-sections-and-3-the-mobilerechargesection-is-relocated-to-the-bottom-of-the-page-as-a-compact-icon-based-grid-or-small-card-e-g-a-row-of-operator-icons-with-a-label-above-the-footer",
-      "featureTitle": "Redesign the HomePage layout so that: (1) a compact auto-sliding banner carousel appears at the very top (reduce banner height to approximately 140–160px on mobile), (2) the ProductGrid appears immediately below the banner with no intervening sections, and (3) the MobileRechargeSection is relocated to the bottom of the page as a compact icon-based grid or small card (e.g., a row of operator icons with a label), above the footer.",
+      "featureId": "feature-replace-all-vegetable-sabji-themed-banners-in-the-herobannercarousel-with-professional-general-grocery-banners-showcasing-rice-oil-biscuits-and-snacks-remove-any-vegetable-or-sabji-imagery-from-the-homepage-entirely",
+      "featureTitle": "Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with professional general grocery banners showcasing Rice, Oil, Biscuits, and Snacks. Remove any vegetable or sabji imagery from the homepage entirely.",
       "files": [
-        "frontend/src/components/HeroBannerCarousel.tsx",
-        "frontend/src/components/MobileRechargeSection.tsx",
-        "frontend/src/pages/HomePage.tsx"
+        "frontend/src/components/HeroBannerCarousel.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -27,11 +25,15 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-redesign-the-product-display-in-productgrid-to-use-a-strict-2-column-grid-layout-each-productcard-must-display-a-clean-product-image-the-product-name-in-bold-a-green-delivery-in-10-mins-tag-and-a-prominent-green-add-button-when-no-products-are-found-empty-state-render-a-visually-appealing-coming-soon-graphic-illustration-with-descriptive-text-instead-of-plain-text",
-      "featureTitle": "Redesign the product display in ProductGrid to use a strict 2-column grid layout. Each ProductCard must display: a clean product image, the product name in bold, a green 'Delivery in 10 Mins' tag, and a prominent green '+ ADD' button. When no products are found (empty state), render a visually appealing 'Coming Soon' graphic/illustration with descriptive text instead of plain text.",
+      "featureId": "feature-delete-the-existing-shopstatustoggle-component-code-entirely-and-rewrite-it-from-scratch-the-new-toggle-must-call-the-backend-mutation-directly-and-optimistically-update-ui-when-the-shop-is-set-to-closed-1-immediately-display-the-shopclosedbanner-on-the-homepage-2-disable-all-add-to-cart-buttons-across-every-productcard-and-3-block-checkout-navigation-from-the-cartdrawer-when-set-to-open-all-restrictions-are-lifted-immediately",
+      "featureTitle": "Delete the existing ShopStatusToggle component code entirely and rewrite it from scratch. The new toggle must call the backend mutation directly and optimistically update UI. When the shop is set to 'Closed': (1) immediately display the ShopClosedBanner on the homepage, (2) disable all 'Add to Cart' buttons across every ProductCard, and (3) block checkout navigation from the CartDrawer. When set to 'Open', all restrictions are lifted immediately.",
       "files": [
+        "frontend/src/components/CartDrawer.tsx",
         "frontend/src/components/ProductCard.tsx",
-        "frontend/src/components/ProductGrid.tsx"
+        "frontend/src/components/ProductGrid.tsx",
+        "frontend/src/components/ShopClosedBanner.tsx",
+        "frontend/src/components/ShopStatusToggle.tsx",
+        "frontend/src/pages/HomePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -51,16 +53,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-sticky-bottom-navigation-bar-fixed-to-the-bottom-of-the-viewport-with-4-navigation-items-home-search-my-orders-and-wallet-each-with-an-appropriate-icon-and-label-the-bar-must-appear-on-all-customer-facing-pages-also-add-a-small-floating-whatsapp-help-button-whatsapp-green-bottom-right-corner-that-opens-a-whatsapp-chat-link-when-tapped-ensure-the-sticky-nav-does-not-overlap-page-content-add-appropriate-bottom-padding-to-page-layouts",
-      "featureTitle": "Add a Sticky Bottom Navigation Bar fixed to the bottom of the viewport with 4 navigation items: Home, Search, My Orders, and Wallet — each with an appropriate icon and label. The bar must appear on all customer-facing pages. Also add a small floating WhatsApp Help button (WhatsApp green, bottom-right corner) that opens a WhatsApp chat link when tapped. Ensure the sticky nav does not overlap page content (add appropriate bottom padding to page layouts).",
+      "featureId": "feature-redesign-the-adminpage-with-a-dark-blue-dashboard-theme-replace-the-current-layout-with-a-stats-overview-row-at-the-top-containing-three-clean-metric-cards-total-orders-showing-order-count-active-users-showing-distinct-users-with-orders-and-shop-status-showing-current-open-closed-state-with-color-indicator-apply-a-dark-navy-slate-background-white-light-text-and-blue-accent-colors-throughout-the-admin-panel-tabs-and-cards",
+      "featureTitle": "Redesign the AdminPage with a dark/blue dashboard theme. Replace the current layout with a stats overview row at the top containing three clean metric cards: 'Total Orders' (showing order count), 'Active Users' (showing distinct users with orders), and 'Shop Status' (showing current open/closed state with color indicator). Apply a dark navy/slate background, white/light text, and blue accent colors throughout the admin panel tabs and cards.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/BottomNavBar.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/components/WhatsAppHelpButton.tsx",
-        "frontend/src/pages/MyOrdersPage.tsx",
-        "frontend/src/pages/SearchPage.tsx",
-        "frontend/src/pages/WalletPage.tsx"
+        "frontend/src/pages/AdminPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -76,6 +72,31 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-delivery-in-10-mins-badge-is-rendered-on-every-productcard-without-exception-verify-that-the-free-delivery-threshold-logic-free-delivery-for-orders-51-and-above-5-charge-below-51-within-1km-is-enforced-in-the-cartdrawer-total-calculation-and-on-the-checkoutpage-order-summary",
+      "featureTitle": "Ensure the 'Delivery in 10 Mins' badge is rendered on every ProductCard without exception. Verify that the free delivery threshold logic (free delivery for orders ₹51 and above, ₹5 charge below ₹51 within 1km) is enforced in the CartDrawer total calculation and on the CheckoutPage order summary.",
+      "files": [
+        "frontend/src/components/CartDrawer.tsx",
+        "frontend/src/components/ProductCard.tsx",
+        "frontend/src/pages/CheckoutPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "camera@1.0.0",
+        "http-outcalls@3.0.0",
+        "qr-code@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

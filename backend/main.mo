@@ -7,13 +7,11 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
 
-
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-
 
 actor {
   // State
@@ -156,7 +154,6 @@ actor {
 
   var upiId : ?Text = null; // Now persistent across upgrades
 
-  // Improve Shop Open/Closed ShopStatus
   // Bool = Open/Closed
   var shopStatus : Bool = true;
 
@@ -666,4 +663,3 @@ actor {
     shopStatus;
   };
 };
-

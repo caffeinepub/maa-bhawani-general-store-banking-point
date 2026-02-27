@@ -61,7 +61,7 @@ export default function Header() {
                   <h1 className="text-lg font-bold text-foreground">Maa Bhawani General Store</h1>
                   {/* Shop Status Indicator */}
                   {isShopOpen !== undefined && (
-                    <div 
+                    <div
                       className={`w-2.5 h-2.5 rounded-full ${isShopOpen ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
                       title={isShopOpen ? 'Shop Open' : 'Shop Closed'}
                     />
@@ -129,7 +129,8 @@ export default function Header() {
         </div>
       </header>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {/* Fixed: prop renamed from isOpen to open to match CartDrawerProps */}
+      <CartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 }

@@ -1,14 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Redesign the Maa Bhawani Store homepage layout, update the product grid to 2 columns, add a sticky bottom navigation bar, and add a floating WhatsApp Help button.
+**Goal:** Replace vegetable banners with grocery banners, fix the shop open/close toggle, redesign the admin panel with a dark/blue theme, and enforce delivery badge and fee logic.
 
 **Planned changes:**
-- Redesign the HomePage: compact auto-sliding banner carousel at the top (≈140–160px tall on mobile), product grid immediately below the banner, and Mobile Recharge section relocated to the bottom of the page as a compact icon-based grid/card above the footer.
-- Redesign ProductGrid to use a strict 2-column layout; each ProductCard shows a clean product image, bold product name, green "Delivery in 10 Mins" badge, and a prominent green "+ ADD" button.
-- Replace the empty product state (no products found) with a styled "Coming Soon" illustration/graphic instead of plain text.
-- Add a sticky bottom navigation bar fixed to the viewport bottom with 4 tabs: Home, Search, My Orders, and Wallet (each with icon + label); active tab highlighted in green; not shown on admin pages.
-- Add bottom padding to page layouts so content is not obscured by the sticky nav.
-- Add a floating WhatsApp Help button (green circular FAB, bottom-right, above the sticky nav) that opens a WhatsApp chat link on tap.
+- Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with new professional grocery banners featuring Rice, Oil, Biscuits, and Snacks; remove any vegetable imagery from the homepage
+- Delete and rewrite the ShopStatusToggle component to directly call the backend mutation and optimistically update the UI; when closed, immediately show ShopClosedBanner, disable all Add to Cart buttons, and block checkout in CartDrawer; when open, lift all restrictions
+- Redesign the AdminPage with a dark navy/slate background and blue accent colors, adding a stats row at the top with three metric cards: Total Orders, Active Users, and Shop Status (green/red indicator); restyle all admin tabs to match the new theme
+- Ensure every ProductCard displays a "Delivery in 10 Mins" badge
+- Enforce delivery fee logic in CartDrawer and CheckoutPage: ₹5 charge for orders below ₹51, free delivery for ₹51 and above, updating dynamically as cart changes
 
-**User-visible outcome:** Customers see a cleaner homepage with a compact banner, an instant 2-column product grid, a bottom nav bar for quick access to Home/Search/Orders/Wallet, and a WhatsApp help button for quick support. The Mobile Recharge section is still accessible but tucked away at the bottom.
+**User-visible outcome:** The homepage shows professional grocery banners with no vegetable imagery; the shop toggle reliably opens/closes the store in real time across all UI elements; the admin panel has a clean dark/blue dashboard with live stats; every product shows the delivery badge; and the correct delivery fee is always reflected in the cart and checkout.
