@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Replace vegetable banners with grocery banners, fix the shop open/close toggle, redesign the admin panel with a dark/blue theme, and enforce delivery badge and fee logic.
+**Goal:** Fix a critical white-on-white button visibility bug across the entire app by enforcing solid blue (#0056b3) backgrounds with white text on all primary action buttons.
 
 **Planned changes:**
-- Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with new professional grocery banners featuring Rice, Oil, Biscuits, and Snacks; remove any vegetable imagery from the homepage
-- Delete and rewrite the ShopStatusToggle component to directly call the backend mutation and optimistically update the UI; when closed, immediately show ShopClosedBanner, disable all Add to Cart buttons, and block checkout in CartDrawer; when open, lift all restrictions
-- Redesign the AdminPage with a dark navy/slate background and blue accent colors, adding a stats row at the top with three metric cards: Total Orders, Active Users, and Shop Status (green/red indicator); restyle all admin tabs to match the new theme
-- Ensure every ProductCard displays a "Delivery in 10 Mins" badge
-- Enforce delivery fee logic in CartDrawer and CheckoutPage: ₹5 charge for orders below ₹51, free delivery for ₹51 and above, updating dynamically as cart changes
+- Update global CSS custom properties (`--primary` → `#0056b3`, `--primary-foreground` → `#ffffff`) in `index.css` and `tailwind.config.js` so no button inherits a white-on-white style from theme tokens
+- Force all primary action buttons (Sign In, Add to Cart, Place Order, Place Recharge Order, Checkout, etc.) to use `#0056b3` background with bold white text across all pages and components
+- Fix the Header so that the Logout and Cart (with badge) buttons are clearly visible against the header background using sufficient color contrast
+- Fix the Sign-In page login button to display `#0056b3` with white text and be visually prominent
+- Fix CategoryFilter buttons so active/selected ones use `#0056b3` with white text and unselected ones use a visible light gray with dark text
 
-**User-visible outcome:** The homepage shows professional grocery banners with no vegetable imagery; the shop toggle reliably opens/closes the store in real time across all UI elements; the admin panel has a clean dark/blue dashboard with live stats; every product shows the delivery badge; and the correct delivery fee is always reflected in the cart and checkout.
+**User-visible outcome:** All buttons throughout the app are clearly visible and clickable — no button blends into the background, and users can easily identify and interact with all call-to-action elements.

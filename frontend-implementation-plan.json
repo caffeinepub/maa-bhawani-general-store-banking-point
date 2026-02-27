@@ -1,111 +1,117 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Banner Replacement, Shop Toggle Fix, Admin Redesign & Delivery Logic",
+  "title": "Critical UI Fix: Restore Button Visibility (White-on-White Bug)",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace all vegetable/sabji-themed banners with professional general grocery banners showcasing Rice, Oil, Biscuits, and Snacks",
+      "summary": "Force all primary action buttons across the entire app to use solid #0056b3 background with bold white text, overriding any conflicting Tailwind or CSS custom properties",
       "acceptanceCriteria": [
-        "No vegetable or sabji images appear anywhere on the homepage",
-        "HeroBannerCarousel displays at least 2 banners featuring Rice, Oil, Biscuits, or Snacks themes",
-        "New banners look professional and match a general grocery store aesthetic"
+        "All primary action buttons display a solid #0056b3 blue background.",
+        "All button labels are clearly legible with white text.",
+        "No button is invisible or blends into a white/light background.",
+        "Fix applies consistently across HomePage, CheckoutPage, OrderConfirmationPage, MobileRechargeSection, ProductCard, CartDrawer, and all other pages with buttons."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/HeroBannerCarousel.tsx",
+          "path": "frontend/src/components/ui/button.tsx",
           "operation": "modify",
-          "description": "Replace the existing banner image paths with the newly generated grocery banners. Update the images array to reference frontend/public/assets/generated/grocery-banner-rice-oil.dim_1200x400.png and frontend/public/assets/generated/grocery-banner-biscuits-snacks.dim_1200x400.png. Remove any references to vegetable or sabji-themed images."
+          "description": "Override the 'default' button variant to use bg-[#0056b3] text-white font-bold, ensuring all primary buttons render with the correct colors. Add !important-style inline overrides if necessary to defeat any CSS variable conflicts."
+        },
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the 'Place Order' button uses the fixed button variant with explicit bg-[#0056b3] text-white font-bold classes, making it clearly visible and clickable."
+        },
+        {
+          "path": "frontend/src/components/MobileRechargeSection.tsx",
+          "operation": "modify",
+          "description": "Ensure the 'Place Recharge Order' button in the dialog uses bg-[#0056b3] text-white font-bold, making it clearly visible and clickable."
+        },
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Ensure the 'Add to Cart' button uses bg-[#0056b3] text-white font-bold, making it clearly visible against the product card background."
+        },
+        {
+          "path": "frontend/src/components/CartDrawer.tsx",
+          "operation": "modify",
+          "description": "Ensure the 'Checkout' button uses bg-[#0056b3] text-white font-bold, making it clearly visible in the cart drawer."
+        },
+        {
+          "path": "frontend/src/pages/OrderConfirmationPage.tsx",
+          "operation": "modify",
+          "description": "Ensure any CTA buttons (e.g., 'Continue Shopping' or payment confirmation actions) use bg-[#0056b3] text-white font-bold."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Rewrite ShopStatusToggle component to directly call backend mutation and optimistically update UI, enforcing shop-closed restrictions across ProductCard and CartDrawer",
+      "summary": "Fix Header component so 'Logout' and 'Cart' buttons are clearly visible with sufficient color contrast",
       "acceptanceCriteria": [
-        "Toggling to 'Closed' in the admin panel immediately persists the closed state to the backend",
-        "ShopClosedBanner appears on the homepage without requiring a page reload after closing",
-        "All 'Add to Cart' buttons are visually disabled and non-functional when shop is closed",
-        "CartDrawer prevents navigation to checkout when shop is closed",
-        "Toggling back to 'Open' re-enables all Add to Cart buttons and hides the closed banner immediately"
+        "'Logout' button in Header is visible and has readable text.",
+        "'Cart' icon button in Header is visible with its item count badge clearly displayed.",
+        "Both buttons pass basic contrast requirements against the header background."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ShopStatusToggle.tsx",
+          "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Delete all existing code in this file and rewrite the component from scratch. Use the useSetShopStatus mutation from useQueries.ts to toggle shop status. Implement optimistic UI updates using queryClient.setQueryData to immediately update the ['shopStatus'] query cache when the toggle is clicked. Display loading and pending states during the mutation. On success, the mutation should automatically invalidate the shopStatus query to ensure consistency. On error, revert the optimistic update and display an error message."
-        },
-        {
-          "path": "frontend/src/components/ProductCard.tsx",
-          "operation": "modify",
-          "description": "Update the ProductCard component to accept isShopClosed as a prop. When isShopClosed is true, disable all 'Add to Cart' buttons and apply visual styling (opacity reduction, cursor-not-allowed) to indicate they are disabled. Prevent the handleAddToCart function from executing when the shop is closed. Ensure the 'Delivery in 10 Mins' badge remains visible regardless of shop status."
-        },
-        {
-          "path": "frontend/src/components/ProductGrid.tsx",
-          "operation": "modify",
-          "description": "Ensure the ProductGrid fetches the current shop status using the useGetShopStatus query from useQueries.ts and passes the isShopClosed boolean prop to every ProductCard component it renders. This ensures all product cards reflect the current shop status in real-time."
-        },
-        {
-          "path": "frontend/src/components/CartDrawer.tsx",
-          "operation": "modify",
-          "description": "Update the CartDrawer to fetch the current shop status using useGetShopStatus. When the shop is closed (isShopClosed === true), disable the 'Proceed to Checkout' button and display a warning message indicating the shop is currently closed. Prevent navigation to the checkout page when the button is clicked if the shop is closed. The cart items and quantity controls should remain functional for browsing purposes."
-        },
-        {
-          "path": "frontend/src/components/ShopClosedBanner.tsx",
-          "operation": "modify",
-          "description": "Ensure the ShopClosedBanner fetches the shop status using useGetShopStatus and only renders the banner when isShopClosed is true and the query has successfully fetched (isFetched is true). This ensures the banner appears and disappears immediately when the shop status changes without requiring a page reload."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Verify that the HomePage renders the ShopClosedBanner component so it appears on the homepage when the shop is closed. Ensure the banner is positioned prominently above the ProductGrid."
+          "description": "Ensure the 'Logout' button uses bg-[#0056b3] text-white font-bold. Ensure the 'Cart' icon button (ShoppingCart icon and badge) has a visible stroke/fill color (e.g., text-gray-800 or text-[#0056b3]) and the badge has a contrasting background (e.g., bg-red-500 text-white) so it stands out against the header background."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Redesign AdminPage with a dark/blue dashboard theme featuring clean metric cards for Total Orders, Active Users, and Shop Status",
+      "summary": "Restore Sign-In page so the login button is NOT white and is clearly clickable with #0056b3 background and white text",
       "acceptanceCriteria": [
-        "Admin panel uses a dark navy/slate background with blue accent colors",
-        "Three stat cards are visible at the top: Total Orders, Active Users, Shop Status",
-        "Each stat card displays a live value fetched from the backend",
-        "Shop Status card shows green when open and red when closed",
-        "All tabs (Orders, Products, Settings, Bills) are restyled to match the dark/blue theme",
-        "Admin panel looks professional and clean on both desktop and mobile"
+        "Sign-In page renders with a clearly visible login button in #0056b3 with white text.",
+        "The button is not white, transparent, or blended into the background.",
+        "User can identify and click the Sign-In button without any confusion."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/AdminPage.tsx",
+          "path": "frontend/src/components/Header.tsx",
           "operation": "modify",
-          "description": "Redesign the AdminPage layout with a dark navy/slate background color (e.g., bg-slate-900 or bg-navy-950). Add a stats overview row at the top of the page containing three metric cards: (1) Total Orders displaying the count from useGetAllOrders, (2) Active Users displaying the distinct count of users with orders (calculate from orders data by counting unique customer names or principals), and (3) Shop Status displaying the current open/closed state from useGetShopStatus with a green indicator when open and red when closed. Style each card with a dark background (bg-slate-800), rounded corners, padding, and white/light text. Apply blue accent colors (e.g., text-blue-400, border-blue-500) to the tab navigation. Ensure the existing tabs (Orders, Products, Settings, Bills) are restyled to match the dark/blue theme with hover states and active tab highlighting. Maintain responsive layout for mobile."
+          "description": "Ensure the 'Login' button (rendered when user is not authenticated) uses bg-[#0056b3] text-white font-bold, making it clearly visible and clickable on the sign-in/home page."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Ensure 'Delivery in 10 Mins' badge is rendered on every ProductCard and verify free delivery threshold logic in CartDrawer and CheckoutPage",
+      "summary": "Fix CategoryFilter component so category buttons are visible with legible labels, using #0056b3 for active and light gray for inactive",
       "acceptanceCriteria": [
-        "'Delivery in 10 Mins' badge is visible on every product card in the grid",
-        "Cart total below ₹51 shows a ₹5 delivery charge",
-        "Cart total of ₹51 or above shows free delivery (₹0 delivery charge)",
-        "Delivery fee dynamically updates as items are added or removed from cart",
-        "CheckoutPage order summary reflects the correct delivery fee"
+        "All category filter buttons are visible with readable labels.",
+        "Active/selected category button is highlighted in #0056b3 with white text.",
+        "Unselected category buttons use a clearly visible style distinct from the page background."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProductCard.tsx",
+          "path": "frontend/src/components/CategoryFilter.tsx",
           "operation": "modify",
-          "description": "Verify that the ProductCard component renders a 'Delivery in 10 Mins' badge (e.g., a small badge with green background and white text) prominently on every product card, positioned near the product image or price. Ensure the badge is always visible regardless of shop status or product availability."
+          "description": "Ensure active category buttons use bg-[#0056b3] text-white font-bold. Ensure inactive buttons use bg-gray-200 text-gray-800 or similar to remain visible and distinct from the page background."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Audit and fix global CSS custom properties and Tailwind theme to ensure --primary resolves to #0056b3 and --primary-foreground to #ffffff in light theme",
+      "acceptanceCriteria": [
+        "CSS custom property --primary resolves to #0056b3 (or equivalent) in light theme.",
+        "CSS custom property --primary-foreground resolves to #ffffff.",
+        "No button component inherits a white-on-white style from the theme tokens.",
+        "Dark mode tokens, if defined, also maintain readable button contrast."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Update the :root CSS custom properties to set --primary to the OKLCH equivalent of #0056b3 and --primary-foreground to the OKLCH equivalent of #ffffff. Verify that no --background, --card, or other token resolves to white/near-white in a way that causes buttons to become invisible."
         },
         {
-          "path": "frontend/src/components/CartDrawer.tsx",
+          "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Update the CartDrawer to calculate and display the delivery fee based on the free delivery threshold logic: if the cart subtotal is ₹51 or above, display ₹0 delivery fee (free delivery); if the cart subtotal is below ₹51 and the distance is within 1km, display a ₹5 delivery fee. Since distance is not available in the CartDrawer context, assume 1km for the ₹5 charge. Display the delivery fee as a separate line item in the cart total breakdown (Subtotal, Delivery Fee, Total). Ensure the delivery fee updates dynamically as items are added or removed."
-        },
-        {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
-          "operation": "modify",
-          "description": "Update the CheckoutPage order summary section to calculate and display the delivery fee using the same logic as CartDrawer: ₹0 for orders ₹51 and above, ₹5 for orders below ₹51 (assuming 1km distance). Display the breakdown as Subtotal, Delivery Fee, and Total. Ensure the delivery fee is included in the total amount passed to the placeOrder backend call. Note: The backend's calculateTotalPrice method already handles this logic based on distanceInKm, so ensure the frontend displays the fee correctly before order placement."
+          "description": "Ensure the Tailwind theme extends colors.primary to reference var(--primary) and colors.primary-foreground to reference var(--primary-foreground). Confirm that the default button variant in the design system will pick up these corrected values."
         }
       ]
     }

@@ -52,14 +52,14 @@ export default function Header() {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <img
-                src="/assets/generated/store-logo.dim_200x200.png"
+                src="/assets/generated/store-logo.dim_512x512.png"
                 alt="Maa Bhawani General Store"
-                className="h-10 w-10 rounded-full"
+                className="h-12 w-12 rounded-full object-contain"
+                style={{ background: '#f5f0e8' }}
               />
               <div className="hidden sm:block">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold text-foreground">Maa Bhawani General Store</h1>
-                  {/* Shop Status Indicator */}
+                  <h1 className="text-lg font-bold text-gray-900">Maa Bhawani General Store</h1>
                   {isShopOpen !== undefined && (
                     <div
                       className={`w-2.5 h-2.5 rounded-full ${isShopOpen ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}
@@ -67,7 +67,7 @@ export default function Header() {
                     />
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">& Banking Point</p>
+                <p className="text-xs text-gray-500">& Banking Point</p>
               </div>
             </button>
 
@@ -77,7 +77,7 @@ export default function Header() {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate({ to: '/admin' })}
-                  className="gap-2 hover:text-primary hover:bg-primary/5"
+                  className="gap-2 text-gray-700 hover:text-primary hover:bg-primary/10"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   <span className="hidden sm:inline">Admin</span>
@@ -85,31 +85,27 @@ export default function Header() {
               )}
 
               {isAuthenticated && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => setIsCartOpen(true)}
-                  className="relative gap-2 hover:text-primary hover:bg-primary/5"
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-5 w-5 text-gray-700" />
                   {cartItemCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary text-white text-xs">
+                    <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
                       {cartItemCount}
-                    </Badge>
+                    </span>
                   )}
                   <span className="hidden sm:inline">Cart</span>
-                </Button>
+                </button>
               )}
 
-              <Button
+              <button
                 onClick={handleAuth}
                 disabled={disabled}
-                size="sm"
-                variant={isAuthenticated ? 'outline' : 'default'}
-                className={`gap-2 min-w-[100px] ${
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 ${
                   isAuthenticated
-                    ? 'hover:bg-gray-100'
-                    : 'bg-primary hover:bg-primary/90 text-white'
+                    ? 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+                    : 'bg-[#0056b3] hover:bg-[#004494] text-white'
                 }`}
               >
                 {isAuthenticated ? (
@@ -123,13 +119,12 @@ export default function Header() {
                     {disabled ? 'Logging in...' : 'Login'}
                   </>
                 )}
-              </Button>
+              </button>
             </nav>
           </div>
         </div>
       </header>
 
-      {/* Fixed: prop renamed from isOpen to open to match CartDrawerProps */}
       <CartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );

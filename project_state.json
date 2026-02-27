@@ -1,77 +1,62 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "General Grocery Store web app with homepage product grid, sticky bottom navigation, admin panel, and shop open/close toggle. User has requested multiple fixes: replace vegetable banners with general grocery banners (Rice, Oil, Biscuits, Snacks), rewrite the shop toggle to directly link to the database and show 'Shop Closed' banner + disable Add to Cart, redesign the Admin Panel with a Dark/Blue Dashboard Theme with stat cards, and ensure 'Delivery in 10 Mins' badge and ₹51 free delivery logic are active on all products.",
+  "summary": "E-commerce/recharge web app with admin panel. Critical UI bug: all buttons are invisible (white on white). Fix includes forcing button colors to solid blue (#0056b3) with white text, fixing header buttons visibility, and restoring Sign-In page buttons.",
   "architectural_notes": [
-    "Shop toggle must read/write directly to the database and reactively update the storefront (Shop Closed banner + disable Add to Cart)"
+    "Admin Panel syncs with website via Global State logic for shop status, database integrity, and error handling.",
+    "Invoice includes dynamic UPI QR code, wallet payment method, and WhatsApp share on order success page."
   ],
   "known_issues": [
-    "Shop On/Off toggle is broken — not persisting to database or updating UI correctly"
+    "All buttons (Sign In, Categories, Place Order, Logout, Cart) are invisible due to white-on-white color issue.",
+    "'Place Recharge Order' button is not responding / not linked to backend function.",
+    "Admin panel shop status toggle causes 'Reverting to Open' bug due to database write priority issue."
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Required Images\n- Professional grocery store promotional banner featuring a bag of Basmati rice, cooking oil bottle, and warm golden tones on a clean white background (grocery-banner-rice-oil.dim_1200x400.png)\n- Professional grocery store promotional banner featuring biscuit packets and snack bags arranged neatly with a vibrant orange and yellow background (grocery-banner-biscuits-snacks.dim_1200x400.png)",
   "existing_features": [
     {
-      "id": "feature-replace-all-vegetable-sabji-themed-banners-in-the-herobannercarousel-with-professional-general-grocery-banners-showcasing-rice-oil-biscuits-and-snacks-remove-any-vegetable-or-sabji-imagery-from-the-homepage-entirely",
-      "title": "Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with professional general grocery banners showcasing Rice, Oil, Biscuits, and Snacks. Remove any vegetable or sabji imagery from the homepage entirely.",
+      "id": "feature-force-all-primary-action-buttons-across-the-entire-app-including-sign-in-place-order-place-recharge-order-add-to-cart-checkout-and-any-other-cta-buttons-to-use-a-solid-0056b3-background-with-bold-white-ffffff-text-override-any-conflicting-tailwind-utility-classes-or-css-custom-properties-that-are-currently-rendering-buttons-with-white-or-near-white-backgrounds",
+      "title": "Force all primary action buttons across the entire app (including 'Sign In', 'Place Order', 'Place Recharge Order', 'Add to Cart', 'Checkout', and any other CTA buttons) to use a solid #0056b3 background with bold white (#ffffff) text. Override any conflicting Tailwind utility classes or CSS custom properties that are currently rendering buttons with white or near-white backgrounds.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-delete-the-existing-shopstatustoggle-component-code-entirely-and-rewrite-it-from-scratch-the-new-toggle-must-call-the-backend-mutation-directly-and-optimistically-update-ui-when-the-shop-is-set-to-closed-1-immediately-display-the-shopclosedbanner-on-the-homepage-2-disable-all-add-to-cart-buttons-across-every-productcard-and-3-block-checkout-navigation-from-the-cartdrawer-when-set-to-open-all-restrictions-are-lifted-immediately",
-      "title": "Delete the existing ShopStatusToggle component code entirely and rewrite it from scratch. The new toggle must call the backend mutation directly and optimistically update UI. When the shop is set to 'Closed': (1) immediately display the ShopClosedBanner on the homepage, (2) disable all 'Add to Cart' buttons across every ProductCard, and (3) block checkout navigation from the CartDrawer. When set to 'Open', all restrictions are lifted immediately.",
+      "id": "feature-fix-the-header-component-so-that-the-logout-and-cart-with-item-count-badge-buttons-are-clearly-visible-against-the-header-background-ensure-these-buttons-have-sufficient-color-contrast-use-0056b3-fill-or-a-visually-distinct-outlined-style-with-white-dark-text-so-they-are-never-invisible",
+      "title": "Fix the Header component so that the 'Logout' and 'Cart' (with item count badge) buttons are clearly visible against the header background. Ensure these buttons have sufficient color contrast — use #0056b3 fill or a visually distinct outlined style with white/dark text so they are never invisible.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-redesign-the-adminpage-with-a-dark-blue-dashboard-theme-replace-the-current-layout-with-a-stats-overview-row-at-the-top-containing-three-clean-metric-cards-total-orders-showing-order-count-active-users-showing-distinct-users-with-orders-and-shop-status-showing-current-open-closed-state-with-color-indicator-apply-a-dark-navy-slate-background-white-light-text-and-blue-accent-colors-throughout-the-admin-panel-tabs-and-cards",
-      "title": "Redesign the AdminPage with a dark/blue dashboard theme. Replace the current layout with a stats overview row at the top containing three clean metric cards: 'Total Orders' (showing order count), 'Active Users' (showing distinct users with orders), and 'Shop Status' (showing current open/closed state with color indicator). Apply a dark navy/slate background, white/light text, and blue accent colors throughout the admin panel tabs and cards.",
+      "id": "feature-restore-the-sign-in-page-internet-identity-login-screen-so-that-all-buttons-including-the-sign-in-login-button-are-not-white-apply-the-same-0056b3-solid-background-with-white-bold-text-ensure-the-button-is-clearly-clickable-and-visually-prominent-on-the-page",
+      "title": "Restore the Sign-In page (Internet Identity login screen) so that all buttons — including the 'Sign In' / 'Login' button — are NOT white. Apply the same #0056b3 solid background with white bold text. Ensure the button is clearly clickable and visually prominent on the page.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-delivery-in-10-mins-badge-is-rendered-on-every-productcard-without-exception-verify-that-the-free-delivery-threshold-logic-free-delivery-for-orders-51-and-above-5-charge-below-51-within-1km-is-enforced-in-the-cartdrawer-total-calculation-and-on-the-checkoutpage-order-summary",
-      "title": "Ensure the 'Delivery in 10 Mins' badge is rendered on every ProductCard without exception. Verify that the free delivery threshold logic (free delivery for orders ₹51 and above, ₹5 charge below ₹51 within 1km) is enforced in the CartDrawer total calculation and on the CheckoutPage order summary.",
+      "id": "feature-fix-the-category-filter-buttons-in-the-categoryfilter-component-so-they-are-rendered-with-a-visible-background-and-legible-label-text-selected-active-category-buttons-should-use-0056b3-with-white-text-unselected-buttons-should-use-a-light-gray-background-with-dark-text-ensuring-none-are-invisible",
+      "title": "Fix the category filter buttons in the CategoryFilter component so they are rendered with a visible background and legible label text. Selected/active category buttons should use #0056b3 with white text; unselected buttons should use a light gray background with dark text — ensuring none are invisible.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-the-global-css-custom-properties-and-tailwind-theme-in-frontend-src-index-css-and-frontend-tailwind-config-js-to-ensure-that-no-primary-background-or-button-related-css-variables-resolve-to-white-or-near-white-values-that-cause-buttons-to-disappear-set-primary-to-0056b3-and-primary-foreground-to-ffffff-in-the-light-theme-token-definitions",
+      "title": "Audit and fix the global CSS custom properties and Tailwind theme in frontend/src/index.css and frontend/tailwind.config.js to ensure that no --primary, --background, or button-related CSS variables resolve to white or near-white values that cause buttons to disappear. Set --primary to #0056b3 and --primary-foreground to #ffffff in the light theme token definitions.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Replace vegetable/sabji banners with professional grocery banners (Rice, Oil, Biscuits, Snacks)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Rewrite Shop On/Off toggle to link directly to database; show 'Shop Closed' banner and disable Add to Cart buttons when closed",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Redesign Admin Panel with Dark/Blue Dashboard Theme using clean cards for Total Orders, Active Users, and Shop Status",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Ensure 'Delivery in 10 Mins' badge is visible on every product and ₹51 free delivery logic is active",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
+  "new_feature_requests": [],
   "gameProjectType": "none",
-  "projectName": "General Grocery Store",
+  "projectName": "Maa Bhawani General Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

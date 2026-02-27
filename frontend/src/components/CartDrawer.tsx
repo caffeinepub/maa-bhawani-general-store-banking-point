@@ -7,7 +7,6 @@ import {
   SheetTitle,
   SheetFooter,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Trash2, AlertTriangle, Truck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,7 +79,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
               </div>
             ))
           ) : (cartItems ?? []).length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+            <div className="flex flex-col items-center justify-center h-40 text-gray-400">
               <ShoppingCart size={40} className="mb-2 opacity-30" />
               <p className="text-sm">Your cart is empty</p>
             </div>
@@ -90,7 +89,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                 <img
                   src={item.product.image.getDirectURL()}
                   alt={item.product.name}
-                  className="w-14 h-14 rounded-lg object-cover bg-muted"
+                  className="w-14 h-14 rounded-lg object-cover bg-gray-100"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       '/assets/generated/coming-soon.dim_400x300.png';
@@ -98,11 +97,11 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{item.product.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     ₹{item.product.priceInRupees.toString()} × {item.quantity.toString()}
                   </p>
                 </div>
-                <span className="text-sm font-bold text-primary">
+                <span className="text-sm font-bold text-[#0056b3]">
                   ₹{(Number(item.product.priceInRupees) * Number(item.quantity)).toFixed(0)}
                 </span>
               </div>
@@ -115,11 +114,11 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
           <>
             <Separator />
             <div className="space-y-2 py-2 text-sm">
-              <div className="flex justify-between text-muted-foreground">
+              <div className="flex justify-between text-gray-500">
                 <span>Subtotal</span>
                 <span>₹{subtotal.toFixed(0)}</span>
               </div>
-              <div className="flex justify-between items-center text-muted-foreground">
+              <div className="flex justify-between items-center text-gray-500">
                 <span className="flex items-center gap-1">
                   <Truck size={13} />
                   Delivery Fee
@@ -138,7 +137,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
               <Separator />
               <div className="flex justify-between font-bold text-base">
                 <span>Total</span>
-                <span className="text-primary">₹{total.toFixed(0)}</span>
+                <span className="text-[#0056b3]">₹{total.toFixed(0)}</span>
               </div>
             </div>
           </>
@@ -146,24 +145,22 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
 
         <SheetFooter className="flex flex-col gap-2 pt-2">
           {(cartItems ?? []).length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={handleClearCart}
               disabled={clearCart.isPending}
-              className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
+              className="w-full py-2 rounded-lg border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              <Trash2 size={14} className="mr-1" />
+              <Trash2 size={14} />
               Clear Cart
-            </Button>
+            </button>
           )}
-          <Button
+          <button
             onClick={handleCheckout}
             disabled={isShopClosed || (cartItems ?? []).length === 0}
-            className="w-full"
+            className="w-full py-2.5 rounded-lg bg-[#0056b3] text-white text-sm font-bold hover:bg-[#004494] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isShopClosed ? 'Shop Closed' : 'Proceed to Checkout'}
-          </Button>
+          </button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

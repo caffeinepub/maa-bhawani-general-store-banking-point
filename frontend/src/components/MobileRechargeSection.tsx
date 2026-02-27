@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePlaceRechargeOrder } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { toast } from 'sonner';
-import { Smartphone, ChevronRight } from 'lucide-react';
+import { Smartphone, ChevronRight, Loader2 } from 'lucide-react';
 
 const OPERATORS = [
   { name: 'Airtel', color: 'bg-red-500', letter: 'A' },
@@ -155,16 +154,20 @@ export default function MobileRechargeSection() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={placeRecharge.isPending}>
+            <button
+              type="submit"
+              disabled={placeRecharge.isPending}
+              className="w-full py-3 rounded-lg bg-[#0056b3] text-white font-bold text-sm hover:bg-[#004494] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
               {placeRecharge.isPending ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <>
+                  <Loader2 size={16} className="animate-spin" />
                   Processing...
-                </span>
+                </>
               ) : (
                 'Place Recharge Order'
               )}
-            </Button>
+            </button>
           </form>
         </DialogContent>
       </Dialog>

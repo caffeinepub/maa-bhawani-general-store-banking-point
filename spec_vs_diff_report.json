@@ -1,56 +1,81 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T01:47:10.305Z",
-  "summary": "The diff implements most of the requested requirements. REQ-1 (banner replacement) is implemented with new grocery-themed banners. REQ-2 (ShopStatusToggle rewrite with backend persistence and UI restrictions) is implemented. REQ-3 (Admin dark/blue redesign with stat cards) is implemented. REQ-4 (delivery badge and fee logic) is implemented. However, there are some gaps: the 'Active Users' stat card uses phone number deduplication instead of distinct users with orders from the backend, and the required banner image files themselves are not added in the diff. The third banner still references 'hero-banner.dim_1200x400.png' which may be vegetable/sabji themed.",
+  "generatedAt": "2026-02-27T02:44:44.620Z",
+  "summary": "The diff implements most of the required UI fixes for button visibility. REQ-1, REQ-2, REQ-4, and REQ-5 are addressed. However, REQ-3 (Sign-In page button fix) is not directly evidenced — no LoginPage or SignInPage component is modified in the diff, and the dedicated Sign-In/Internet Identity login screen is not shown as changed.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Remove any vegetable or sabji imagery from the homepage entirely",
-      "reason": "HeroBannerCarousel still includes a third banner referencing '/assets/generated/hero-banner.dim_1200x400.png'. If the existing hero-banner image is vegetable/sabji themed, it violates this requirement. Additionally, the two new banner image files (grocery-banner-rice-oil.dim_1200x400.png and grocery-banner-biscuits-snacks.dim_1200x400.png) are not listed as added files in the diff.",
-      "evidence": [
-        "frontend/src/components/HeroBannerCarousel.tsx"
-      ]
-    },
-    {
       "id": "REQ-3",
-      "requirement": "Each stat card displays a live value fetched from the backend for Active Users showing distinct users with orders",
-      "reason": "The AdminPage computes uniqueCustomers using frontend phone number deduplication on the already-fetched orders array rather than fetching a dedicated distinct user count from the backend.",
+      "requirement": "Restore the Sign-In page (Internet Identity login screen) so that all buttons — including the 'Sign In' / 'Login' button — are NOT white. Apply the same #0056b3 solid background with white bold text.",
+      "reason": "No dedicated Sign-In page or Internet Identity login screen component appears in the modified files. The diff shows Header.tsx login button changes but does not show any SignInPage, LoginPage, or equivalent component being modified.",
       "evidence": [
-        "frontend/src/pages/AdminPage.tsx"
+        "frontend/src/components/Header.tsx",
+        "frontend-file-summaries.txt"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Batch routing feature in AdminPage that groups active orders by delivery address",
-      "reason": "The diff includes a batch order filter and batchGroups logic grouping orders by delivery address. This feature was not requested in the build request.",
+      "description": "New routes added for /search, /my-orders, and /wallet placeholder pages in App.tsx",
+      "reason": "The build request explicitly lists adding search and wallet features as non-goals. The frontend-file-summaries.txt mentions App.tsx was updated to include three new routes: /search, /my-orders, and /wallet.",
       "evidence": [
-        "frontend/src/pages/AdminPage.tsx"
+        "frontend-file-summaries.txt"
       ]
     },
     {
-      "description": "CheckoutPage renders a full blocked UI page when shop is closed instead of just relying on CartDrawer navigation block",
-      "reason": "The build request only requires CartDrawer to block checkout navigation when shop is closed. The CheckoutPage additionally renders a complete blocked state UI, which goes beyond the stated requirements.",
+      "description": "WhatsAppHelpButton component conditionally rendered in Layout.tsx",
+      "reason": "The build request lists WhatsApp share as a non-goal and new feature that should not be added. The frontend-file-summaries.txt mentions WhatsAppHelpButton being rendered in Layout.tsx.",
       "evidence": [
-        "frontend/src/pages/CheckoutPage.tsx"
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "BottomNavBar component added to Layout.tsx",
+      "reason": "Adding a BottomNavBar was not requested in the build requirements and appears to be a new feature added beyond the scope of the button visibility fix.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "AdminGuard component with hardcoded admin login credentials stored in localStorage with 24-hour session persistence",
+      "reason": "This security-sensitive feature was not requested in the build requirements, which focus solely on fixing button visibility. The constraints also state not to change backend logic or admin panel behavior.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "PhoneNumberSetup modal for collecting user name and phone number after login",
+      "reason": "This new feature was not requested in the build requirements, which focus solely on fixing button visibility.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "DeliveryFeeInfo component explaining updated delivery fee policy",
+      "reason": "Adding or modifying delivery fee information components was not part of the button visibility fix requirements.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "AdminProductForm updated with inventory and stock quantity field",
+      "reason": "Adding inventory management fields to AdminProductForm was not requested and modifies admin panel functionality beyond the scope of the button color fix.",
+      "evidence": [
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.75,
+  "confidence": 0.78,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/src/components/CartDrawer.tsx",
+    "frontend/src/components/CategoryFilter.tsx",
     "frontend/src/components/Header.tsx",
-    "frontend/src/components/HeroBannerCarousel.tsx",
+    "frontend/src/components/MobileRechargeSection.tsx",
     "frontend/src/components/ProductCard.tsx",
-    "frontend/src/components/ProductGrid.tsx",
-    "frontend/src/components/ShopClosedBanner.tsx",
-    "frontend/src/components/ShopStatusToggle.tsx",
-    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/index.css",
     "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/OrderConfirmationPage.tsx",
     "project_state.json"
   ]
 }

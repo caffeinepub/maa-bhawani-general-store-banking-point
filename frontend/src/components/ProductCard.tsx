@@ -34,9 +34,9 @@ export default function ProductCard({ product, isShopClosed = false }: ProductCa
   };
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
       {/* Product Image */}
-      <div className="relative aspect-square bg-muted">
+      <div className="relative aspect-square bg-gray-100">
         <img
           src={product.image.getDirectURL()}
           alt={product.name}
@@ -62,21 +62,21 @@ export default function ProductCard({ product, isShopClosed = false }: ProductCa
 
       {/* Product Info */}
       <div className="p-2 flex flex-col flex-1 gap-1">
-        <p className="text-xs font-semibold text-foreground leading-tight line-clamp-2">
+        <p className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2">
           {product.name}
         </p>
-        <p className="text-xs text-muted-foreground">{product.category}</p>
+        <p className="text-xs text-gray-500">{product.category}</p>
 
         <div className="flex items-center justify-between mt-auto pt-1">
-          <span className="text-sm font-bold text-primary">₹{product.priceInRupees.toString()}</span>
-          <span className="text-[10px] text-muted-foreground">/{unitLabel}</span>
+          <span className="text-sm font-bold text-[#0056b3]">₹{product.priceInRupees.toString()}</span>
+          <span className="text-[10px] text-gray-400">/{unitLabel}</span>
         </div>
 
         {/* Quantity selector */}
         <div className="flex items-center gap-1 mt-1">
           <button
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="w-6 h-6 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+            className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
             disabled={isShopClosed}
           >
             <Minus size={10} />
@@ -84,7 +84,7 @@ export default function ProductCard({ product, isShopClosed = false }: ProductCa
           <span className="text-xs font-medium w-5 text-center">{quantity}</span>
           <button
             onClick={() => setQuantity((q) => q + 1)}
-            className="w-6 h-6 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+            className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
             disabled={isShopClosed}
           >
             <Plus size={10} />
@@ -97,10 +97,10 @@ export default function ProductCard({ product, isShopClosed = false }: ProductCa
           disabled={isShopClosed || addToCart.isPending}
           className={`w-full mt-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
             isShopClosed
-              ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
               : added
               ? 'bg-emerald-500 text-white'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95'
+              : 'bg-[#0056b3] text-white hover:bg-[#004494] active:scale-95'
           }`}
         >
           {isShopClosed ? 'Shop Closed' : added ? '✓ Added!' : '+ ADD'}

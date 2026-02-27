@@ -4,6 +4,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const banners = [
   {
     id: 1,
+    image: '/assets/generated/store-banner.dim_1200x500.png',
+    title: 'Maa Bhawani General Store',
+    subtitle: 'Bardiha Turki, Tarvadih, Patepur-Vaishali, Bihar · 9142876085',
+    badge: 'AePS Available',
+    bgColor: 'from-slate-800 to-slate-600',
+  },
+  {
+    id: 2,
     image: '/assets/generated/grocery-banner-rice-oil.dim_1200x400.png',
     title: 'Premium Rice & Pure Oils',
     subtitle: 'Best quality grains & cooking oils at unbeatable prices',
@@ -11,20 +19,12 @@ const banners = [
     bgColor: 'from-amber-900 to-amber-700',
   },
   {
-    id: 2,
+    id: 3,
     image: '/assets/generated/grocery-banner-biscuits-snacks.dim_1200x400.png',
     title: 'Biscuits, Snacks & More',
     subtitle: 'Your favourite munchies delivered in 10 minutes',
     badge: 'Delivery in 10 Mins',
     bgColor: 'from-orange-900 to-orange-700',
-  },
-  {
-    id: 3,
-    image: '/assets/generated/hero-banner.dim_1200x400.png',
-    title: 'Daily Grocery Essentials',
-    subtitle: 'Sugar, Spices, Atta & everything you need',
-    badge: 'Shop Now',
-    bgColor: 'from-green-900 to-green-700',
   },
 ];
 

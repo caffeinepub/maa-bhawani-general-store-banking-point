@@ -1,93 +1,95 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T01:47:10.309Z",
+  "generatedAt": "2026-02-27T02:44:44.623Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with professional general grocery banners showcasing Rice, Oil, Biscuits, and Snacks. Remove any vegetable or sabji imagery from the homepage entirely.",
+        "summary": "Force all primary action buttons across the entire app (including 'Sign In', 'Place Order', 'Place Recharge Order', 'Add to Cart', 'Checkout', and any other CTA buttons) to use a solid #0056b3 background with bold white (#ffffff) text. Override any conflicting Tailwind utility classes or CSS custom properties that are currently rendering buttons with white or near-white backgrounds.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/HeroBannerCarousel.tsx"
+          "frontend/src/components/ui/button.tsx",
+          "frontend/src/pages/CheckoutPage.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx",
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/CartDrawer.tsx",
+          "frontend/src/pages/OrderConfirmationPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/HeroBannerCarousel.tsx"
+          "frontend/src/pages/CheckoutPage.tsx",
+          "frontend/src/components/MobileRechargeSection.tsx",
+          "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/CartDrawer.tsx",
+          "frontend/src/pages/OrderConfirmationPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Delete the existing ShopStatusToggle component code entirely and rewrite it from scratch. The new toggle must call the backend mutation directly and optimistically update UI. When the shop is set to 'Closed': (1) immediately display the ShopClosedBanner on the homepage, (2) disable all 'Add to Cart' buttons across every ProductCard, and (3) block checkout navigation from the CartDrawer. When set to 'Open', all restrictions are lifted immediately.",
+        "summary": "Fix the Header component so that the 'Logout' and 'Cart' (with item count badge) buttons are clearly visible against the header background. Ensure these buttons have sufficient color contrast — use #0056b3 fill or a visually distinct outlined style with white/dark text so they are never invisible.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ShopStatusToggle.tsx",
-          "frontend/src/components/ProductCard.tsx",
-          "frontend/src/components/ProductGrid.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/components/ShopClosedBanner.tsx",
-          "frontend/src/pages/HomePage.tsx"
+          "frontend/src/components/Header.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/ShopStatusToggle.tsx",
-          "frontend/src/components/ProductCard.tsx",
-          "frontend/src/components/ProductGrid.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/components/ShopClosedBanner.tsx",
-          "frontend/src/pages/HomePage.tsx"
+          "frontend/src/components/Header.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Redesign the AdminPage with a dark/blue dashboard theme. Replace the current layout with a stats overview row at the top containing three clean metric cards: 'Total Orders' (showing order count), 'Active Users' (showing distinct users with orders), and 'Shop Status' (showing current open/closed state with color indicator). Apply a dark navy/slate background, white/light text, and blue accent colors throughout the admin panel tabs and cards.",
+        "summary": "Restore the Sign-In page (Internet Identity login screen) so that all buttons — including the 'Sign In' / 'Login' button — are NOT white. Apply the same #0056b3 solid background with white bold text. Ensure the button is clearly clickable and visually prominent on the page.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/AdminPage.tsx"
+          "frontend/src/components/Header.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/AdminPage.tsx"
+          "frontend/src/components/Header.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Ensure the 'Delivery in 10 Mins' badge is rendered on every ProductCard without exception. Verify that the free delivery threshold logic (free delivery for orders ₹51 and above, ₹5 charge below ₹51 within 1km) is enforced in the CartDrawer total calculation and on the CheckoutPage order summary.",
+        "summary": "Fix the category filter buttons in the CategoryFilter component so they are rendered with a visible background and legible label text. Selected/active category buttons should use #0056b3 with white text; unselected buttons should use a light gray background with dark text — ensuring none are invisible.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProductCard.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/components/CategoryFilter.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/ProductCard.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/components/CategoryFilter.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Audit and fix the global CSS custom properties and Tailwind theme in frontend/src/index.css and frontend/tailwind.config.js to ensure that no --primary, --background, or button-related CSS variables resolve to white or near-white values that cause buttons to disappear. Set --primary to #0056b3 and --primary-foreground to #ffffff in the light theme token definitions.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js"
+        ],
+        "matchedFiles": [
+          "frontend/src/index.css"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/grocery-banner-biscuits-snacks.dim_1200x400.png",
-    "frontend/public/assets/generated/grocery-banner-rice-oil.dim_1200x400.png",
     "frontend/src/components/CartDrawer.tsx",
+    "frontend/src/components/CategoryFilter.tsx",
     "frontend/src/components/Header.tsx",
-    "frontend/src/components/HeroBannerCarousel.tsx",
+    "frontend/src/components/MobileRechargeSection.tsx",
     "frontend/src/components/ProductCard.tsx",
-    "frontend/src/components/ProductGrid.tsx",
-    "frontend/src/components/ShopClosedBanner.tsx",
-    "frontend/src/components/ShopStatusToggle.tsx",
-    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/index.css",
     "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/OrderConfirmationPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface CategoryFilterProps {
@@ -16,19 +15,17 @@ export default function CategoryFilter({
     <ScrollArea className="w-full whitespace-nowrap">
       <div className="flex gap-3 pb-2">
         {categories.map((category) => (
-          <Button
+          <button
             key={category}
-            variant={selectedCategory === category ? 'default' : 'outline'}
-            size="sm"
             onClick={() => onSelectCategory(category)}
-            className={`flex-shrink-0 min-h-[40px] px-4 transition-all ${
+            className={`flex-shrink-0 min-h-[40px] px-4 rounded-lg text-sm font-semibold transition-all border ${
               selectedCategory === category
-                ? 'bg-primary hover:bg-primary/90 text-white'
-                : 'bg-white hover:bg-primary/5 hover:text-primary hover:border-primary'
+                ? 'bg-[#0056b3] text-white border-[#0056b3] shadow-sm'
+                : 'bg-white text-gray-700 border-gray-300 hover:border-[#0056b3] hover:text-[#0056b3]'
             }`}
           >
             {category}
-          </Button>
+          </button>
         ))}
       </div>
       <ScrollBar orientation="horizontal" />

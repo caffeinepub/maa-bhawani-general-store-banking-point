@@ -1,105 +1,115 @@
 {
   "kind": "build_request",
-  "title": "Banner Replacement, Shop Toggle Fix, Admin Redesign & Delivery Logic",
+  "title": "Critical UI Fix: Restore Button Visibility (White-on-White Bug)",
   "projectName": "Maa Bhawani General Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Replace all vegetable/sabji-themed banners in the HeroBannerCarousel with professional general grocery banners showcasing Rice, Oil, Biscuits, and Snacks. Remove any vegetable or sabji imagery from the homepage entirely.",
+      "text": "Force all primary action buttons across the entire app (including 'Sign In', 'Place Order', 'Place Recharge Order', 'Add to Cart', 'Checkout', and any other CTA buttons) to use a solid #0056b3 background with bold white (#ffffff) text. Override any conflicting Tailwind utility classes or CSS custom properties that are currently rendering buttons with white or near-white backgrounds.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-latest"
         ],
         "quotes": [
-          "Remove all images and banners related to vegetables/sabji. This is a General Grocery Store. Replace them with professional grocery banners (Rice, Oil, Biscuits, Snacks)."
+          "Force Button Colors: Set all buttons to a Solid Blue (#0056b3) background with Bold White text."
         ]
       },
       "acceptanceCriteria": [
-        "No vegetable or sabji images appear anywhere on the homepage",
-        "HeroBannerCarousel displays at least 2 banners featuring Rice, Oil, Biscuits, or Snacks themes",
-        "New banners look professional and match a general grocery store aesthetic"
+        "All primary action buttons display a solid #0056b3 blue background.",
+        "All button labels are clearly legible with white text.",
+        "No button is invisible or blends into a white/light background.",
+        "Fix applies consistently across HomePage, CheckoutPage, OrderConfirmationPage, MobileRechargeSection, ProductCard, CartDrawer, and all other pages with buttons."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Delete the existing ShopStatusToggle component code entirely and rewrite it from scratch. The new toggle must call the backend mutation directly and optimistically update UI. When the shop is set to 'Closed': (1) immediately display the ShopClosedBanner on the homepage, (2) disable all 'Add to Cart' buttons across every ProductCard, and (3) block checkout navigation from the CartDrawer. When set to 'Open', all restrictions are lifted immediately.",
-      "target": "both",
+      "text": "Fix the Header component so that the 'Logout' and 'Cart' (with item count badge) buttons are clearly visible against the header background. Ensure these buttons have sufficient color contrast — use #0056b3 fill or a visually distinct outlined style with white/dark text so they are never invisible.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-latest"
         ],
         "quotes": [
-          "The On/Off toggle is still not working. Delete the old toggle code and rewrite it. It must link directly to the database. When I click 'Close', the website must immediately show the 'Shop Closed' banner and disable all 'Add to Cart' buttons."
+          "Header Fix: Make sure the 'Logout' and 'Cart' buttons are clearly visible against the header."
         ]
       },
       "acceptanceCriteria": [
-        "Toggling to 'Closed' in the admin panel immediately persists the closed state to the backend",
-        "ShopClosedBanner appears on the homepage without requiring a page reload after closing",
-        "All 'Add to Cart' buttons are visually disabled and non-functional when shop is closed",
-        "CartDrawer prevents navigation to checkout when shop is closed",
-        "Toggling back to 'Open' re-enables all Add to Cart buttons and hides the closed banner immediately"
+        "'Logout' button in Header is visible and has readable text.",
+        "'Cart' icon button in Header is visible with its item count badge clearly displayed.",
+        "Both buttons pass basic contrast requirements against the header background."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Redesign the AdminPage with a dark/blue dashboard theme. Replace the current layout with a stats overview row at the top containing three clean metric cards: 'Total Orders' (showing order count), 'Active Users' (showing distinct users with orders), and 'Shop Status' (showing current open/closed state with color indicator). Apply a dark navy/slate background, white/light text, and blue accent colors throughout the admin panel tabs and cards.",
+      "text": "Restore the Sign-In page (Internet Identity login screen) so that all buttons — including the 'Sign In' / 'Login' button — are NOT white. Apply the same #0056b3 solid background with white bold text. Ensure the button is clearly clickable and visually prominent on the page.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-latest"
         ],
         "quotes": [
-          "The Admin Panel looks unprofessional. Redesign it using a Dark/Blue Dashboard Theme. Use clean cards for 'Total Orders', 'Active Users', and 'Shop Status'."
+          "Sign-In Restoration: Ensure the Sign-In page buttons are NOT white. They must be easily clickable."
         ]
       },
       "acceptanceCriteria": [
-        "Admin panel uses a dark navy/slate background with blue accent colors",
-        "Three stat cards are visible at the top: Total Orders, Active Users, Shop Status",
-        "Each stat card displays a live value fetched from the backend",
-        "Shop Status card shows green when open and red when closed",
-        "All tabs (Orders, Products, Settings, Bills) are restyled to match the dark/blue theme",
-        "Admin panel looks professional and clean on both desktop and mobile"
+        "Sign-In page renders with a clearly visible login button in #0056b3 with white text.",
+        "The button is not white, transparent, or blended into the background.",
+        "User can identify and click the Sign-In button without any confusion."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Ensure the 'Delivery in 10 Mins' badge is rendered on every ProductCard without exception. Verify that the free delivery threshold logic (free delivery for orders ₹51 and above, ₹5 charge below ₹51 within 1km) is enforced in the CartDrawer total calculation and on the CheckoutPage order summary.",
+      "text": "Fix the category filter buttons in the CategoryFilter component so they are rendered with a visible background and legible label text. Selected/active category buttons should use #0056b3 with white text; unselected buttons should use a light gray background with dark text — ensuring none are invisible.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-latest"
         ],
         "quotes": [
-          "Ensure the 'Delivery in 10 Mins' badge is visible on every product and the ₹51 free delivery logic is active"
+          "All buttons (Sign In, Categories, Place Order) are currently invisible (White on White)."
         ]
       },
       "acceptanceCriteria": [
-        "'Delivery in 10 Mins' badge is visible on every product card in the grid",
-        "Cart total below ₹51 shows a ₹5 delivery charge",
-        "Cart total of ₹51 or above shows free delivery (₹0 delivery charge)",
-        "Delivery fee dynamically updates as items are added or removed from cart",
-        "CheckoutPage order summary reflects the correct delivery fee"
+        "All category filter buttons are visible with readable labels.",
+        "Active/selected category button is highlighted in #0056b3 with white text.",
+        "Unselected category buttons use a clearly visible style distinct from the page background."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Audit and fix the global CSS custom properties and Tailwind theme in frontend/src/index.css and frontend/tailwind.config.js to ensure that no --primary, --background, or button-related CSS variables resolve to white or near-white values that cause buttons to disappear. Set --primary to #0056b3 and --primary-foreground to #ffffff in the light theme token definitions.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Reset the UI immediately"
+        ]
+      },
+      "acceptanceCriteria": [
+        "CSS custom property --primary resolves to #0056b3 (or equivalent) in light theme.",
+        "CSS custom property --primary-foreground resolves to #ffffff.",
+        "No button component inherits a white-on-white style from the theme tokens.",
+        "Dark mode tokens, if defined, also maintain readable button contrast."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files in frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "All backend state changes must go through the existing single Motoko actor in backend/main.mo",
-    "Shop open/closed state must be persisted to the backend — do not use localStorage or sessionStorage as the source of truth for shop status"
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Do not change backend logic, data models, or Motoko files.",
+    "Button color fix must be applied globally — do not patch only one page or component in isolation."
   ],
   "nonGoals": [
-    "Adding new backend data fields beyond what is needed for shop status toggle and stats",
-    "Redesigning the customer-facing pages (checkout, my orders, wallet)",
-    "Implementing real-time WebSocket updates",
-    "Changing the store name or PWA manifest"
+    "Fixing the 'Place Recharge Order' backend linkage (separate issue).",
+    "Fixing the Admin Panel shop status 'Reverting to Open' bug (separate issue).",
+    "Adding new features (search, wallet, invoice QR code, WhatsApp share).",
+    "Dark mode redesign beyond fixing contrast tokens."
   ],
   "imageRequirements": {
-    "required": [
-      "Professional grocery store promotional banner featuring a bag of Basmati rice, cooking oil bottle, and warm golden tones on a clean white background (grocery-banner-rice-oil.dim_1200x400.png)",
-      "Professional grocery store promotional banner featuring biscuit packets and snack bags arranged neatly with a vibrant orange and yellow background (grocery-banner-biscuits-snacks.dim_1200x400.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

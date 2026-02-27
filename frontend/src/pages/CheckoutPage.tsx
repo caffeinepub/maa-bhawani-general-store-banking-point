@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { usePlaceOrder, useGetCart, useGetShopStatus } from '../hooks/useQueries';
 import { useNavigate } from '@tanstack/react-router';
 import { PaymentMethod } from '../backend';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -54,7 +53,7 @@ export default function CheckoutPage() {
       // GPS denied or unavailable — proceed without coordinates
     }
 
-    const distanceInKm = 1n; // Default 1km for delivery fee calculation
+    const distanceInKm = 1n;
 
     try {
       const orderId = await placeOrder.mutateAsync({
@@ -76,23 +75,28 @@ export default function CheckoutPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-12 text-center">
         <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-foreground mb-2">Shop is Closed</h2>
-        <p className="text-muted-foreground mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Shop is Closed</h2>
+        <p className="text-gray-500 mb-6">
           We're currently closed. Please come back during our opening hours: 6:30 AM – 10:00 PM
         </p>
-        <Button onClick={() => navigate({ to: '/' })}>Back to Home</Button>
+        <button
+          onClick={() => navigate({ to: '/' })}
+          className="px-6 py-2.5 bg-[#0056b3] text-white font-bold rounded-lg hover:bg-[#004494] transition-colors"
+        >
+          Back to Home
+        </button>
       </div>
     );
   }
 
   return (
     <div className="max-w-md mx-auto px-4 py-6 space-y-6">
-      <h1 className="text-xl font-bold text-foreground">Checkout</h1>
+      <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Customer Details */}
-        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-          <h2 className="font-semibold text-foreground">Delivery Details</h2>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+          <h2 className="font-semibold text-gray-800">Delivery Details</h2>
           <div className="space-y-1">
             <Label htmlFor="customerName">Full Name</Label>
             <Input
@@ -131,16 +135,16 @@ export default function CheckoutPage() {
         </div>
 
         {/* Payment Method */}
-        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-          <h2 className="font-semibold text-foreground">Payment Method</h2>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+          <h2 className="font-semibold text-gray-800">Payment Method</h2>
           <div className="flex gap-3">
             {(['cod', 'upi'] as const).map((method) => (
               <label
                 key={method}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 cursor-pointer transition-all text-sm font-medium ${
                   form.paymentMethod === method
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/50'
+                    ? 'border-[#0056b3] bg-blue-50 text-[#0056b3]'
+                    : 'border-gray-200 text-gray-500 hover:border-[#0056b3]/50'
                 }`}
               >
                 <input
@@ -158,11 +162,11 @@ export default function CheckoutPage() {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-          <h2 className="font-semibold text-foreground">Order Summary</h2>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+          <h2 className="font-semibold text-gray-800">Order Summary</h2>
           <div className="space-y-2 text-sm">
             {cartItems.map((item, i) => (
-              <div key={i} className="flex justify-between text-muted-foreground">
+              <div key={i} className="flex justify-between text-gray-500">
                 <span>
                   {item.product.name} × {item.quantity.toString()}
                 </span>
@@ -174,11 +178,11 @@ export default function CheckoutPage() {
           </div>
           <Separator />
           <div className="space-y-1.5 text-sm">
-            <div className="flex justify-between text-muted-foreground">
+            <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
               <span>₹{subtotal.toFixed(0)}</span>
             </div>
-            <div className="flex justify-between items-center text-muted-foreground">
+            <div className="flex justify-between items-center text-gray-500">
               <span className="flex items-center gap-1">
                 <Truck size={13} />
                 Delivery Fee
@@ -197,34 +201,34 @@ export default function CheckoutPage() {
             <Separator />
             <div className="flex justify-between font-bold text-base">
               <span>Total</span>
-              <span className="text-primary">₹{total.toFixed(0)}</span>
+              <span className="text-[#0056b3]">₹{total.toFixed(0)}</span>
             </div>
           </div>
         </div>
 
         {/* GPS note */}
-        <p className="text-xs text-muted-foreground flex items-center gap-1">
+        <p className="text-xs text-gray-400 flex items-center gap-1">
           <MapPin size={12} />
           We'll request your location to calculate accurate delivery distance.
         </p>
 
-        <Button
+        <button
           type="submit"
-          className="w-full"
+          className="w-full py-3 rounded-xl bg-[#0056b3] text-white font-bold text-base hover:bg-[#004494] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           disabled={placeOrder.isPending || cartItems.length === 0}
         >
           {placeOrder.isPending ? (
             <>
-              <Loader2 size={16} className="animate-spin mr-2" />
+              <Loader2 size={18} className="animate-spin" />
               Placing Order…
             </>
           ) : (
             `Place Order — ₹${total.toFixed(0)}`
           )}
-        </Button>
+        </button>
 
         {placeOrder.isError && (
-          <p className="text-sm text-destructive text-center">
+          <p className="text-sm text-red-600 text-center">
             Failed to place order. Please try again.
           </p>
         )}
