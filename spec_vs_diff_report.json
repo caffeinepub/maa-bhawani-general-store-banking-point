@@ -1,39 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T12:48:35.014Z",
-  "summary": "The diff implements the four core requirements with good coverage. REQ-1 (authoritative shop status write + query invalidation), REQ-2 (await backend confirmation on all admin mutations), REQ-3 (visible error feedback on failures), and REQ-4 (30-second polling + refetchOnWindowFocus) are all addressed. One minor gap exists: ShopStatusToggle reads the shop status directly from the query with no local optimistic state, so revert-on-error depends on query refetch rather than an explicit rollback. The handleToggleExclusion in AdminProductList silently swallows errors. No significant hallucinated features were found.",
+  "generatedAt": "2026-02-27T13:26:38.687Z",
+  "summary": "The diff implements most of the requested requirements: the UPI Payment Settings card is restored in AdminSettingsPage.tsx (REQ-1), BillTemplate dynamically fetches and uses the UPI ID with proper fallback (REQ-3), frontend hooks useGetUpiId/useSetUpiId are added (REQ-1, REQ-3). The backend main.mo shows a upiId variable and setStoreUpiId method. However, there are concerns about REQ-2 (stable var declaration, correct method naming getUpiId/setUpiId) and REQ-4 (stable vars for logo and store name not confirmed in truncated diff). A migration module is added as a bonus feature not requested.",
   "missing_requirements": [
     {
-      "id": "REQ-3",
-      "requirement": "The ShopStatusToggle reverts to the original value and shows an error message if the backend update fails.",
-      "reason": "ShopStatusToggle binds 'checked' directly to shopStatusQuery.data with no local state to revert from. On a failed mutateAsync, the UI depends entirely on the next query refetch to restore the previous value rather than an explicit rollback, meaning the toggle may transiently remain in the wrong state. The AC explicitly requires the component to revert to the original value on failure.",
+      "id": "REQ-2",
+      "requirement": "UPI ID stored in a stable var in main.mo; getUpiId query and setUpiId update methods present; default '9708075648-1@okbizaxis' pre-seeded.",
+      "reason": "The visible portion of main.mo shows 'var upiId' (not 'stable var') and defines 'setStoreUpiId' (not 'setUpiId'). The getUpiId query method is not visible in the truncated diff. The stable keyword is critical per the AC and not confirmed.",
       "evidence": [
-        "frontend/src/components/ShopStatusToggle.tsx"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "All admin mutation onError handlers display a human-readable error string rather than swallowing the error silently.",
-      "reason": "In AdminProductList.tsx, the handleToggleExclusion handler has a catch block that explicitly swallows errors with the comment '// silently handled', violating the requirement that no admin mutation silently swallows errors.",
+      "id": "REQ-4",
+      "requirement": "Store Logo URL and Store Name/Slogan also stored in stable variables; all three settings independently queryable and updatable.",
+      "reason": "The visible portion of main.mo shows 'var shopSlogan' (not 'stable var') for slogan, and no evidence of a stable var for Store Logo URL. The truncated diff does not confirm stable declarations for logo or slogan, which is the core AC requirement.",
       "evidence": [
-        "frontend/src/components/AdminProductList.tsx"
+        "backend/main.mo"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.85,
+  "hallucinated_features": [
+    {
+      "description": "A migration.mo module was added to handle optional-to-required UPI ID type migration during canister upgrades.",
+      "reason": "The BuildRequest does not mention or request a migration module or type migration logic. This is an additional implementation not specified in any requirement.",
+      "evidence": [
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "description": "UPI ID input field includes a show/hide password toggle using Eye/EyeOff icons and masked display logic.",
+      "reason": "The BuildRequest only specifies a labeled text input and Save UPI button. No masking or show/hide toggle was requested.",
+      "evidence": [
+        "frontend/src/pages/AdminSettingsPage.tsx"
+      ]
+    },
+    {
+      "description": "UPI ID input includes client-side validation requiring the '@' character before saving.",
+      "reason": "The BuildRequest does not specify any client-side validation logic for the UPI ID format.",
+      "evidence": [
+        "frontend/src/pages/AdminSettingsPage.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/AdminProductForm.tsx",
-    "frontend/src/components/AdminProductList.tsx",
-    "frontend/src/components/CartDrawer.tsx",
-    "frontend/src/components/MobileRechargeSection.tsx",
-    "frontend/src/components/ProductCard.tsx",
-    "frontend/src/components/ShopClosedBanner.tsx",
-    "frontend/src/components/ShopStatusToggle.tsx",
+    "frontend/src/components/BillTemplate.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/pages/AdminSettingsPage.tsx",
     "project_state.json"
   ]
 }

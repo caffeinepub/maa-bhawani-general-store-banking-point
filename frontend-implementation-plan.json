@@ -1,138 +1,44 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin-to-Web Full System Sync with Reliable State & Error Handling",
+  "title": "Restore UPI Payment Settings, QR Code Logic, and Persistent Admin Settings",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix shop status toggle to await backend confirmation and immediately refetch on both admin and website",
+      "summary": "Restore the 'UPI Payment Settings' card in the Admin Settings page with input field, save button, backend persistence, and pre-population of saved values",
       "acceptanceCriteria": [
-        "Toggling shop status in Admin saves the new value to the backend before the UI reflects success.",
-        "After a successful toggle, the customer-facing website shows the updated shop status (open or closed) within one query refresh cycle.",
-        "The 'Reverting to Open' bug no longer occurs after toggling closed — the closed state persists across page reloads.",
-        "The ShopStatusToggle component does not revert to the previous value unless the backend explicitly returns an error."
+        "The Admin Settings page displays a 'UPI Payment Settings' card with a text input and a 'Save UPI' button.",
+        "Entering a UPI ID and clicking 'Save UPI' persists the value to the backend.",
+        "On revisiting the Admin Settings page, the saved UPI ID is pre-filled in the input field.",
+        "A success or error toast/message is shown after saving."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/pages/AdminSettingsPage.tsx",
           "operation": "modify",
-          "description": "Update useSetShopStatus mutation to remove optimistic update logic, properly await actor.setShopStatus() backend confirmation, and explicitly invalidate the shopStatus query on success. Ensure onMutate does not pre-emptively update the cache. On success callback, call queryClient.invalidateQueries(['shopStatus']) to force immediate refetch across all components. On error, display a visible error message via onError callback."
+          "description": "Add a 'UPI Payment Settings' card section below the existing Store Slogan section. Include a labeled text input field (pre-populated with the current UPI ID from useGetUpiId query), a 'Save UPI' button that calls the useSetUpiId mutation, and display success/error toast notifications. Ensure the input shows a loading state while fetching the current value and is disabled during save operations. Use the existing card/form styling patterns from the Store Slogan section."
         },
-        {
-          "path": "frontend/src/components/ShopStatusToggle.tsx",
-          "operation": "modify",
-          "description": "Remove local optimistic state logic. Rely entirely on the mutation's isLoading state to show a loading spinner during toggle. Disable the toggle switch while mutation.isLoading is true. Display mutation.error.message in an inline error alert or toast notification if mutation.isError is true after the mutation completes. Do not manually revert the toggle; let the invalidated query refetch the authoritative backend value. Reference the workspace file path frontend/public/assets/generated/store-logo.dim_200x200.png for any static branding assets if needed."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Ensure all admin write mutations await backend confirmation and propagate errors to the UI",
-      "acceptanceCriteria": [
-        "Adding or updating product stock in AdminProductList/AdminProductForm only shows success after the backend confirms the write.",
-        "Updating an order status in AdminPage only marks the order as updated after receiving backend confirmation.",
-        "Submitting a recharge order in MobileRechargeSection only closes the dialog and shows success after backend confirmation.",
-        "No admin mutation silently swallows errors or resolves prematurely."
-      ],
-      "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Review and fix all admin mutation hooks (useAddProduct, useUpdateProductStock, useRemoveProduct, useConfirmOrder, useMarkAsPacked, useMarkAsOutForDelivery, useMarkAsCompleted, usePlaceRechargeOrder) to ensure each mutation properly awaits the actor method call, does not use optimistic updates unless also awaiting confirmation, and includes an onError callback that exposes error.message to the calling component. Remove any fire-and-forget patterns. Ensure each mutation invalidates the relevant query (e.g., invalidate ['products'] after stock changes, ['orders'] after order status changes, ['rechargeOrders'] after recharge submission) on success."
-        },
-        {
-          "path": "frontend/src/components/AdminProductList.tsx",
-          "operation": "modify",
-          "description": "Update inline stock editing and product removal flows to display mutation.isLoading state (disable input/button during mutation) and show mutation.error.message in an inline error alert or toast if mutation.isError is true. Do not allow the user to edit the stock input or click Remove while a mutation is pending. After a successful stock update or product removal, the mutation success callback will invalidate the products query, causing the table to refetch and display the updated list."
-        },
-        {
-          "path": "frontend/src/components/AdminProductForm.tsx",
-          "operation": "modify",
-          "description": "Ensure the Add Product form awaits the useAddProduct mutation completion before closing the form or resetting fields. Display mutation.isLoading as a disabled state on the submit button ('Adding Product...' text). If mutation.isError is true, display mutation.error.message in an inline error alert above the form. On mutation success, invalidate the products query and close/reset the form. Reference the workspace file path frontend/public/assets/generated/product-aata.dim_300x300.png and similar product images as examples when handling image uploads."
-        },
-        {
-          "path": "frontend/src/components/MobileRechargeSection.tsx",
-          "operation": "modify",
-          "description": "Update the recharge order submission flow to await the usePlaceRechargeOrder mutation. Disable the submit button and show 'Submitting...' text while mutation.isLoading is true. If mutation.isError, display mutation.error.message in an inline error alert within the dialog. Only close the dialog and reset the form on mutation success (onSuccess callback). Ensure the mutation invalidates ['rechargeOrders'] query on success so the admin can see the new order immediately in the recharge orders list."
-        },
-        {
-          "path": "frontend/src/pages/AdminPage.tsx",
-          "operation": "modify",
-          "description": "For order status mutation buttons (Confirm, Mark as Packed, Mark as Out for Delivery, Mark as Completed), display the mutation.isLoading state by disabling the button and showing a spinner or 'Updating...' text. If mutation.isError, display mutation.error.message in an inline error alert next to the order row or as a toast notification. On mutation success, the orders query will be invalidated and refetch, updating the order's status badge in the table. Ensure all mutation hooks (useConfirmOrder, useMarkAsPacked, etc.) are called with proper error handling wired to the UI."
+          "description": "Add useGetUpiId query hook that calls actor.getUpiId() and caches the result with queryKey ['upiId']. Add useSetUpiId mutation hook that calls actor.setUpiId(upi) and invalidates the ['upiId'] query on success. Follow the existing query/mutation patterns in this file (e.g., useGetShopSlogan and useSetShopSlogan). Export both hooks."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Replace all fake or silent loading states on admin mutations with real error feedback",
+      "summary": "Dynamically fetch the saved UPI ID from the backend in BillTemplate and use it to generate the UPI QR code on every bill with fallback to default value",
       "acceptanceCriteria": [
-        "When a backend write fails, the admin sees a visible error message describing the failure within the same UI context (inline or toast).",
-        "The loading/spinner state is dismissed when an error occurs — it does not spin indefinitely.",
-        "The ShopStatusToggle reverts to the original value and shows an error message if the backend update fails.",
-        "All admin mutation onError handlers display a human-readable error string rather than swallowing the error silently."
+        "BillTemplate fetches the UPI ID from the backend before rendering the QR code.",
+        "The QR code on every bill reflects the currently saved UPI ID.",
+        "If the backend returns an empty value, the QR code uses '9708075648-1@okbizaxis' as fallback.",
+        "Changing the UPI ID in Admin Settings causes the QR code on new bills to update accordingly."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/BillTemplate.tsx",
           "operation": "modify",
-          "description": "Add or enhance onError callbacks for all admin mutations. Each onError should log the error to console and optionally trigger a global toast notification or set an error state that components can read via mutation.error. Ensure no mutation uses an empty catch block or a silent .catch(() => {}). Every mutation must expose error.message to the component layer. For mutations that previously had optimistic updates, ensure the cache rollback happens on error so the UI reflects the true backend state."
-        },
-        {
-          "path": "frontend/src/components/ShopStatusToggle.tsx",
-          "operation": "modify",
-          "description": "Add an inline error display below the toggle switch. If mutation.isError, render an alert with the text 'Failed to update shop status: {mutation.error.message}'. The toggle switch will automatically reflect the correct backend state after the query refetch triggered by invalidation, so no manual revert logic is needed. Ensure the loading spinner or disabled state is cleared when the mutation completes (either success or error)."
-        },
-        {
-          "path": "frontend/src/components/AdminProductList.tsx",
-          "operation": "modify",
-          "description": "Add inline error alerts next to the stock input and Remove button. If updateStockMutation.isError, display 'Failed to update stock: {updateStockMutation.error.message}' in red text. If removeProductMutation.isError, display 'Failed to remove product: {removeProductMutation.error.message}' in red text. Ensure the input and button are re-enabled after the mutation completes (success or error)."
-        },
-        {
-          "path": "frontend/src/components/AdminProductForm.tsx",
-          "operation": "modify",
-          "description": "Add an error alert section at the top of the form. If addProductMutation.isError, render an alert component displaying 'Failed to add product: {addProductMutation.error.message}'. Dismiss the error when the user starts editing the form again or when the mutation succeeds. Ensure the submit button is re-enabled after error so the user can retry."
-        },
-        {
-          "path": "frontend/src/components/MobileRechargeSection.tsx",
-          "operation": "modify",
-          "description": "Add an error alert inside the recharge order dialog. If mutation.isError, display 'Failed to submit recharge order: {mutation.error.message}' in a visible alert above the form fields. Do not close the dialog on error; allow the user to retry or cancel. Ensure the submit button is re-enabled after the mutation completes (success or error)."
-        },
-        {
-          "path": "frontend/src/pages/AdminPage.tsx",
-          "operation": "modify",
-          "description": "For each order status mutation (Confirm, Packed, Out for Delivery, Completed), add inline error feedback. If mutation.isError, display 'Failed to update order status: {mutation.error.message}' in a small red alert next to the order row or as a toast notification. Ensure the button is re-enabled after the mutation completes so the admin can retry if needed."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Implement global shop status polling and refetch-on-focus on the customer-facing website",
-      "acceptanceCriteria": [
-        "The shop status query on the website has a refetchInterval of 30 seconds or less.",
-        "The shop status query refetches on window focus (refetchOnWindowFocus: true).",
-        "The ShopClosedBanner, CartDrawer checkout disable, and ProductCard Add-to-Cart disable all react to the refreshed shop status.",
-        "No stale open/closed state is shown to customers more than 30 seconds after an admin toggle."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Update the useShopStatus query to include refetchInterval: 30000 (30 seconds) and refetchOnWindowFocus: true. This ensures the query automatically refetches every 30 seconds and also refetches when the user switches back to the browser tab. The query will return the latest shop open/closed status from the backend, and all components using this hook will reactively update their UI based on the new value."
-        },
-        {
-          "path": "frontend/src/components/ShopClosedBanner.tsx",
-          "operation": "modify",
-          "description": "Verify the component already uses useShopStatus() and conditionally renders the banner only when shopStatus.data === false and shopStatus.isFetched === true. No changes needed if already correct. If the banner is not reactive to query updates, ensure it reads shopStatus.data directly and rerenders when the query refetches. Reference the workspace file path frontend/public/assets/generated/store-banner.dim_1200x500.png for any branding assets if needed."
-        },
-        {
-          "path": "frontend/src/components/CartDrawer.tsx",
-          "operation": "modify",
-          "description": "Verify the Checkout button disables when shopStatus.data === false. Ensure the component uses useShopStatus() and reactively disables the checkout button based on the latest query value. If the shop transitions from open to closed while the cart is open, the button should immediately disable without requiring a page reload. Add a tooltip or inline message explaining 'Checkout unavailable: Shop is currently closed' when the button is disabled due to shop status."
-        },
-        {
-          "path": "frontend/src/components/ProductCard.tsx",
-          "operation": "modify",
-          "description": "Verify the Add to Cart button disables when shopStatus.data === false. Ensure the component uses useShopStatus() and reactively disables the button based on the latest query value. If the shop transitions from open to closed, the button should immediately disable across all product cards without requiring a page reload. Add a tooltip or visual indicator on the button explaining 'Shop is currently closed' when disabled due to shop status."
+          "description": "Add useGetUpiId query hook call at the top of the BillTemplate component. Use the fetched UPI ID (or fallback to '9708075648-1@okbizaxis' if the value is empty or null) to dynamically construct the UPI QR code URL. Replace any hardcoded UPI ID in the QR code generation logic with the dynamic value. The QR code image should use the direct asset path 'frontend/public/assets/generated/upi-qr-code.dim_200x200.png' for the static QR image, but the actual UPI link (if generated via a URL scheme like upi://pay?pa=...) should use the live UPI ID. Ensure the component displays a loading state or placeholder while the UPI ID is being fetched."
         }
       ]
     }

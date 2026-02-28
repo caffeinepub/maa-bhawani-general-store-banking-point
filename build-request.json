@@ -1,98 +1,98 @@
 {
   "kind": "build_request",
-  "title": "Admin-to-Web Full System Sync with Reliable State & Error Handling",
-  "projectName": "Maa Bhawani Store",
+  "title": "Restore UPI Payment Settings, QR Code Logic, and Persistent Admin Settings",
+  "projectName": "Maa Bhawani General Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the 'Reverting to Open' bug in shop status toggling: when the admin toggles shop open/closed status, the backend must persist the new status with an authoritative write (no optimistic-only update). The toggle must await backend confirmation before treating the update as complete. If the write succeeds, immediately invalidate and refetch the shop status query on both the admin panel and the website so the customer-facing view reflects the change without stale data.",
+      "text": "Restore the 'UPI Payment Settings' card in the Admin Settings page (AdminSettingsPage.tsx). It must contain a labeled text input field for the UPI ID and a 'Save UPI' button. On click, the button must call the backend mutation to persist the UPI ID to the canister's stable state. The input must be pre-populated with the currently saved UPI ID on page load.",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "Shop Status: When I toggle the shop status in Admin, the website must update instantly without errors.",
-          "Database Integrity: Every action in the Admin Panel (adding stock, changing status, recharge updates) must be written to the database with a high-priority 'Write' command to prevent the 'Reverting to Open' bug."
+          "Restore the 'UPI Payment Settings' card in the Admin Panel. It must have the input field and the 'Save UPI' button. Ensure this button successfully saves my ID to the database."
         ]
       },
       "acceptanceCriteria": [
-        "Toggling shop status in Admin saves the new value to the backend before the UI reflects success.",
-        "After a successful toggle, the customer-facing website shows the updated shop status (open or closed) within one query refresh cycle.",
-        "The 'Reverting to Open' bug no longer occurs after toggling closed — the closed state persists across page reloads.",
-        "The ShopStatusToggle component does not revert to the previous value unless the backend explicitly returns an error."
+        "The Admin Settings page displays a 'UPI Payment Settings' card with a text input and a 'Save UPI' button.",
+        "Entering a UPI ID and clicking 'Save UPI' persists the value to the backend.",
+        "On revisiting the Admin Settings page, the saved UPI ID is pre-filled in the input field.",
+        "A success or error toast/message is shown after saving."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure all admin write actions — including adding/editing product stock, updating order status, and submitting recharge orders — await backend confirmation before marking the operation as successful. Remove any fire-and-forget or optimistic-only patterns that can silently fail. Each mutation in useQueries.ts must properly await the actor call result and propagate errors to the calling component.",
-      "target": "both",
+      "text": "In the backend (main.mo), ensure the UPI ID is stored in a stable variable so it survives canister upgrades and is never reset. The `getUpiId` query and `setUpiId` update methods must be present and correctly reference this stable variable. Pre-seed the value with '9708075648-1@okbizaxis' as the default if no value has been saved yet.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "Every action in the Admin Panel (adding stock, changing status, recharge updates) must be written to the database with a high-priority 'Write' command to prevent the 'Reverting to Open' bug."
+          "Ensure that any settings I save (Logo, UPI, Store Name) are locked in the database and not reset during app updates.",
+          "Link this UPI ID 9708075648-1@okbizaxis to generate a dynamic QR code on every bill."
         ]
       },
       "acceptanceCriteria": [
-        "Adding or updating product stock in AdminProductList/AdminProductForm only shows success after the backend confirms the write.",
-        "Updating an order status in AdminPage only marks the order as updated after receiving backend confirmation.",
-        "Submitting a recharge order in MobileRechargeSection only closes the dialog and shows success after backend confirmation.",
-        "No admin mutation silently swallows errors or resolves prematurely."
+        "The UPI ID is stored in a `stable var` in main.mo.",
+        "Canister upgrades do not reset the stored UPI ID.",
+        "The default value '9708075648-1@okbizaxis' is used when no custom value has been saved.",
+        "`getUpiId` returns the current stored UPI ID.",
+        "`setUpiId` updates the stored UPI ID and is restricted to admin callers."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Replace all fake or silent loading states on admin mutations with real error feedback. When any admin write operation (shop status toggle, stock update, order status change, recharge submission) fails, display a clear, visible error message (e.g., a toast notification or inline error text) stating what failed. Do not show a spinner or 'Updating…' animation that never resolves or never reports the actual failure to the user.",
+      "text": "In the BillTemplate component, dynamically fetch the saved UPI ID from the backend (via `getUpiId`) and use it to generate the UPI QR code displayed on every bill. The QR code URL must be constructed using the live UPI ID value, not a hardcoded string. The default fallback must be '9708075648-1@okbizaxis' if the backend returns empty.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "Error Handling: If a database update fails, show me a clear error message instead of showing a fake 'Updating' animation."
+          "Link this UPI ID 9708075648-1@okbizaxis to generate a dynamic QR code on every bill.",
+          "Do not delete this logic in the future."
         ]
       },
       "acceptanceCriteria": [
-        "When a backend write fails, the admin sees a visible error message describing the failure within the same UI context (inline or toast).",
-        "The loading/spinner state is dismissed when an error occurs — it does not spin indefinitely.",
-        "The ShopStatusToggle reverts to the original value and shows an error message if the backend update fails.",
-        "All admin mutation onError handlers display a human-readable error string rather than swallowing the error silently."
+        "BillTemplate fetches the UPI ID from the backend before rendering the QR code.",
+        "The QR code on every bill reflects the currently saved UPI ID.",
+        "If the backend returns an empty value, the QR code uses '9708075648-1@okbizaxis' as fallback.",
+        "Changing the UPI ID in Admin Settings causes the QR code on new bills to update accordingly."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement a global shop status polling or query invalidation strategy on the customer-facing website so that the shop open/closed state stays in sync with the backend. The website should refetch shop status at a short interval (e.g., every 30 seconds) and also refetch immediately on window focus, so customers always see the current status without a full page reload.",
-      "target": "frontend",
+      "text": "Ensure that all persistent admin settings — Store Logo, UPI ID, and Store Name/Slogan — are stored in stable variables in the Motoko backend (main.mo) so they are never reset during canister upgrades. Verify existing stable vars for logo and store name/slogan are present and correctly preserved across upgrades.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-latest"
         ],
         "quotes": [
-          "Shop Status: When I toggle the shop status in Admin, the website must update instantly without errors.",
-          "Perform a Full System Sync between the Admin Panel and the Website. Use a 'Global State' logic"
+          "Ensure that any settings I save (Logo, UPI, Store Name) are locked in the database and not reset during app updates."
         ]
       },
       "acceptanceCriteria": [
-        "The shop status query on the website has a refetchInterval of 30 seconds or less.",
-        "The shop status query refetches on window focus (refetchOnWindowFocus: true).",
-        "The ShopClosedBanner, CartDrawer checkout disable, and ProductCard Add-to-Cart disable all react to the refreshed shop status.",
-        "No stale open/closed state is shown to customers more than 30 seconds after an admin toggle."
+        "Store Logo URL, UPI ID, and Store Name/Slogan are all stored in `stable var` declarations.",
+        "A canister upgrade does not reset any of these values.",
+        "All three settings can be independently queried and updated via dedicated backend methods."
       ]
     }
   ],
   "constraints": [
-    "All Motoko logic must remain in backend/main.mo — no new actor files.",
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Error messages shown to the admin must be in English."
+    "Do not remove or overwrite the UPI QR code logic in BillTemplate in future builds.",
+    "The UPI ID '9708075648-1@okbizaxis' must be used as the default/fallback value.",
+    "Admin-only mutations (setUpiId, setStoreName, setLogo) must remain protected by role-based access control.",
+    "Do not edit files listed in frontend.immutablePaths."
   ],
   "nonGoals": [
-    "WebSocket or real-time push — polling and query invalidation are sufficient.",
-    "Customer-facing error messages for backend failures (only admin-facing errors are in scope).",
-    "Redesigning the Admin UI layout or navigation.",
-    "Adding new admin features beyond fixing existing sync and error-handling gaps."
+    "Activating Home Page Coming Soon features (Search, Orders, Wallet) — separate request.",
+    "Adding new admin settings beyond UPI, Logo, and Store Name.",
+    "Changing the visual theme or layout of the Admin Panel beyond restoring the UPI card."
   ],
   "imageRequirements": {
     "required": [],

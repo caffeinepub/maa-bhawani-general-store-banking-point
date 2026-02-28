@@ -1,101 +1,69 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T12:48:35.018Z",
+  "generatedAt": "2026-02-27T13:26:38.693Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 4,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the 'Reverting to Open' bug in shop status toggling: when the admin toggles shop open/closed status, the backend must persist the new status with an authoritative write (no optimistic-only update). The toggle must await backend confirmation before treating the update as complete. If the write succeeds, immediately invalidate and refetch the shop status query on both the admin panel and the website so the customer-facing view reflects the change without stale data.",
+        "summary": "Restore the 'UPI Payment Settings' card in the Admin Settings page (AdminSettingsPage.tsx). It must contain a labeled text input field for the UPI ID and a 'Save UPI' button. On click, the button must call the backend mutation to persist the UPI ID to the canister's stable state. The input must be pre-populated with the currently saved UPI ID on page load.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/ShopStatusToggle.tsx"
+          "frontend/src/pages/AdminSettingsPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/ShopStatusToggle.tsx"
+          "frontend/src/pages/AdminSettingsPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure all admin write actions — including adding/editing product stock, updating order status, and submitting recharge orders — await backend confirmation before marking the operation as successful. Remove any fire-and-forget or optimistic-only patterns that can silently fail. Each mutation in useQueries.ts must properly await the actor call result and propagate errors to the calling component.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/AdminProductList.tsx",
-          "frontend/src/components/AdminProductForm.tsx",
-          "frontend/src/components/MobileRechargeSection.tsx",
-          "frontend/src/pages/AdminPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/AdminProductList.tsx",
-          "frontend/src/components/AdminProductForm.tsx",
-          "frontend/src/components/MobileRechargeSection.tsx",
-          "frontend/src/pages/AdminPage.tsx"
-        ]
+        "summary": "In the backend (main.mo), ensure the UPI ID is stored in a stable variable so it survives canister upgrades and is never reset. The `getUpiId` query and `setUpiId` update methods must be present and correctly reference this stable variable. Pre-seed the value with '9708075648-1@okbizaxis' as the default if no value has been saved yet.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Replace all fake or silent loading states on admin mutations with real error feedback. When any admin write operation (shop status toggle, stock update, order status change, recharge submission) fails, display a clear, visible error message (e.g., a toast notification or inline error text) stating what failed. Do not show a spinner or 'Updating…' animation that never resolves or never reports the actual failure to the user.",
+        "summary": "In the BillTemplate component, dynamically fetch the saved UPI ID from the backend (via `getUpiId`) and use it to generate the UPI QR code displayed on every bill. The QR code URL must be constructed using the live UPI ID value, not a hardcoded string. The default fallback must be '9708075648-1@okbizaxis' if the backend returns empty.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/ShopStatusToggle.tsx",
-          "frontend/src/components/AdminProductList.tsx",
-          "frontend/src/components/AdminProductForm.tsx",
-          "frontend/src/components/MobileRechargeSection.tsx",
-          "frontend/src/pages/AdminPage.tsx"
+          "frontend/src/components/BillTemplate.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/ShopStatusToggle.tsx",
-          "frontend/src/components/AdminProductList.tsx",
-          "frontend/src/components/AdminProductForm.tsx",
-          "frontend/src/components/MobileRechargeSection.tsx",
-          "frontend/src/pages/AdminPage.tsx"
+          "frontend/src/components/BillTemplate.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Implement a global shop status polling or query invalidation strategy on the customer-facing website so that the shop open/closed state stays in sync with the backend. The website should refetch shop status at a short interval (e.g., every 30 seconds) and also refetch immediately on window focus, so customers always see the current status without a full page reload.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/ShopClosedBanner.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/components/ProductCard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/ShopClosedBanner.tsx",
-          "frontend/src/components/CartDrawer.tsx",
-          "frontend/src/components/ProductCard.tsx"
-        ]
+        "summary": "Ensure that all persistent admin settings — Store Logo, UPI ID, and Store Name/Slogan — are stored in stable variables in the Motoko backend (main.mo) so they are never reset during canister upgrades. Verify existing stable vars for logo and store name/slogan are present and correctly preserved across upgrades.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/AdminProductForm.tsx",
-    "frontend/src/components/AdminProductList.tsx",
-    "frontend/src/components/CartDrawer.tsx",
-    "frontend/src/components/MobileRechargeSection.tsx",
-    "frontend/src/components/ProductCard.tsx",
-    "frontend/src/components/ShopClosedBanner.tsx",
-    "frontend/src/components/ShopStatusToggle.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/BillTemplate.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/pages/AdminSettingsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

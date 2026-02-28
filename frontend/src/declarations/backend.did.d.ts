@@ -136,7 +136,8 @@ export interface _SERVICE {
   'getProductByBarcodeWithAction' : ActorMethod<[string], ProductWithAction>,
   'getShopSlogan' : ActorMethod<[], string>,
   'getShopStatus' : ActorMethod<[], boolean>,
-  'getStoreUpiId' : ActorMethod<[], [] | [string]>,
+  'getStoreUpiId' : ActorMethod<[], string>,
+  'getUpiId' : ActorMethod<[], string>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isAdmin' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
@@ -161,6 +162,7 @@ export interface _SERVICE {
   'setShopSlogan' : ActorMethod<[string], undefined>,
   'setShopStatus' : ActorMethod<[boolean], boolean>,
   'setStoreUpiId' : ActorMethod<[string], undefined>,
+  'setUpiId' : ActorMethod<[string], undefined>,
   'toggleProductExclusion' : ActorMethod<[bigint], boolean>,
   'updateBillPaymentStatus' : ActorMethod<
     [bigint, PaymentStatus, [] | [string], [] | [string]],

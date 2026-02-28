@@ -124,7 +124,8 @@ export interface backendInterface {
     getProductByBarcodeWithAction(barcode: string): Promise<ProductWithAction>;
     getShopSlogan(): Promise<string>;
     getShopStatus(): Promise<boolean>;
-    getStoreUpiId(): Promise<string | null>;
+    getStoreUpiId(): Promise<string>;
+    getUpiId(): Promise<string>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isAdmin(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
@@ -138,6 +139,7 @@ export interface backendInterface {
     setShopSlogan(slogan: string): Promise<void>;
     setShopStatus(status: boolean): Promise<boolean>;
     setStoreUpiId(upi: string): Promise<void>;
+    setUpiId(upi: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
     updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;
     updateProductStock(productId: bigint, newStock: bigint): Promise<void>;

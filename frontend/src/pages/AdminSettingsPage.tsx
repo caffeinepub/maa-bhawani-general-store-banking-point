@@ -16,20 +16,20 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { useActor } from '../hooks/useActor';
-import { useSetShopStatus, useGetShopSlogan, useSetShopSlogan } from '../hooks/useQueries';
+import { useSetShopStatus, useGetShopSlogan, useSetShopSlogan, useGetUpiId, useSetUpiId } from '../hooks/useQueries';
+
+const DEFAULT_UPI_ID = '9708075648-1@okbizaxis';
 
 export default function AdminSettingsPage() {
-  const { actor } = useActor();
   const [slogan, setSlogan] = useState('');
-  const [upiId, setUpiId] = useState('');
-  const [upiLoading, setUpiLoading] = useState(false);
-  const [upiSaving, setUpiSaving] = useState(false);
+  const [upiInput, setUpiInput] = useState('');
   const [showUpi, setShowUpi] = useState(false);
 
   const { data: currentSlogan } = useGetShopSlogan();
+  const { data: currentUpiId, isLoading: upiLoading } = useGetUpiId();
   const setShopSloganMutation = useSetShopSlogan();
-  // useSetShopStatus now accepts a boolean (true = open, false = closed)
+  const setUpiIdMutation = useSetUpiId();
+  // useSetShopStatus accepts a boolean (true = open, false = closed)
   const setShopStatusMutation = useSetShopStatus();
 
   useEffect(() => {
@@ -37,13 +37,8 @@ export default function AdminSettingsPage() {
   }, [currentSlogan]);
 
   useEffect(() => {
-    if (!actor) return;
-    setUpiLoading(true);
-    actor.getStoreUpiId()
-      .then((id) => { if (id) setUpiId(id); })
-      .catch(() => {})
-      .finally(() => setUpiLoading(false));
-  }, [actor]);
+    if (currentUpiId) setUpiInput(currentUpiId);
+  }, [currentUpiId]);
 
   const handleSaveSlogan = async () => {
     try {
@@ -55,35 +50,34 @@ export default function AdminSettingsPage() {
   };
 
   const handleSaveUpi = async () => {
-    if (!actor) return;
-    if (!upiId.trim()) {
+    const trimmed = upiInput.trim();
+    if (!trimmed) {
       toast.error('Please enter a valid UPI ID');
       return;
     }
-    if (!upiId.includes('@')) {
-      toast.error('UPI ID must be in format: number@bankname (e.g., 9708075648@okbizaxis)');
+    if (!trimmed.includes('@')) {
+      toast.error('UPI ID must contain "@" — e.g., 9708075648-1@okbizaxis');
       return;
     }
-    setUpiSaving(true);
     try {
-      await actor.setStoreUpiId(upiId.trim());
+      await setUpiIdMutation.mutateAsync(trimmed);
       toast.success('UPI ID saved successfully! Bills will now show the updated QR code.');
     } catch (error: any) {
       toast.error(error?.message || 'Failed to save UPI ID');
-    } finally {
-      setUpiSaving(false);
     }
   };
 
   const handleEmergencyClose = async () => {
     try {
-      // Pass boolean false to close the shop — backend expects boolean
       await setShopStatusMutation.mutateAsync(false);
       toast.success('Shop has been closed successfully.');
     } catch (error: any) {
       toast.error(error?.message || 'Failed to close shop');
     }
   };
+
+  const displayUpi = upiInput || DEFAULT_UPI_ID;
+  const maskedUpi = displayUpi.replace(/(.{3}).*(@.*)/, '$1***$2');
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -95,7 +89,7 @@ export default function AdminSettingsPage() {
         <p className="text-muted-foreground mt-1">Manage your store configuration and preferences.</p>
       </div>
 
-      {/* UPI ID Settings */}
+      {/* UPI Payment Settings */}
       <Card className="border-2 border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -114,26 +108,27 @@ export default function AdminSettingsPage() {
                 <Input
                   id="upiId"
                   type={showUpi ? 'text' : 'password'}
-                  placeholder="e.g., 9708075648@okbizaxis"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  disabled={upiLoading}
+                  placeholder={`e.g., ${DEFAULT_UPI_ID}`}
+                  value={upiInput}
+                  onChange={(e) => setUpiInput(e.target.value)}
+                  disabled={upiLoading || setUpiIdMutation.isPending}
                   className="pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowUpi(!showUpi)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showUpi ? 'Hide UPI ID' : 'Show UPI ID'}
                 >
                   {showUpi ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               <Button
                 onClick={handleSaveUpi}
-                disabled={upiSaving || upiLoading}
+                disabled={setUpiIdMutation.isPending || upiLoading}
                 className="shrink-0"
               >
-                {upiSaving ? (
+                {setUpiIdMutation.isPending ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Saving...
@@ -147,15 +142,23 @@ export default function AdminSettingsPage() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Format: <code className="bg-muted px-1 rounded">mobilenumber@bankcode</code> — e.g., <code className="bg-muted px-1 rounded">9708075648@okbizaxis</code>
+              Format: <code className="bg-muted px-1 rounded">mobilenumber@bankcode</code> — default: <code className="bg-muted px-1 rounded">{DEFAULT_UPI_ID}</code>
             </p>
           </div>
-          {upiId && upiId.includes('@') && (
+
+          {upiLoading ? (
+            <div className="p-3 bg-muted/40 border border-muted rounded-lg">
+              <p className="text-xs text-muted-foreground">Loading UPI configuration...</p>
+            </div>
+          ) : displayUpi && displayUpi.includes('@') ? (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-xs text-green-700 font-medium">✅ UPI ID configured</p>
-              <p className="text-xs text-green-600 mt-0.5">Bills will generate QR codes linked to: <strong>{showUpi ? upiId : upiId.replace(/(.{3}).*(@.*)/, '$1***$2')}</strong></p>
+              <p className="text-xs text-green-600 mt-0.5">
+                Bills will generate QR codes linked to:{' '}
+                <strong>{showUpi ? displayUpi : maskedUpi}</strong>
+              </p>
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 

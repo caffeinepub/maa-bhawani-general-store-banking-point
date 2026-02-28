@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Printer, MessageCircle, Store, Phone, MapPin, Calendar, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Bill, BillItem } from '../backend';
-import { useActor } from '../hooks/useActor';
+import { useGetUpiId } from '../hooks/useQueries';
 
 interface BillTemplateProps {
   bill: Bill;
@@ -16,6 +16,8 @@ const STORE_ADDRESS = 'Main Market, Your City';
 const STORE_PHONE = '+91 9708075648';
 const DELIVERY_CHARGE = 5;
 const FREE_DELIVERY_THRESHOLD = 51;
+// Default/fallback UPI ID — NEVER remove this constant
+const DEFAULT_UPI_ID = '9708075648-1@okbizaxis';
 
 function generateUPIQR(upiId: string, amount: number): string {
   const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&am=${amount.toFixed(2)}&cu=INR&tn=Bill+Payment`;
@@ -23,16 +25,9 @@ function generateUPIQR(upiId: string, amount: number): string {
 }
 
 export default function BillTemplate({ bill, onClose, onPrint }: BillTemplateProps) {
-  const { actor } = useActor();
-  const [upiId, setUpiId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (actor) {
-      actor.getStoreUpiId().then((id) => {
-        if (id) setUpiId(id);
-      }).catch(() => {});
-    }
-  }, [actor]);
+  // Fetch UPI ID from backend via React Query; fallback to default if empty/unavailable
+  const { data: fetchedUpiId, isLoading: upiLoading } = useGetUpiId();
+  const upiId = (fetchedUpiId && fetchedUpiId.trim() !== '') ? fetchedUpiId : DEFAULT_UPI_ID;
 
   const subtotal = bill.items.reduce((sum, item) => sum + Number(item.totalPrice), 0);
   const deliveryCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
@@ -221,9 +216,13 @@ export default function BillTemplate({ bill, onClose, onPrint }: BillTemplatePro
         {/* Payment Section */}
         <div className="border-t border-gray-200 px-6 py-5 bg-gray-50">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* QR Code */}
+            {/* QR Code — always shown using live UPI ID or fallback */}
             <div className="flex flex-col items-center gap-2">
-              {upiId ? (
+              {upiLoading ? (
+                <div className="w-36 h-36 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
+                  <span className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                </div>
+              ) : (
                 <>
                   <img
                     src={generateUPIQR(upiId, total)}
@@ -233,10 +232,6 @@ export default function BillTemplate({ bill, onClose, onPrint }: BillTemplatePro
                   <p className="text-xs text-gray-500 text-center">Scan to pay ₹{total}</p>
                   <p className="text-xs font-medium text-primary">{upiId}</p>
                 </>
-              ) : (
-                <div className="w-36 h-36 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
-                  <p className="text-xs text-gray-400 text-center px-2">UPI ID not configured</p>
-                </div>
               )}
             </div>
 

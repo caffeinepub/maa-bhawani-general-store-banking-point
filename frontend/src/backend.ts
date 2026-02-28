@@ -217,7 +217,8 @@ export interface backendInterface {
     getProductByBarcodeWithAction(barcode: string): Promise<ProductWithAction>;
     getShopSlogan(): Promise<string>;
     getShopStatus(): Promise<boolean>;
-    getStoreUpiId(): Promise<string | null>;
+    getStoreUpiId(): Promise<string>;
+    getUpiId(): Promise<string>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isAdmin(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
@@ -231,6 +232,7 @@ export interface backendInterface {
     setShopSlogan(slogan: string): Promise<void>;
     setShopStatus(status: boolean): Promise<boolean>;
     setStoreUpiId(upi: string): Promise<void>;
+    setUpiId(upi: string): Promise<void>;
     toggleProductExclusion(productId: bigint): Promise<boolean>;
     updateBillPaymentStatus(billId: bigint, paymentStatus: PaymentStatus, paymentReference: string | null, paymentGatewayId: string | null): Promise<Bill>;
     updateProductStock(productId: bigint, newStock: bigint): Promise<void>;
@@ -616,18 +618,32 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getStoreUpiId(): Promise<string | null> {
+    async getStoreUpiId(): Promise<string> {
         if (this.processError) {
             try {
                 const result = await this.actor.getStoreUpiId();
-                return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
+                return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getStoreUpiId();
-            return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
+            return result;
+        }
+    }
+    async getUpiId(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUpiId();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUpiId();
+            return result;
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
@@ -809,6 +825,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.setStoreUpiId(arg0);
+            return result;
+        }
+    }
+    async setUpiId(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setUpiId(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setUpiId(arg0);
             return result;
         }
     }

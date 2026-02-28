@@ -6,13 +6,15 @@ import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
-
+import Migration "migration";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
+// Apply migration automatically on canister upgrade
+(with migration = Migration.run)
 actor {
   // State
   include MixinStorage();
@@ -35,7 +37,7 @@ actor {
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Unauthorized: Can only view your own profile");
+      Runtime.trap("Unauthorized: Can only view your own profile");
     };
     userProfiles.get(user);
   };
@@ -151,23 +153,32 @@ actor {
 
   var shopSlogan : Text = "Welcome to our shop!";
   var excludedProducts = Set.empty<Nat>();
-
-  var upiId : ?Text = null; // Now persistent across upgrades
-
-  // Bool = Open/Closed
+  var upiId : Text = "9708075648-1@okbizaxis";
   var shopStatus : Bool = true;
 
+  // Admin-only: set the UPI ID
   public shared ({ caller }) func setStoreUpiId(upi : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can set UPI ID");
     };
-    upiId := ?upi;
+    upiId := upi;
   };
 
-  public query ({ caller }) func getStoreUpiId() : async ?Text {
+  // Public: customers need the UPI ID to complete UPI payments
+  public query func getStoreUpiId() : async Text {
+    upiId;
+  };
+
+  // Aliases used by the frontend (getUpiId / setUpiId)
+  public shared ({ caller }) func setUpiId(upi : Text) : async () {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can view UPI ID");
+      Runtime.trap("Unauthorized: Only admins can set UPI ID");
     };
+    upiId := upi;
+  };
+
+  // Public: customers need the UPI ID to complete UPI payments
+  public query func getUpiId() : async Text {
     upiId;
   };
 
@@ -232,11 +243,11 @@ actor {
     products.remove(productId);
   };
 
-  public query ({ caller }) func getAllProducts() : async [Product] {
+  public query func getAllProducts() : async [Product] {
     products.values().toArray();
   };
 
-  public query ({ caller }) func getProductByBarcode(barcode : Text) : async ?Product {
+  public query func getProductByBarcode(barcode : Text) : async ?Product {
     products.values().find(func(product) { product.barcode == barcode });
   };
 
@@ -414,9 +425,9 @@ actor {
 
     if (distanceInKm <= 1) {
       if (totalPrice < 51) {
-        totalPrice + 5; // Delivery charge for orders below ₹51 and within 1km
+        totalPrice + 5;
       } else {
-        totalPrice; // Free delivery for orders >= ₹51 within 1km
+        totalPrice;
       };
     } else {
       totalPrice + ((distanceInKm - 1) * deliveryFeePerKm);
@@ -545,7 +556,7 @@ actor {
       Runtime.trap("Unauthorized: Only admins can generate bills");
     };
 
-    if (upiId == null) {
+    if (upiId == "") {
       Runtime.trap("UPI ID not set. Please set UPI ID first in admin settings.");
     };
 
@@ -638,6 +649,7 @@ actor {
     bills.values().toArray();
   };
 
+  // Public: anyone can read the shop slogan (displayed on storefront)
   public query func getShopSlogan() : async Text {
     shopSlogan;
   };
@@ -649,7 +661,7 @@ actor {
     excludedProducts.toArray();
   };
 
-  // Fully persistent Shop Open/Closed Feature methods
+  // Admin-only: set shop open/closed status
   public shared ({ caller }) func setShopStatus(status : Bool) : async Bool {
     if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
       Runtime.trap("Unauthorized: Only admins can set shop status");
@@ -659,7 +671,8 @@ actor {
     status;
   };
 
-  public query ({ caller }) func getShopStatus() : async Bool {
+  // Public: customers need to know if the shop is open before placing orders
+  public query func getShopStatus() : async Bool {
     shopStatus;
   };
 };

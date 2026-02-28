@@ -473,13 +473,52 @@ export function useSetShopSlogan() {
   });
 }
 
+// ─── UPI ID (primary hooks used by AdminSettingsPage and BillTemplate) ────────
+
+const DEFAULT_UPI_ID = '9708075648-1@okbizaxis';
+
+export function useGetUpiId() {
+  const { actor, isFetching } = useActor();
+  return useQuery<string>({
+    queryKey: ['upiId'],
+    queryFn: async () => {
+      if (!actor) return DEFAULT_UPI_ID;
+      const id = await actor.getUpiId();
+      return id && id.trim() !== '' ? id : DEFAULT_UPI_ID;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetUpiId() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: async (upiId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.setUpiId(upiId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['upiId'] });
+      // Also invalidate the storeUpiId cache for consistency
+      queryClient.invalidateQueries({ queryKey: ['storeUpiId'] });
+    },
+    onError: (error: Error) => {
+      console.error('Failed to set UPI ID:', error.message);
+    },
+  });
+}
+
+// ─── Store UPI ID (legacy aliases kept for backward compatibility) ─────────────
+
 export function useGetStoreUpiId() {
   const { actor, isFetching } = useActor();
-  return useQuery<string | null>({
+  return useQuery<string>({
     queryKey: ['storeUpiId'],
     queryFn: async () => {
-      if (!actor) return null;
-      return actor.getStoreUpiId();
+      if (!actor) return DEFAULT_UPI_ID;
+      const id = await actor.getStoreUpiId();
+      return id && id.trim() !== '' ? id : DEFAULT_UPI_ID;
     },
     enabled: !!actor && !isFetching,
   });
@@ -495,6 +534,7 @@ export function useSetStoreUpiId() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storeUpiId'] });
+      queryClient.invalidateQueries({ queryKey: ['upiId'] });
     },
     onError: (error: Error) => {
       console.error('Failed to set store UPI ID:', error.message);
