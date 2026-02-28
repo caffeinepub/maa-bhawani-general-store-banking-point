@@ -2,63 +2,76 @@ import React from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { useShopStatus, useSetShopStatus } from '../hooks/useQueries';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 
 export default function ShopStatusToggle() {
-  const shopStatusQuery = useShopStatus();
+  const { identity } = useInternetIdentity();
+  const isAuthenticated = !!identity;
+
+  const { data: shopOpen, isLoading } = useShopStatus();
   const setShopStatusMutation = useSetShopStatus();
 
-  const isOpen = shopStatusQuery.data ?? true;
-  const isLoading = shopStatusQuery.isLoading || setShopStatusMutation.isPending;
-
   const handleToggle = async (checked: boolean) => {
-    if (setShopStatusMutation.isPending) return;
+    if (!isAuthenticated) {
+      toast.error('Please log in via Internet Identity (Login button in header) to change shop status.');
+      return;
+    }
     try {
       await setShopStatusMutation.mutateAsync(checked);
-    } catch {
-      // Error is handled via mutation.isError
+      toast.success(`Shop is now ${checked ? 'OPEN' : 'CLOSED'}`);
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      if (msg.includes('Unauthorized')) {
+        toast.error('Unauthorized: Please log in via Internet Identity to change shop status.');
+      } else {
+        toast.error(`Failed to update shop status: ${msg}`);
+      }
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-6 bg-gray-200 rounded-full animate-pulse" />
+        <span className="text-sm text-gray-400">Loading...</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="flex items-center gap-3">
         <Switch
-          id="shop-status"
-          checked={isOpen}
+          id="shopStatus"
+          checked={shopOpen ?? true}
           onCheckedChange={handleToggle}
-          disabled={isLoading}
-          className={isOpen ? 'data-[state=checked]:bg-green-500' : ''}
+          disabled={setShopStatusMutation.isPending || !isAuthenticated}
         />
-        <Label htmlFor="shop-status" className="flex items-center gap-2 cursor-pointer select-none">
-          {isLoading ? (
-            <span className="flex items-center gap-1 text-sm text-gray-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
+        <Label htmlFor="shopStatus" className="cursor-pointer">
+          {setShopStatusMutation.isPending ? (
+            <span className="flex items-center gap-1.5 text-gray-500">
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
               Updating...
             </span>
           ) : (
-            <span className={`text-sm font-semibold ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
-              {isOpen ? '🟢 Shop is OPEN' : '🔴 Shop is CLOSED'}
+            <span className={shopOpen ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+              Shop is currently {shopOpen ? 'OPEN' : 'CLOSED'}
             </span>
           )}
         </Label>
       </div>
 
       {setShopStatusMutation.isError && (
-        <Alert variant="destructive" className="mt-2">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="destructive">
           <AlertDescription>
-            Failed to update shop status: {setShopStatusMutation.error?.message ?? 'Unknown error'}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {shopStatusQuery.isError && (
-        <Alert variant="destructive" className="mt-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Failed to fetch shop status: {(shopStatusQuery.error as Error)?.message ?? 'Unknown error'}
+            {(setShopStatusMutation.error as any)?.message?.includes('Unauthorized')
+              ? 'Unauthorized: Please log in via Internet Identity to change shop status.'
+              : `Error: ${(setShopStatusMutation.error as any)?.message || 'Unknown error'}`}
           </AlertDescription>
         </Alert>
       )}

@@ -1,212 +1,175 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { ShieldCheck, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Checkbox } from '@/components/ui/checkbox';
-import { SESSION_KEY, AdminSession, getAdminSession } from '../components/AdminGuard';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { SESSION_KEY, AdminSession } from '../components/AdminGuard';
 
-// Hardcoded admin credentials
-const ADMIN_ID = '919708075648';
-const ADMIN_PASSWORD = '979142876085';
-
-const REMEMBER_ME_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
-const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin123';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const [adminId, setAdminId] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // If already authenticated, redirect to admin
-  useEffect(() => {
-    const session = getAdminSession();
-    if (session) {
-      navigate({ to: '/admin' });
-    }
-  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setError('');
 
-    if (!adminId.trim() || !password.trim()) {
-      setError('Both Admin ID and Password are required.');
+    if (!username.trim()) {
+      setError('Please enter your username.');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password.');
       return;
     }
 
     setIsLoading(true);
 
-    // Small delay to prevent brute-force timing attacks
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    // Simulate a brief delay for UX
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    if (adminId.trim() === ADMIN_ID && password.trim() === ADMIN_PASSWORD) {
-      const now = Date.now();
-      const expiresAt = now + (rememberMe ? REMEMBER_ME_EXPIRY : SESSION_EXPIRY);
-
+    if (username.trim() === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       const session: AdminSession = {
         authenticated: true,
-        timestamp: now,
-        expiresAt,
+        createdAt: Date.now(),
+        expiresAt: rememberMe
+          ? Date.now() + 7 * 24 * 60 * 60 * 1000  // 7 days
+          : Date.now() + 24 * 60 * 60 * 1000,       // 24 hours
       };
 
       if (rememberMe) {
-        // Persist across browser restarts for 7 days
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-        sessionStorage.removeItem(SESSION_KEY);
       } else {
-        // Only valid for this browser session (cleared on close)
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-        localStorage.removeItem(SESSION_KEY);
       }
 
       navigate({ to: '/admin' });
     } else {
-      setError('Invalid Admin ID or Password. Please try again.');
-      setIsLoading(false);
+      setError('Invalid username or password. Please try again.');
     }
-  };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSubmit(e as unknown as React.FormEvent);
-    }
+    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          {/* Header */}
-          <div className="bg-[#0056b3] px-8 py-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-4">
-              <ShieldCheck className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
-            <p className="text-blue-100 text-sm mt-1">Maa Bhawani General Store</p>
+        {/* Logo / Branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
+            <ShieldCheck className="w-8 h-8 text-white" />
           </div>
+          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+          <p className="text-gray-500 text-sm mt-1">Maa Bhawani General Store</p>
+        </div>
 
-          {/* Form */}
-          <div className="px-8 py-8">
-            <div className="mb-6 text-center">
-              <h2 className="text-lg font-semibold text-gray-900">Sign In</h2>
-              <p className="text-sm text-gray-500 mt-1">Enter your credentials to access the admin panel</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Admin ID */}
-              <div className="space-y-2">
-                <Label htmlFor="adminId" className="text-sm font-medium text-gray-700">
-                  Admin ID
-                </Label>
-                <Input
-                  id="adminId"
-                  type="text"
-                  placeholder="Enter your Admin ID"
-                  value={adminId}
-                  onChange={(e) => setAdminId(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={isLoading}
-                  autoComplete="username"
-                  autoFocus
-                  className="h-11"
-                />
+        <Card className="shadow-xl border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl text-center">Sign In</CardTitle>
+            <CardDescription className="text-center">
+              Enter your credentials to access the admin dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Username */}
+              <div className="space-y-1.5">
+                <Label htmlFor="username">Username</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="pl-9"
+                    autoComplete="username"
+                    autoFocus
+                  />
+                </div>
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Password
-                </Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={isLoading}
+                    className="pl-9 pr-10"
                     autoComplete="current-password"
-                    className="h-11 pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               {/* Remember Me */}
               <div className="flex items-center gap-2">
-                <Checkbox
+                <input
                   id="rememberMe"
+                  type="checkbox"
                   checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  disabled={isLoading}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
                 />
-                <Label
-                  htmlFor="rememberMe"
-                  className="text-sm text-gray-600 cursor-pointer select-none"
-                >
+                <Label htmlFor="rememberMe" className="cursor-pointer text-sm font-normal text-gray-600">
                   Remember me for 7 days
                 </Label>
               </div>
 
-              {/* Error */}
+              {/* Error Message */}
               {error && (
-                <Alert variant="destructive" className="py-3">
-                  <AlertDescription className="text-sm">{error}</AlertDescription>
-                </Alert>
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+                  {error}
+                </div>
               )}
 
               {/* Submit */}
               <Button
                 type="submit"
-                disabled={isLoading || !adminId.trim() || !password.trim()}
-                className="w-full h-11 bg-[#0056b3] hover:bg-[#004494] text-white font-semibold text-sm"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                disabled={isLoading}
               >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in…
-                  </>
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    Signing in...
+                  </span>
                 ) : (
-                  <>
-                    <Lock className="mr-2 h-4 w-4" />
-                    Sign In
-                  </>
+                  'Sign In'
                 )}
               </Button>
             </form>
 
-            {/* Footer note */}
-            <p className="mt-6 text-center text-xs text-gray-400">
-              Without "Remember Me", your session will end when you close the browser.
+            <p className="text-center text-xs text-gray-400 mt-6">
+              Default: <span className="font-mono">admin</span> / <span className="font-mono">admin123</span>
             </p>
-          </div>
-        </div>
-
-        {/* Back to store */}
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => navigate({ to: '/' })}
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
-          >
-            ← Back to Store
-          </button>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

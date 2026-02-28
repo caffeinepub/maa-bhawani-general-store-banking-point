@@ -1,59 +1,56 @@
-import { type ReactNode, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Loader2 } from 'lucide-react';
 
-interface AdminGuardProps {
-  children: ReactNode;
-}
-
-export const SESSION_KEY = 'adminSession';
-export const SESSION_KEY_SS = 'adminSession'; // same key, different storage
+export const SESSION_KEY = 'admin_session';
 
 export interface AdminSession {
   authenticated: boolean;
-  timestamp: number;
+  createdAt: number;
   expiresAt: number;
 }
 
 export function getAdminSession(): AdminSession | null {
   try {
-    // Check localStorage first (Remember Me sessions)
-    const lsStored = localStorage.getItem(SESSION_KEY);
-    if (lsStored) {
-      const session: AdminSession = JSON.parse(lsStored);
-      if (session.authenticated && Date.now() < session.expiresAt) {
+    // Check localStorage first (Remember Me)
+    const lsRaw = localStorage.getItem(SESSION_KEY);
+    if (lsRaw) {
+      const session: AdminSession = JSON.parse(lsRaw);
+      if (session.authenticated && session.expiresAt > Date.now()) {
         return session;
       }
       // Expired — clean up
       localStorage.removeItem(SESSION_KEY);
     }
 
-    // Fall back to sessionStorage (non-Remember Me sessions)
-    const ssStored = sessionStorage.getItem(SESSION_KEY_SS);
-    if (ssStored) {
-      const session: AdminSession = JSON.parse(ssStored);
-      if (session.authenticated && Date.now() < session.expiresAt) {
+    // Check sessionStorage (session-only)
+    const ssRaw = sessionStorage.getItem(SESSION_KEY);
+    if (ssRaw) {
+      const session: AdminSession = JSON.parse(ssRaw);
+      if (session.authenticated && session.expiresAt > Date.now()) {
         return session;
       }
-      // Expired — clean up
-      sessionStorage.removeItem(SESSION_KEY_SS);
+      sessionStorage.removeItem(SESSION_KEY);
     }
-
-    return null;
   } catch {
-    return null;
+    // Corrupted data — clear it
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
   }
+
+  return null;
 }
 
 export function clearAdminSession(): void {
   localStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_KEY_SS);
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+interface AdminGuardProps {
+  children: React.ReactNode;
 }
 
 export default function AdminGuard({ children }: AdminGuardProps) {
   const navigate = useNavigate();
-
-  // Synchronous session check — runs before paint
   const session = getAdminSession();
 
   useEffect(() => {
@@ -62,13 +59,12 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     }
   }, [session, navigate]);
 
-  // If no valid session, show nothing (redirect is in flight)
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-3 text-gray-500">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm font-medium">Checking authentication…</p>
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-500 text-sm">Redirecting to login...</p>
         </div>
       </div>
     );

@@ -1,100 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Product, Order, RechargeOrder, Bill, BillItem, CartItem, UnitType, PaymentMethod, PaymentStatus, UserProfile } from '../backend';
+import type { Product, Order, CartItem, Bill, BillItem, RechargeOrder } from '../backend';
+import { PaymentMethod, PaymentStatus, UnitType } from '../backend';
 import { ExternalBlob } from '../backend';
 
-// ─── User Profile ────────────────────────────────────────────────────────────
+export { PaymentMethod, PaymentStatus, UnitType, ExternalBlob };
 
-export function useGetCallerUserProfile() {
-  const { actor, isFetching: actorFetching } = useActor();
-  const query = useQuery<UserProfile | null>({
-    queryKey: ['currentUserProfile'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
-    },
-    enabled: !!actor && !actorFetching,
-    retry: false,
-  });
-  return {
-    ...query,
-    isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched,
-  };
-}
+const DEFAULT_UPI_ID = '9708075648-1@okbizaxis';
 
-export function useSaveCallerUserProfile() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (profile: UserProfile) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.saveCallerUserProfile(profile);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    },
-  });
-}
-
-// ─── Admin Check ─────────────────────────────────────────────────────────────
-
-export function useIsCallerAdmin() {
-  const { actor, isFetching } = useActor();
-  return useQuery<boolean>({
-    queryKey: ['isCallerAdmin'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-// ─── Shop Status ─────────────────────────────────────────────────────────────
-
-export function useShopStatus() {
-  const { actor, isFetching } = useActor();
-  return useQuery<boolean>({
-    queryKey: ['shopStatus'],
-    queryFn: async () => {
-      if (!actor) return true;
-      return actor.getShopStatus();
-    },
-    enabled: !!actor && !isFetching,
-    refetchInterval: 30000,
-    refetchOnWindowFocus: true,
-  });
-}
-
-// Legacy aliases — kept for backward compatibility with existing components
-export const useGetShopStatus = useShopStatus;
-export const useGetShopOpenStatus = useShopStatus;
-
-export function useSetShopStatus() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation<boolean, Error, boolean>({
-    mutationFn: async (status: boolean) => {
-      if (!actor) throw new Error('Actor not available');
-      const result = await actor.setShopStatus(status);
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopStatus'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to update shop status:', error.message);
-      queryClient.invalidateQueries({ queryKey: ['shopStatus'] });
-    },
-  });
-}
-
-// Legacy alias for backward compatibility
-export const useSetShopOpenStatus = useSetShopStatus;
-export const useToggleShopStatus = useSetShopStatus;
-
-// ─── Products ─────────────────────────────────────────────────────────────────
+// ─── Products ────────────────────────────────────────────────────────────────
 
 export function useGetAllProducts() {
   const { actor, isFetching } = useActor();
@@ -111,66 +25,59 @@ export function useGetAllProducts() {
 export function useAddProduct() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<bigint, Error, {
-    name: string;
-    category: string;
-    priceInRupees: bigint;
-    image: ExternalBlob;
-    barcode: string;
-    unitType: UnitType;
-    stock: bigint;
-  }>({
-    mutationFn: async ({ name, category, priceInRupees, image, barcode, unitType, stock }) => {
+  return useMutation({
+    mutationFn: async (params: {
+      name: string;
+      category: string;
+      priceInRupees: bigint;
+      image: ExternalBlob;
+      barcode: string;
+      unitType: UnitType;
+      stock: bigint;
+    }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.addProduct(name, category, priceInRupees, image, barcode, unitType, stock);
+      return actor.addProduct(
+        params.name,
+        params.category,
+        params.priceInRupees,
+        params.image,
+        params.barcode,
+        params.unitType,
+        params.stock,
+      );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to add product:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 }
 
 export function useUpdateProductStock() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { productId: bigint; newStock: bigint }>({
-    mutationFn: async ({ productId, newStock }) => {
+  return useMutation({
+    mutationFn: async (params: { productId: bigint; newStock: bigint }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateProductStock(productId, newStock);
+      return actor.updateProductStock(params.productId, params.newStock);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to update product stock:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 }
 
 export function useRemoveProduct() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, bigint>({
+  return useMutation({
     mutationFn: async (productId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.removeProduct(productId);
+      return actor.removeProduct(productId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to remove product:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 }
 
 export function useToggleProductExclusion() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<boolean, Error, bigint>({
+  return useMutation({
     mutationFn: async (productId: bigint) => {
       if (!actor) throw new Error('Actor not available');
       return actor.toggleProductExclusion(productId);
@@ -178,9 +85,6 @@ export function useToggleProductExclusion() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['excludedProducts'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to toggle product exclusion:', error.message);
     },
   });
 }
@@ -214,34 +118,24 @@ export function useGetCart() {
 export function useAddToCart() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { productId: bigint; quantity: bigint }>({
-    mutationFn: async ({ productId, quantity }) => {
+  return useMutation({
+    mutationFn: async (params: { productId: bigint; quantity: bigint }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.addToCart(productId, quantity);
+      return actor.addToCart(params.productId, params.quantity);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to add to cart:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cart'] }),
   });
 }
 
 export function useClearCart() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, void>({
+  return useMutation({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      await actor.clearCart();
+      return actor.clearCart();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to clear cart:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cart'] }),
   });
 }
 
@@ -262,25 +156,30 @@ export function useGetAllOrders() {
 export function usePlaceOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<bigint, Error, {
-    customerName: string;
-    deliveryAddress: string;
-    phoneNumber: string;
-    distanceInKm: bigint;
-    paymentMethod: PaymentMethod;
-    latitude: number | null;
-    longitude: number | null;
-  }>({
-    mutationFn: async ({ customerName, deliveryAddress, phoneNumber, distanceInKm, paymentMethod, latitude, longitude }) => {
+  return useMutation({
+    mutationFn: async (params: {
+      customerName: string;
+      deliveryAddress: string;
+      phoneNumber: string;
+      distanceInKm: bigint;
+      paymentMethod: PaymentMethod;
+      latitude: number | null;
+      longitude: number | null;
+    }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.placeOrder(customerName, deliveryAddress, phoneNumber, distanceInKm, paymentMethod, latitude, longitude);
+      return actor.placeOrder(
+        params.customerName,
+        params.deliveryAddress,
+        params.phoneNumber,
+        params.distanceInKm,
+        params.paymentMethod,
+        params.latitude,
+        params.longitude,
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to place order:', error.message);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
@@ -288,68 +187,48 @@ export function usePlaceOrder() {
 export function useConfirmOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, bigint>({
+  return useMutation({
     mutationFn: async (orderId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.confirmOrder(orderId);
+      return actor.confirmOrder(orderId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to confirm order:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
   });
 }
 
 export function useMarkAsPacked() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, bigint>({
+  return useMutation({
     mutationFn: async (orderId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.markAsPacked(orderId);
+      return actor.markAsPacked(orderId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to mark as packed:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
   });
 }
 
 export function useMarkAsOutForDelivery() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, bigint>({
+  return useMutation({
     mutationFn: async (orderId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.markAsOutForDelivery(orderId);
+      return actor.markAsOutForDelivery(orderId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to mark as out for delivery:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
   });
 }
 
 export function useMarkAsCompleted() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<void, Error, bigint>({
+  return useMutation({
     mutationFn: async (orderId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.markAsCompleted(orderId);
+      return actor.markAsCompleted(orderId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to mark as completed:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
   });
 }
 
@@ -370,17 +249,139 @@ export function useGetAllRechargeOrders() {
 export function usePlaceRechargeOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<bigint, Error, { mobileNumber: string; operator: string; rechargeAmount: bigint }>({
-    mutationFn: async ({ mobileNumber, operator, rechargeAmount }) => {
+  return useMutation({
+    mutationFn: async (params: {
+      mobileNumber: string;
+      operator: string;
+      rechargeAmount: bigint;
+    }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.placeRechargeOrder(mobileNumber, operator, rechargeAmount);
+      return actor.placeRechargeOrder(params.mobileNumber, params.operator, params.rechargeAmount);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['rechargeOrders'] }),
+  });
+}
+
+// ─── Shop Status ──────────────────────────────────────────────────────────────
+
+export function useShopStatus() {
+  const { actor, isFetching } = useActor();
+  return useQuery<boolean>({
+    queryKey: ['shopStatus'],
+    queryFn: async () => {
+      if (!actor) return true;
+      return actor.getShopStatus();
+    },
+    enabled: !!actor && !isFetching,
+    refetchInterval: 30000,
+  });
+}
+
+// Legacy aliases used by existing components
+export const useGetShopStatus = useShopStatus;
+export const useGetShopOpenStatus = useShopStatus;
+
+export function useSetShopStatus() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (status: boolean) => {
+      if (!actor) throw new Error('Actor not available. Please ensure you are logged in.');
+      return actor.setShopStatus(status);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopStatus'] }),
+  });
+}
+
+// ─── UPI ID ───────────────────────────────────────────────────────────────────
+
+export function useGetUpiId() {
+  const { actor, isFetching } = useActor();
+  return useQuery<string>({
+    queryKey: ['upiId'],
+    queryFn: async () => {
+      if (!actor) return DEFAULT_UPI_ID;
+      try {
+        return await actor.getUpiId();
+      } catch {
+        return DEFAULT_UPI_ID;
+      }
+    },
+    enabled: !!actor && !isFetching,
+    placeholderData: DEFAULT_UPI_ID,
+  });
+}
+
+export function useSetUpiId() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (upi: string) => {
+      if (!actor) throw new Error('Actor not available. Please ensure you are logged in.');
+      return actor.setUpiId(upi);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rechargeOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['upiId'] });
+      queryClient.invalidateQueries({ queryKey: ['storeUpiId'] });
     },
-    onError: (error: Error) => {
-      console.error('Failed to place recharge order:', error.message);
+  });
+}
+
+export function useGetStoreUpiId() {
+  const { actor, isFetching } = useActor();
+  return useQuery<string>({
+    queryKey: ['storeUpiId'],
+    queryFn: async () => {
+      if (!actor) return DEFAULT_UPI_ID;
+      try {
+        return await actor.getStoreUpiId();
+      } catch {
+        return DEFAULT_UPI_ID;
+      }
     },
+    enabled: !!actor && !isFetching,
+    placeholderData: DEFAULT_UPI_ID,
+  });
+}
+
+export function useSetStoreUpiId() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (upi: string) => {
+      if (!actor) throw new Error('Actor not available. Please ensure you are logged in.');
+      return actor.setStoreUpiId(upi);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storeUpiId'] });
+      queryClient.invalidateQueries({ queryKey: ['upiId'] });
+    },
+  });
+}
+
+// ─── Shop Slogan ──────────────────────────────────────────────────────────────
+
+export function useGetShopSlogan() {
+  const { actor, isFetching } = useActor();
+  return useQuery<string>({
+    queryKey: ['shopSlogan'],
+    queryFn: async () => {
+      if (!actor) return '';
+      return actor.getShopSlogan();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetShopSlogan() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (slogan: string) => {
+      if (!actor) throw new Error('Actor not available. Please ensure you are logged in.');
+      return actor.setShopSlogan(slogan);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopSlogan'] }),
   });
 }
 
@@ -401,156 +402,67 @@ export function useGetAllBills() {
 export function useGenerateBill() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<Bill, Error, {
-    customerName: string | null;
-    customerPhone: string | null;
-    items: BillItem[];
-    totalAmount: bigint;
-  }>({
-    mutationFn: async ({ customerName, customerPhone, items, totalAmount }) => {
+  return useMutation({
+    mutationFn: async (params: {
+      customerName: string | null;
+      customerPhone: string | null;
+      items: BillItem[];
+      totalAmount: bigint;
+    }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.generateBill(customerName, customerPhone, items, totalAmount);
+      return actor.generateBill(
+        params.customerName,
+        params.customerPhone,
+        params.items,
+        params.totalAmount,
+      );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bills'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to generate bill:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bills'] }),
   });
 }
 
 export function useUpdateBillPaymentStatus() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-  return useMutation<Bill, Error, {
-    billId: bigint;
-    paymentStatus: PaymentStatus;
-    paymentReference: string | null;
-    paymentGatewayId: string | null;
-  }>({
-    mutationFn: async ({ billId, paymentStatus, paymentReference, paymentGatewayId }) => {
+  return useMutation({
+    mutationFn: async (params: {
+      billId: bigint;
+      paymentStatus: PaymentStatus;
+      paymentReference: string | null;
+      paymentGatewayId: string | null;
+    }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateBillPaymentStatus(billId, paymentStatus, paymentReference, paymentGatewayId);
+      return actor.updateBillPaymentStatus(
+        params.billId,
+        params.paymentStatus,
+        params.paymentReference,
+        params.paymentGatewayId,
+      );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bills'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to update bill payment status:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bills'] }),
   });
 }
 
-// ─── Store Settings ───────────────────────────────────────────────────────────
-
-export function useGetShopSlogan() {
-  const { actor, isFetching } = useActor();
-  return useQuery<string>({
-    queryKey: ['shopSlogan'],
-    queryFn: async () => {
-      if (!actor) return '';
-      return actor.getShopSlogan();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useSetShopSlogan() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
-    mutationFn: async (slogan: string) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.setShopSlogan(slogan);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopSlogan'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to set shop slogan:', error.message);
-    },
-  });
-}
-
-// ─── UPI ID (primary hooks used by AdminSettingsPage and BillTemplate) ────────
-
-const DEFAULT_UPI_ID = '9708075648-1@okbizaxis';
-
-export function useGetUpiId() {
-  const { actor, isFetching } = useActor();
-  return useQuery<string>({
-    queryKey: ['upiId'],
-    queryFn: async () => {
-      if (!actor) return DEFAULT_UPI_ID;
-      const id = await actor.getUpiId();
-      return id && id.trim() !== '' ? id : DEFAULT_UPI_ID;
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useSetUpiId() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
-    mutationFn: async (upiId: string) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.setUpiId(upiId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['upiId'] });
-      // Also invalidate the storeUpiId cache for consistency
-      queryClient.invalidateQueries({ queryKey: ['storeUpiId'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to set UPI ID:', error.message);
-    },
-  });
-}
-
-// ─── Store UPI ID (legacy aliases kept for backward compatibility) ─────────────
-
-export function useGetStoreUpiId() {
-  const { actor, isFetching } = useActor();
-  return useQuery<string>({
-    queryKey: ['storeUpiId'],
-    queryFn: async () => {
-      if (!actor) return DEFAULT_UPI_ID;
-      const id = await actor.getStoreUpiId();
-      return id && id.trim() !== '' ? id : DEFAULT_UPI_ID;
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useSetStoreUpiId() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
-    mutationFn: async (upiId: string) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.setStoreUpiId(upiId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['storeUpiId'] });
-      queryClient.invalidateQueries({ queryKey: ['upiId'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to set store UPI ID:', error.message);
-    },
-  });
-}
+// ─── Calculate Total Price ────────────────────────────────────────────────────
 
 export function useCalculateTotalPrice() {
   const { actor } = useActor();
-  return useMutation<bigint, Error, bigint>({
+  return useMutation({
     mutationFn: async (distanceInKm: bigint) => {
       if (!actor) throw new Error('Actor not available');
       return actor.calculateTotalPrice(distanceInKm);
     },
-    onError: (error: Error) => {
-      console.error('Failed to calculate total price:', error.message);
+  });
+}
+
+// ─── Product by Barcode ───────────────────────────────────────────────────────
+
+export function useGetProductByBarcode() {
+  const { actor } = useActor();
+  return useMutation({
+    mutationFn: async (barcode: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getProductByBarcode(barcode);
     },
   });
 }
@@ -559,15 +471,63 @@ export function useAddProductByBarcode() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ barcode, quantity }: { barcode: string; quantity: bigint }) => {
+    mutationFn: async (params: { barcode: string; quantity: bigint }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.addProductByBarcode(barcode, quantity);
+      return actor.addProductByBarcode(params.barcode, params.quantity);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error: Error) => {
-      console.error('Failed to add product by barcode:', error.message);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cart'] }),
   });
 }
+
+// ─── User Profile ─────────────────────────────────────────────────────────────
+
+export function useGetCallerUserProfile() {
+  const { actor, isFetching: actorFetching } = useActor();
+  const query = useQuery({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
+}
+
+export function useSaveCallerUserProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (profile: { name: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.saveCallerUserProfile(profile);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] }),
+  });
+}
+
+// ─── Admin Check ──────────────────────────────────────────────────────────────
+
+export function useIsAdmin() {
+  const { actor, isFetching } = useActor();
+  return useQuery<boolean>({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      try {
+        return await actor.isAdmin();
+      } catch {
+        return false;
+      }
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// Legacy alias used by Header
+export const useIsCallerAdmin = useIsAdmin;

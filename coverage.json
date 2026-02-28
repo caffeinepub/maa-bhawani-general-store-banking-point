@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-28T01:46:24.271Z",
+  "generatedAt": "2026-02-28T02:23:26.794Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,65 +12,83 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Rewrite the AdminGuard component so that on every page load (including refresh and browser reopen) it synchronously checks for a valid admin session in localStorage before rendering any admin content. If no valid session exists, immediately redirect to /login. The session must have a timestamp-based expiry (24 hours by default). Remove any logic that allows bypassing the session check.",
+        "summary": "Reset admin authentication so that the AdminGuard component grants full admin access by default when no valid session exists, effectively bypassing the lockout. The hardcoded credentials in AdminLoginPage must be reset to a known default (e.g., username: 'admin', password: 'admin123') and the session creation logic must be verified to correctly write to localStorage/sessionStorage so that the AdminGuard recognizes it as valid.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/AdminLoginPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/AdminLoginPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Re-enable the hardcoded password check on the admin login page. The login form must validate the entered password against the stored admin credential before creating a session. If the password is incorrect, show an error message and do not create a session. Do not allow the admin panel to be accessed without successful password entry.",
+        "summary": "Rebuild the /admin login page (AdminLoginPage.tsx) to always display a Username and Password input form. The login page must be visible at /admin/login (or /login as currently routed in App.tsx). Ensure App.tsx routes /admin and all /admin/* paths through AdminGuard, which redirects unauthenticated users to the login page. The login page itself must NOT be wrapped in AdminGuard. Verify TanStack Router route definitions so the login route is always reachable.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/AdminLoginPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/App.tsx",
+          "frontend/src/components/AdminGuard.tsx"
         ],
         "matchedFiles": [
           "frontend/src/pages/AdminLoginPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/App.tsx",
+          "frontend/src/components/AdminGuard.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Implement a 'Remember Me' checkbox on the admin login page. When checked, persist the session in localStorage with a 7-day expiry (instead of session-only). When unchecked, clear the session on browser close by using sessionStorage so that reopening the browser requires re-authentication. If 'Remember Me' is not checked, the session must not survive a browser restart.",
+        "summary": "Fix the backend actor availability issue causing 'Actor not available' errors. In useQueries.ts, all mutations that write settings (UPI ID, shop status, slogan) must wait for the actor to be available before executing, and must handle the case where the actor is null/undefined gracefully with a clear error message. In the Motoko backend (backend/main.mo), verify that the admin-only write functions (setUpiId, setShopStatus, setSlogan, or equivalent) do not perform a principal-based authorization check that would reject calls from the frontend session — if they do, either remove the check or make it compatible with the anonymous/session-based admin flow being used.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/AdminLoginPage.tsx",
-          "frontend/src/components/AdminGuard.tsx",
-          "frontend/src/components/Header.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/AdminSettingsPage.tsx",
+          "frontend/src/components/ShopStatusToggle.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/AdminLoginPage.tsx",
-          "frontend/src/components/AdminGuard.tsx",
-          "frontend/src/components/Header.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/AdminSettingsPage.tsx",
+          "frontend/src/components/ShopStatusToggle.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Wrap ALL admin routes — including /admin, /admin/settings, /admin/qr, /admin/billing, and any other /admin/* sub-routes — with the AdminGuard component so that none of them are publicly accessible. No admin page or sub-page should render any content before the session check passes.",
+        "summary": "Remove all 'Coming Soon' placeholder content from SearchPage.tsx, WalletPage.tsx, and MyOrdersPage.tsx. Replace them with real, functional implementations: (1) SearchPage must render a search input that filters products from the backend by name/category and displays results using ProductCard components. (2) WalletPage must display the user's wallet/cashback balance and transaction history if the backend supports it, or a basic wallet UI with balance display. (3) MyOrdersPage must display the current user's past orders fetched from the backend. Update BottomNavBar.tsx links for Search and Wallet to navigate to these now-functional pages.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/pages/SearchPage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/pages/MyOrdersPage.tsx",
+          "frontend/src/components/BottomNavBar.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/pages/SearchPage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/pages/MyOrdersPage.tsx",
+          "frontend/src/components/BottomNavBar.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/App.tsx",
     "frontend/src/components/AdminGuard.tsx",
-    "frontend/src/components/Header.tsx",
+    "frontend/src/components/BottomNavBar.tsx",
+    "frontend/src/components/ShopStatusToggle.tsx",
+    "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/AdminLoginPage.tsx",
+    "frontend/src/pages/AdminSettingsPage.tsx",
+    "frontend/src/pages/MyOrdersPage.tsx",
+    "frontend/src/pages/SearchPage.tsx",
+    "frontend/src/pages/WalletPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

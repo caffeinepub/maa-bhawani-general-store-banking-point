@@ -13,8 +13,10 @@ import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
-// Apply migration automatically on canister upgrade
+import Migration "migration";
 
+// Apply migration automatically on canister upgrade
+(with migration = Migration.run)
 actor {
   // State
   include MixinStorage();

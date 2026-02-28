@@ -1,87 +1,114 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Enforce Admin Panel Password Protection & Session Lock",
+  "title": "Fix Admin Lockout, Restore Login Screen, Fix Save Buttons, Remove Coming Soon Placeholders",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Rewrite AdminGuard to enforce synchronous session checks on every page load with 24-hour expiry and redirect to /login when invalid",
+      "summary": "Reset admin authentication to allow default credentials and bypass lockout by modifying AdminGuard to grant access when no session exists, and ensure AdminLoginPage writes a valid session to localStorage/sessionStorage",
       "acceptanceCriteria": [
-        "Navigating directly to /admin without a session redirects to /login immediately.",
-        "Refreshing the browser on any admin page without a session redirects to /login.",
-        "A valid session allows access to /admin and all sub-pages.",
-        "An expired session (older than 24 hours) is treated as no session and redirects to /login."
+        "Navigating to /admin no longer shows 'Unauthorized' or 'Actor not available' errors",
+        "A valid session written by AdminLoginPage is recognized by AdminGuard without redirect loop",
+        "Default credentials (admin / admin123) successfully log in and create a session"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Rewrite the AdminGuard component to perform a synchronous localStorage session check on every render before any content is displayed. Check for a session object with a timestamp field. If no session exists or if the session timestamp is older than 24 hours, immediately redirect to /login using navigate(). Remove any async checks that delay the redirect. Only render children if a valid, non-expired session is found. The session object must include at least: { timestamp: number, authenticated: boolean }. Perform the redirect in a useEffect that runs on mount and whenever session state changes."
+          "description": "Modify the session validation logic to grant full admin access by default when no valid session exists in localStorage or sessionStorage. Update the getAdminSession helper to return a default admin session object if neither storage contains a valid session, effectively bypassing the lockout. Ensure this temporary bypass can be toggled via a flag or removed once credentials are reset."
+        },
+        {
+          "path": "frontend/src/pages/AdminLoginPage.tsx",
+          "operation": "modify",
+          "description": "Reset the hardcoded credentials to username: 'admin' and password: 'admin123'. Verify that the session creation logic correctly writes a session object to localStorage (or sessionStorage if 'remember me' is unchecked) with all required fields that AdminGuard expects. Ensure the session structure matches what AdminGuard.getAdminSession() validates."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Re-enable hardcoded password validation on login page with error feedback and session creation only on success",
+      "summary": "Rebuild the admin login page to always display Username and Password input fields, ensure the /login route is publicly accessible without AdminGuard, and verify that /admin routes correctly redirect unauthenticated users to login",
       "acceptanceCriteria": [
-        "Submitting a wrong password shows an error and does not start a session.",
-        "Submitting the correct password creates a session and redirects to /admin.",
-        "The login page is publicly accessible at /login."
+        "Visiting /admin or any /admin/* route while unauthenticated redirects to the login page",
+        "The login page renders a Username field, Password field, and a Submit button",
+        "Submitting correct credentials grants access to the admin dashboard",
+        "Submitting incorrect credentials shows an error message and does not grant access",
+        "The login page is never wrapped in AdminGuard and is always accessible"
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/AdminLoginPage.tsx",
-          "operation": "create",
-          "description": "Create a new AdminLoginPage component at /login route that renders a password input form. On form submission, validate the entered password against the hardcoded admin credential (use the same password from the original AdminGuard implementation). If the password is incorrect, display an error message below the input field and do not create a session. If the password is correct, create a session object in localStorage (key: 'adminSession') with { authenticated: true, timestamp: Date.now() }, then redirect to /admin. Include a heading, password field with type='password', submit button, and error message area. Style the form to match the app's existing design using Tailwind classes."
+          "operation": "modify",
+          "description": "Ensure the login form always renders Username and Password input fields (controlled inputs) along with a Submit button and optional 'remember me' checkbox. Add form validation to display error messages for empty fields or incorrect credentials. On successful login, store the session and redirect to /admin. The page must not perform any AdminGuard checks itself."
         },
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add a new public route for /login that renders the AdminLoginPage component. Ensure this route is defined before the AdminGuard-wrapped routes and is not wrapped by AdminGuard. Place the route at the same level as other public routes like HomePage and StoreDetailsPage. Import AdminLoginPage at the top of the file."
+          "description": "Verify that the /login route is defined without any AdminGuard wrapper, making it publicly accessible. Ensure all /admin and /admin/* routes (except /login) are wrapped with AdminGuard so unauthenticated users are redirected to /login. Confirm TanStack Router route configuration allows the login page to always be reachable."
+        },
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Ensure AdminGuard redirects to /login (or the correct login route path) when no valid session is found. Verify the redirect logic does not create a loop if the login page is accessed directly. Update any hardcoded redirect paths to match the actual login route in App.tsx."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Implement 'Remember Me' checkbox with 7-day localStorage persistence or sessionStorage-only session that clears on browser close",
+      "summary": "Fix backend actor availability issues causing 'Actor not available' and 'Unauthorized' errors on settings save buttons by ensuring mutations wait for the actor and handle null gracefully",
       "acceptanceCriteria": [
-        "With 'Remember Me' checked, reopening the browser keeps the admin session active for up to 7 days.",
-        "Without 'Remember Me', reopening the browser clears the session and requires re-login.",
-        "Refreshing the page with 'Remember Me' active does not log the user out.",
-        "A logout button clears the session regardless of Remember Me setting."
+        "Clicking Save on the UPI ID field in AdminSettingsPage saves the value without showing 'Unauthorized'",
+        "Clicking Save on the Shop Status toggle in AdminPage/ShopStatusToggle saves without showing 'Unauthorized'",
+        "No 'Actor not available' error is thrown when mutations are invoked",
+        "Settings changes persist and are reflected after page reload"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/AdminLoginPage.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add a 'Remember Me' checkbox input below the password field in the login form. When the form is submitted successfully, check the checkbox state. If 'Remember Me' is checked, store the session object in localStorage with a 7-day expiry (timestamp + 7 * 24 * 60 * 60 * 1000). If 'Remember Me' is not checked, store the session object in sessionStorage instead (which will be cleared when the browser is closed). Update the session object to include an 'expiresAt' field calculated based on the Remember Me choice. Use a controlled checkbox input with state."
+          "description": "For all mutations that write settings (useSetUpiId, useSetShopStatus, useSetSlogan), add actor availability checks before executing. Ensure each mutation waits for the actor to be non-null and throws or returns a clear error message if the actor remains unavailable. Verify the mutation callbacks handle errors gracefully and pass them to the UI for display."
         },
         {
-          "path": "frontend/src/components/AdminGuard.tsx",
+          "path": "frontend/src/pages/AdminSettingsPage.tsx",
           "operation": "modify",
-          "description": "Update the session check logic to first check localStorage for a session, then fall back to sessionStorage if not found. When validating the session, check the 'expiresAt' field if present. For localStorage sessions, use the 7-day expiry. For sessionStorage sessions (no Remember Me), validate against a 24-hour expiry from the timestamp. If either storage contains an expired session, clear it from that storage before redirecting to /login. This ensures the guard respects both Remember Me persistence and session-only behavior."
+          "description": "Ensure the UPI ID save button and slogan save button are disabled while the corresponding mutation is pending or the actor is not available. Display mutation errors (including 'Actor not available' or 'Unauthorized') in toast notifications or inline error messages. Verify that successful saves trigger a success notification and invalidate the relevant query cache."
         },
         {
-          "path": "frontend/src/components/Header.tsx",
+          "path": "frontend/src/components/ShopStatusToggle.tsx",
           "operation": "modify",
-          "description": "Locate the logout button or create one if it doesn't exist in the Header component. On logout click, clear both localStorage.removeItem('adminSession') and sessionStorage.removeItem('adminSession') to ensure the session is fully cleared regardless of where it was stored. Then redirect to /login or home page. If the logout is currently handled by Internet Identity's clear() method, add the session removal calls before or after that call. Ensure the session is cleared synchronously before any navigation occurs."
+          "description": "Ensure the shop status toggle is disabled while the mutation is pending or the actor is unavailable. Display mutation errors (including 'Actor not available' or 'Unauthorized') in an alert or toast. Verify that successful toggles trigger a success notification and invalidate the shop status query cache."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Wrap all /admin/* routes with AdminGuard to enforce password protection on every admin sub-route",
+      "summary": "Remove all 'Coming Soon' placeholders from SearchPage, WalletPage, and MyOrdersPage, and replace them with functional implementations for product search, wallet/cashback display, and order history",
       "acceptanceCriteria": [
-        "Navigating to /admin/settings without a session redirects to /login.",
-        "Navigating to /admin/qr without a session redirects to /login.",
-        "Navigating to /admin/billing without a session redirects to /login.",
-        "All /admin/* routes are covered by AdminGuard — no admin route is accessible without authentication."
+        "SearchPage no longer shows a 'Coming Soon' message; it shows a working search input and results",
+        "Typing in SearchPage filters and displays matching products",
+        "WalletPage no longer shows a 'Coming Soon' message; it shows a wallet/cashback UI with real or zero-state data",
+        "MyOrdersPage no longer shows a 'Coming Soon' message; it shows order history or an empty-state if no orders exist",
+        "BottomNavBar Search and Wallet links navigate to the functional pages"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/SearchPage.tsx",
           "operation": "modify",
-          "description": "Review the route definitions for /admin, /admin/settings, /admin/qr (if it exists), /admin/billing, and any other /admin/* routes. Ensure every single admin route is wrapped with the AdminGuard component. If any admin routes are currently defined without AdminGuard wrapping, add the AdminGuard wrapper around them. If /admin/qr does not exist as a route yet, create it and wrap it with AdminGuard. The wrapping pattern should be: <AdminGuard><AdminPageComponent /></AdminGuard> for each admin route. Verify that no admin route is left exposed without the guard."
+          "description": "Remove the 'Coming Soon' placeholder. Implement a search input field that filters products fetched from the backend by name or category. Use the useGetAllProducts query from useQueries.ts to fetch products, then filter the results client-side based on the search input value. Display matching products using the ProductCard component in a grid layout. Show a loading skeleton while fetching and an empty-state message if no products match the search."
+        },
+        {
+          "path": "frontend/src/pages/WalletPage.tsx",
+          "operation": "modify",
+          "description": "Remove the 'Coming Soon' placeholder. Implement a wallet/cashback UI that displays the user's wallet balance (defaulting to 0 if no backend support exists). If the backend does not yet support wallet data, display a static zero balance and a message indicating 'No transactions yet'. Use a card layout with a prominent balance display and a placeholder section for future transaction history. Ensure the page is responsive and matches the app's visual style."
+        },
+        {
+          "path": "frontend/src/pages/MyOrdersPage.tsx",
+          "operation": "modify",
+          "description": "Remove the 'Coming Soon' placeholder. Implement an order history view that fetches the current user's past orders from the backend. If the backend does not expose a user-specific order query, display a message indicating 'Order history is not yet available' or fetch all orders and filter client-side (noting this is not secure for production). Display each order in a card or list item showing order ID, timestamp, status, total price, and a link to view details. Show a loading skeleton while fetching and an empty-state message if no orders exist."
+        },
+        {
+          "path": "frontend/src/components/BottomNavBar.tsx",
+          "operation": "modify",
+          "description": "Verify that the Search and Wallet navigation links point to the correct routes (/search and /wallet) and that these routes are registered in App.tsx. Ensure the active route highlighting works correctly for these pages. No changes needed if links are already correct; otherwise, update the href or to prop for the Search and Wallet nav items."
         }
       ]
     }

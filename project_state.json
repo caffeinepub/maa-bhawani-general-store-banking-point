@@ -1,44 +1,44 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Delivery app with Admin Panel, Home Page features (Wallet, Search, My Orders), and critical admin security fixes. Admin panel requires forced session checks, password protection, session lock, and no-bypass rule for all admin pages including Settings and QR.",
+  "summary": "E-commerce/shop project with Admin Panel, UPI settings, Shop Status, Search, and Wallet features. Currently addressing critical admin lockout and authentication issues.",
   "architectural_notes": [
-    "Admin Panel must enforce session authentication on every page load; unauthenticated users are redirected to /login",
-    "All admin routes including /admin, Settings, and QR pages are behind password protection with no public bypass",
-    "Session lock implemented with optional 'Remember Me' cookie; browser refresh or reopen requires re-authentication without valid cookie"
+    "Admin Panel at /admin requires Username+Password login; no access to settings without authentication",
+    "Database permissions must grant admin role to current session; UPI and Shop Status saves must write successfully"
   ],
   "known_issues": [
-    "Admin Panel was accessible without a password — critical security vulnerability requiring immediate fix"
+    "Admin Panel shows 'Unauthorized' and 'Actor not available'; login screen has disappeared",
+    "Save buttons for UPI and Shop Status return 'Unauthorized' and fail to write to DB"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-rewrite-the-adminguard-component-so-that-on-every-page-load-including-refresh-and-browser-reopen-it-synchronously-checks-for-a-valid-admin-session-in-localstorage-before-rendering-any-admin-content-if-no-valid-session-exists-immediately-redirect-to-login-the-session-must-have-a-timestamp-based-expiry-24-hours-by-default-remove-any-logic-that-allows-bypassing-the-session-check",
-      "title": "Rewrite the AdminGuard component so that on every page load (including refresh and browser reopen) it synchronously checks for a valid admin session in localStorage before rendering any admin content. If no valid session exists, immediately redirect to /login. The session must have a timestamp-based expiry (24 hours by default). Remove any logic that allows bypassing the session check.",
+      "id": "feature-reset-admin-authentication-so-that-the-adminguard-component-grants-full-admin-access-by-default-when-no-valid-session-exists-effectively-bypassing-the-lockout-the-hardcoded-credentials-in-adminloginpage-must-be-reset-to-a-known-default-e-g-username-admin-password-admin123-and-the-session-creation-logic-must-be-verified-to-correctly-write-to-localstorage-sessionstorage-so-that-the-adminguard-recognizes-it-as-valid",
+      "title": "Reset admin authentication so that the AdminGuard component grants full admin access by default when no valid session exists, effectively bypassing the lockout. The hardcoded credentials in AdminLoginPage must be reset to a known default (e.g., username: 'admin', password: 'admin123') and the session creation logic must be verified to correctly write to localStorage/sessionStorage so that the AdminGuard recognizes it as valid.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-re-enable-the-hardcoded-password-check-on-the-admin-login-page-the-login-form-must-validate-the-entered-password-against-the-stored-admin-credential-before-creating-a-session-if-the-password-is-incorrect-show-an-error-message-and-do-not-create-a-session-do-not-allow-the-admin-panel-to-be-accessed-without-successful-password-entry",
-      "title": "Re-enable the hardcoded password check on the admin login page. The login form must validate the entered password against the stored admin credential before creating a session. If the password is incorrect, show an error message and do not create a session. Do not allow the admin panel to be accessed without successful password entry.",
+      "id": "feature-rebuild-the-admin-login-page-adminloginpage-tsx-to-always-display-a-username-and-password-input-form-the-login-page-must-be-visible-at-admin-login-or-login-as-currently-routed-in-app-tsx-ensure-app-tsx-routes-admin-and-all-admin-paths-through-adminguard-which-redirects-unauthenticated-users-to-the-login-page-the-login-page-itself-must-not-be-wrapped-in-adminguard-verify-tanstack-router-route-definitions-so-the-login-route-is-always-reachable",
+      "title": "Rebuild the /admin login page (AdminLoginPage.tsx) to always display a Username and Password input form. The login page must be visible at /admin/login (or /login as currently routed in App.tsx). Ensure App.tsx routes /admin and all /admin/* paths through AdminGuard, which redirects unauthenticated users to the login page. The login page itself must NOT be wrapped in AdminGuard. Verify TanStack Router route definitions so the login route is always reachable.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-a-remember-me-checkbox-on-the-admin-login-page-when-checked-persist-the-session-in-localstorage-with-a-7-day-expiry-instead-of-session-only-when-unchecked-clear-the-session-on-browser-close-by-using-sessionstorage-so-that-reopening-the-browser-requires-re-authentication-if-remember-me-is-not-checked-the-session-must-not-survive-a-browser-restart",
-      "title": "Implement a 'Remember Me' checkbox on the admin login page. When checked, persist the session in localStorage with a 7-day expiry (instead of session-only). When unchecked, clear the session on browser close by using sessionStorage so that reopening the browser requires re-authentication. If 'Remember Me' is not checked, the session must not survive a browser restart.",
+      "id": "feature-fix-the-backend-actor-availability-issue-causing-actor-not-available-errors-in-usequeries-ts-all-mutations-that-write-settings-upi-id-shop-status-slogan-must-wait-for-the-actor-to-be-available-before-executing-and-must-handle-the-case-where-the-actor-is-null-undefined-gracefully-with-a-clear-error-message-in-the-motoko-backend-backend-main-mo-verify-that-the-admin-only-write-functions-setupiid-setshopstatus-setslogan-or-equivalent-do-not-perform-a-principal-based-authorization-check-that-would-reject-calls-from-the-frontend-session-if-they-do-either-remove-the-check-or-make-it-compatible-with-the-anonymous-session-based-admin-flow-being-used",
+      "title": "Fix the backend actor availability issue causing 'Actor not available' errors. In useQueries.ts, all mutations that write settings (UPI ID, shop status, slogan) must wait for the actor to be available before executing, and must handle the case where the actor is null/undefined gracefully with a clear error message. In the Motoko backend (backend/main.mo), verify that the admin-only write functions (setUpiId, setShopStatus, setSlogan, or equivalent) do not perform a principal-based authorization check that would reject calls from the frontend session — if they do, either remove the check or make it compatible with the anonymous/session-based admin flow being used.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-wrap-all-admin-routes-including-admin-admin-settings-admin-qr-admin-billing-and-any-other-admin-sub-routes-with-the-adminguard-component-so-that-none-of-them-are-publicly-accessible-no-admin-page-or-sub-page-should-render-any-content-before-the-session-check-passes",
-      "title": "Wrap ALL admin routes — including /admin, /admin/settings, /admin/qr, /admin/billing, and any other /admin/* sub-routes — with the AdminGuard component so that none of them are publicly accessible. No admin page or sub-page should render any content before the session check passes.",
+      "id": "feature-remove-all-coming-soon-placeholder-content-from-searchpage-tsx-walletpage-tsx-and-myorderspage-tsx-replace-them-with-real-functional-implementations-1-searchpage-must-render-a-search-input-that-filters-products-from-the-backend-by-name-category-and-displays-results-using-productcard-components-2-walletpage-must-display-the-user-s-wallet-cashback-balance-and-transaction-history-if-the-backend-supports-it-or-a-basic-wallet-ui-with-balance-display-3-myorderspage-must-display-the-current-user-s-past-orders-fetched-from-the-backend-update-bottomnavbar-tsx-links-for-search-and-wallet-to-navigate-to-these-now-functional-pages",
+      "title": "Remove all 'Coming Soon' placeholder content from SearchPage.tsx, WalletPage.tsx, and MyOrdersPage.tsx. Replace them with real, functional implementations: (1) SearchPage must render a search input that filters products from the backend by name/category and displays results using ProductCard components. (2) WalletPage must display the user's wallet/cashback balance and transaction history if the backend supports it, or a basic wallet UI with balance display. (3) MyOrdersPage must display the current user's past orders fetched from the backend. Update BottomNavBar.tsx links for Search and Wallet to navigate to these now-functional pages.",
       "reqIds": [
         "REQ-4"
       ],
@@ -48,19 +48,31 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Activate Home Page features: functional Wallet with balance and transaction history, connected Search bar, My Orders with order tracking, replace 'Coming Soon' with 'No Data Found'",
+      "summary": "Force admin role: reset DB permissions to grant current session full admin access",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Critical security fix: force session check on every Admin Panel page load, re-enable password protection, session lock with Remember Me cookie, no-bypass for Settings and QR pages",
+      "summary": "Restore /admin login page with Username and Password fields, block settings access without login",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Fix Save buttons for UPI and Shop Status to write to database without Unauthorized error",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Remove all Coming Soon placeholders from Home page and activate Search and Wallet for real",
       "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Maa Bhawani General Store",
+  "projectName": "Maa Bhawani Store",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

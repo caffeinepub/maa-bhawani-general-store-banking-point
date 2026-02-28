@@ -1,14 +1,17 @@
 # Specification
 
 ## Summary
-**Goal:** Enforce proper password protection and session management for the admin panel so that no admin page is accessible without valid credentials.
+**Goal:** Fix admin lockout and login flow, repair broken Save buttons, and replace all "Coming Soon" placeholder pages with functional implementations.
 
 **Planned changes:**
-- Rewrite `AdminGuard` to synchronously check for a valid admin session (localStorage) on every page load, redirecting to `/login` immediately if no valid or unexpired session exists
-- Add 24-hour timestamp-based session expiry; expired sessions are treated as no session
-- Re-enable hardcoded password validation on the admin login page; wrong password shows an error and does not create a session
-- Add a "Remember Me" checkbox: when checked, session persists in localStorage for 7 days; when unchecked, use sessionStorage so the session is cleared on browser close
-- Wrap all admin routes (`/admin`, `/admin/settings`, `/admin/qr`, `/admin/billing`, and any other `/admin/*` sub-routes) with `AdminGuard` so none render content before the session check passes
-- Ensure a logout button clears the session regardless of "Remember Me" setting
+- Reset admin credentials to default (`admin` / `admin123`) and fix session creation so AdminGuard correctly recognizes a valid login session from localStorage/sessionStorage
+- Rebuild the AdminLoginPage to always display a Username and Password form; ensure it is publicly accessible and never wrapped in AdminGuard
+- Fix App.tsx routing so all `/admin` and `/admin/*` paths go through AdminGuard, redirecting unauthenticated users to the login page
+- Fix "Actor not available" errors in useQueries.ts by ensuring mutations wait for the actor before executing and handle null/undefined gracefully
+- Verify Motoko backend write functions (setUpiId, setShopStatus, setSlogan, etc.) do not reject frontend calls due to principal-based authorization conflicts
+- Replace "Coming Soon" placeholder in SearchPage with a working search input that filters products by name/category and displays results using ProductCard components
+- Replace "Coming Soon" placeholder in WalletPage with a wallet/cashback UI showing balance and transaction history (or zero-state)
+- Replace "Coming Soon" placeholder in MyOrdersPage with order history fetched from the backend (or empty-state if no orders)
+- Update BottomNavBar links for Search and Wallet to navigate to the now-functional pages
 
-**User-visible outcome:** Accessing any admin page without logging in (or after a session expires/browser is closed without "Remember Me") immediately redirects to `/login`. Only users who enter the correct password can access the admin panel, and the session persists across refreshes only when "Remember Me" is checked.
+**User-visible outcome:** Admin can log in with default credentials without being locked out, Save buttons for UPI ID and Shop Status work without "Unauthorized" errors, and Search, Wallet, and My Orders pages are fully functional instead of showing "Coming Soon."

@@ -1,96 +1,97 @@
 {
   "kind": "build_request",
-  "title": "Enforce Admin Panel Password Protection & Session Lock",
-  "projectName": "Maa Bhawani General Store",
+  "title": "Fix Admin Lockout, Restore Login Screen, Fix Save Buttons, Remove Coming Soon Placeholders",
+  "projectName": "Maa Bhawani Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Rewrite the AdminGuard component so that on every page load (including refresh and browser reopen) it synchronously checks for a valid admin session in localStorage before rendering any admin content. If no valid session exists, immediately redirect to /login. The session must have a timestamp-based expiry (24 hours by default). Remove any logic that allows bypassing the session check.",
+      "text": "Reset admin authentication so that the AdminGuard component grants full admin access by default when no valid session exists, effectively bypassing the lockout. The hardcoded credentials in AdminLoginPage must be reset to a known default (e.g., username: 'admin', password: 'admin123') and the session creation logic must be verified to correctly write to localStorage/sessionStorage so that the AdminGuard recognizes it as valid.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Rewrite the Admin Panel logic so that it MUST check for an active session on every single page load. If no user is logged in, redirect them instantly to the /login page."
+          "Force Admin Role: Reset the database permissions so that the current session or IP is automatically granted Full Admin Access until I can set a new password."
         ]
       },
       "acceptanceCriteria": [
-        "Navigating directly to /admin without a session redirects to /login immediately.",
-        "Refreshing the browser on any admin page without a session redirects to /login.",
-        "A valid session allows access to /admin and all sub-pages.",
-        "An expired session (older than 24 hours) is treated as no session and redirects to /login."
+        "Navigating to /admin no longer shows 'Unauthorized' or 'Actor not available' errors",
+        "A valid session written by AdminLoginPage is recognized by AdminGuard without redirect loop",
+        "Default credentials (admin / admin123) successfully log in and create a session"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Re-enable the hardcoded password check on the admin login page. The login form must validate the entered password against the stored admin credential before creating a session. If the password is incorrect, show an error message and do not create a session. Do not allow the admin panel to be accessed without successful password entry.",
+      "text": "Rebuild the /admin login page (AdminLoginPage.tsx) to always display a Username and Password input form. The login page must be visible at /admin/login (or /login as currently routed in App.tsx). Ensure App.tsx routes /admin and all /admin/* paths through AdminGuard, which redirects unauthenticated users to the login page. The login page itself must NOT be wrapped in AdminGuard. Verify TanStack Router route definitions so the login route is always reachable.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Re-enable the password requirement for the Admin Panel. Use the same password I set before (or let me set a new one now). No one should access /admin without entering the correct credentials."
+          "Restore Login Screen: Re-build the /admin login page with a Username and Password field. Do not allow access to settings without this."
         ]
       },
       "acceptanceCriteria": [
-        "Submitting a wrong password shows an error and does not start a session.",
-        "Submitting the correct password creates a session and redirects to /admin.",
-        "The login page is publicly accessible at /login."
+        "Visiting /admin or any /admin/* route while unauthenticated redirects to the login page",
+        "The login page renders a Username field, Password field, and a Submit button",
+        "Submitting correct credentials grants access to the admin dashboard",
+        "Submitting incorrect credentials shows an error message and does not grant access",
+        "The login page is never wrapped in AdminGuard and is always accessible"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Implement a 'Remember Me' checkbox on the admin login page. When checked, persist the session in localStorage with a 7-day expiry (instead of session-only). When unchecked, clear the session on browser close by using sessionStorage so that reopening the browser requires re-authentication. If 'Remember Me' is not checked, the session must not survive a browser restart.",
-      "target": "frontend",
+      "text": "Fix the backend actor availability issue causing 'Actor not available' errors. In useQueries.ts, all mutations that write settings (UPI ID, shop status, slogan) must wait for the actor to be available before executing, and must handle the case where the actor is null/undefined gracefully with a clear error message. In the Motoko backend (backend/main.mo), verify that the admin-only write functions (setUpiId, setShopStatus, setSlogan, or equivalent) do not perform a principal-based authorization check that would reject calls from the frontend session — if they do, either remove the check or make it compatible with the anonymous/session-based admin flow being used.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Ensure that even if someone refreshes the page or reopens the browser, they are asked for a password again unless they have a valid 'Remember Me' cookie."
+          "Fix Setting Save: Repair the 'Save' buttons for UPI and Shop Status so they stop showing 'Unauthorized'. They must successfully write to the database."
         ]
       },
       "acceptanceCriteria": [
-        "With 'Remember Me' checked, reopening the browser keeps the admin session active for up to 7 days.",
-        "Without 'Remember Me', reopening the browser clears the session and requires re-login.",
-        "Refreshing the page with 'Remember Me' active does not log the user out.",
-        "A logout button clears the session regardless of Remember Me setting."
+        "Clicking Save on the UPI ID field in AdminSettingsPage saves the value without showing 'Unauthorized'",
+        "Clicking Save on the Shop Status toggle in AdminPage/ShopStatusToggle saves without showing 'Unauthorized'",
+        "No 'Actor not available' error is thrown when mutations are invoked",
+        "Settings changes persist and are reflected after page reload"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Wrap ALL admin routes — including /admin, /admin/settings, /admin/qr, /admin/billing, and any other /admin/* sub-routes — with the AdminGuard component so that none of them are publicly accessible. No admin page or sub-page should render any content before the session check passes.",
-      "target": "frontend",
+      "text": "Remove all 'Coming Soon' placeholder content from SearchPage.tsx, WalletPage.tsx, and MyOrdersPage.tsx. Replace them with real, functional implementations: (1) SearchPage must render a search input that filters products from the backend by name/category and displays results using ProductCard components. (2) WalletPage must display the user's wallet/cashback balance and transaction history if the backend supports it, or a basic wallet UI with balance display. (3) MyOrdersPage must display the current user's past orders fetched from the backend. Update BottomNavBar.tsx links for Search and Wallet to navigate to these now-functional pages.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-6"
         ],
         "quotes": [
-          "Ensure that the new 'Settings' and 'QR' pages are also behind this password wall. Do not allow any part of the Admin Panel to be public."
+          "Cleanup: Remove all 'Coming Soon' and 'Coming Soon' placeholders from the Home page once and for all. Activate Search and Wallet for real."
         ]
       },
       "acceptanceCriteria": [
-        "Navigating to /admin/settings without a session redirects to /login.",
-        "Navigating to /admin/qr without a session redirects to /login.",
-        "Navigating to /admin/billing without a session redirects to /login.",
-        "All /admin/* routes are covered by AdminGuard — no admin route is accessible without authentication."
+        "SearchPage no longer shows a 'Coming Soon' message; it shows a working search input and results",
+        "Typing in SearchPage filters and displays matching products",
+        "WalletPage no longer shows a 'Coming Soon' message; it shows a wallet/cashback UI with real or zero-state data",
+        "MyOrdersPage no longer shows a 'Coming Soon' message; it shows order history or an empty-state if no orders exist",
+        "BottomNavBar Search and Wallet links navigate to the functional pages"
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "The existing AdminGuard component at frontend/src/components/AdminGuard.tsx must be rewritten in place, not replaced with a new file.",
-    "Do not remove or alter Internet Identity (ICP) authentication logic — the admin password check is a separate layer on top of it.",
-    "The admin password must remain hardcoded in the frontend (same approach as existing AdminGuard) unless the user provides a new password."
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "The login page route must remain publicly accessible without AdminGuard wrapping",
+    "All admin write operations must remain protected behind the login session check — do not remove AdminGuard from admin routes"
   ],
   "nonGoals": [
-    "Activating Home Page features (Wallet, Search, My Orders) — that is a separate request.",
-    "Storing admin credentials in the backend canister.",
-    "Adding multi-user admin accounts or role management.",
-    "Implementing OAuth or third-party authentication for the admin panel."
+    "Implementing IP-based or server-side session management",
+    "Adding Internet Identity (ICP) authentication to the admin flow",
+    "Redesigning the overall visual theme or layout",
+    "Adding new product categories or backend data models"
   ],
   "imageRequirements": {
     "required": [],
