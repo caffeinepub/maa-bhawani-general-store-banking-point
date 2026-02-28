@@ -1,9 +1,9 @@
 {
-  "frontend/src/App.tsx": "Main app router updated to include three new routes: /search, /my-orders, and /wallet mapped to their respective placeholder page components.",
+  "frontend/src/App.tsx": "Main app router with all `/admin/*` routes (admin, admin/dashboard, admin/billing, admin/settings) individually wrapped with `<AdminGuard>`, plus a new public `/login` route rendering `AdminLoginPage` — no admin route is accessible without a valid session.",
   "frontend/src/hooks/useQueries.ts": "Complete React Query hooks for all backend operations; now includes dedicated `useGetUpiId` and `useSetUpiId` hooks (calling `actor.getUpiId`/`actor.setUpiId`) with `DEFAULT_UPI_ID = '9708075648-1@okbizaxis'` as fallback, plus updated `useGetStoreUpiId`/`useSetStoreUpiId` that also invalidate the `upiId` cache for cross-consistency.",
   "frontend/src/hooks/useUserProfile.ts": "Custom hooks for managing user profile data including fetching and saving caller user profile with proper loading states to prevent modal flash.",
   "frontend/src/components/Layout.tsx": "Updated to conditionally render BottomNavBar and WhatsAppHelpButton on non-admin pages, with bottom padding added to main content to prevent overlap with the sticky nav.",
-  "frontend/src/components/Header.tsx": "Sticky header with Login/Logout buttons using explicit `bg-[#0056b3] text-white` for the login button and `bg-gray-200 text-gray-800` for logout, plus a plain HTML cart button with a red badge — all guaranteed visible against the white header.",
+  "frontend/src/components/Header.tsx": "Sticky header unchanged in appearance; logout handler now calls `clearAdminSession()` (clearing both localStorage and sessionStorage) before clearing the Internet Identity session, ensuring the admin password session is always destroyed on logout.",
   "frontend/src/components/Footer.tsx": "Footer component with white background, subtle top border, royal blue hover states for links, and proper spacing matching the clean dashboard theme.",
   "frontend/src/components/CallUsButton.tsx": "Fixed floating call button with enhanced touch target size (64x64px) and active state feedback for mobile users.",
   "frontend/src/components/PhoneNumberSetup.tsx": "Modal dialog for collecting user name and phone number after login, with validation for 10-digit Indian phone numbers.",
@@ -14,7 +14,7 @@
   "frontend/src/components/MobileRechargeSection.tsx": "Mobile recharge section with a dialog that awaits backend confirmation before showing success, displays inline error alerts on failure, keeps the dialog open on error for retry, and disables the submit button with \"Submitting...\" during mutation.",
   "frontend/src/components/DeliveryFeeInfo.tsx": "Alert component explaining the updated delivery fee policy — free delivery for orders ₹51 and above within 1km, ₹5 charge for orders below ₹51 within 1km, and ₹20/km for distances beyond 1km.",
   "frontend/src/components/PaymentQRCode.tsx": "Payment QR code display with amount and step-by-step payment instructions.",
-  "frontend/src/components/AdminGuard.tsx": "Authorization wrapper component that implements hardcoded admin login (ID: 919708075648, Password: 979142876085) with 24-hour session persistence in localStorage and automatic redirect to /admin/dashboard upon successful authentication.",
+  "frontend/src/components/AdminGuard.tsx": "Rewritten security guard that performs a synchronous session check on every render — reads from both localStorage (Remember Me) and sessionStorage (session-only), validates the `expiresAt` field, and immediately redirects to `/login` if no valid session is found. Exports `getAdminSession`, `clearAdminSession`, `SESSION_KEY`, and `AdminSession` for use by the login page and header.",
   "frontend/src/components/AdminProductForm.tsx": "Admin product creation form that awaits backend confirmation before resetting, shows inline error alerts on failure, disables the submit button with \"Adding Product...\" text during mutation, and resets on success.",
   "frontend/src/components/AdminProductList.tsx": "Admin product table with inline stock editing that awaits backend confirmation, per-row error messages for stock update and remove failures, disabled controls during pending mutations, and low-stock alerts.",
   "frontend/src/pages/HomePage.tsx": "Homepage that fetches products to build the category list, then renders HeroBannerCarousel, ShopClosedBanner, CategoryFilter (with correct `categories` and `onSelectCategory` props), ProductGrid, and MobileRechargeSection.",
@@ -43,5 +43,6 @@
   "frontend/src/components/WhatsAppHelpButton.tsx": "New floating WhatsApp FAB button positioned above the bottom nav bar that opens a WhatsApp chat URL in a new tab using WhatsApp brand green (#25D366).",
   "frontend/src/pages/SearchPage.tsx": "Placeholder Search page with a centered icon and \"coming soon\" message, wired to the /search route.",
   "frontend/src/pages/MyOrdersPage.tsx": "Placeholder My Orders page with a centered icon and \"coming soon\" message, wired to the /my-orders route.",
-  "frontend/src/pages/WalletPage.tsx": "Placeholder Wallet page with a centered icon and \"coming soon\" message, wired to the /wallet route."
+  "frontend/src/pages/WalletPage.tsx": "Placeholder Wallet page with a centered icon and \"coming soon\" message, wired to the /wallet route.",
+  "frontend/src/pages/AdminLoginPage.tsx": "New dedicated admin login page at `/login` with Admin ID + password fields, show/hide password toggle, a \"Remember Me\" checkbox (7-day localStorage vs 24-hour sessionStorage), inline error feedback on wrong credentials, and redirect to `/admin` on success."
 }

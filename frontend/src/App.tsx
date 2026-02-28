@@ -7,9 +7,11 @@ import StoreDetailsPage from './pages/StoreDetailsPage';
 import AdminPage from './pages/AdminPage';
 import BillingPage from './pages/BillingPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import SearchPage from './pages/SearchPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import WalletPage from './pages/WalletPage';
+import AdminGuard from './components/AdminGuard';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -43,28 +45,52 @@ const storeDetailsRoute = createRoute({
   component: StoreDetailsPage,
 });
 
+// Public admin login page — no guard
+const adminLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/login',
+  component: AdminLoginPage,
+});
+
+// All admin routes are wrapped with AdminGuard
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
-  component: AdminPage,
+  component: () => (
+    <AdminGuard>
+      <AdminPage />
+    </AdminGuard>
+  ),
 });
 
 const adminDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/dashboard',
-  component: AdminPage,
+  component: () => (
+    <AdminGuard>
+      <AdminPage />
+    </AdminGuard>
+  ),
 });
 
 const billingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/billing',
-  component: BillingPage,
+  component: () => (
+    <AdminGuard>
+      <BillingPage />
+    </AdminGuard>
+  ),
 });
 
 const adminSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/settings',
-  component: AdminSettingsPage,
+  component: () => (
+    <AdminGuard>
+      <AdminSettingsPage />
+    </AdminGuard>
+  ),
 });
 
 const searchRoute = createRoute({
@@ -90,6 +116,7 @@ const routeTree = rootRoute.addChildren([
   checkoutRoute,
   orderConfirmationRoute,
   storeDetailsRoute,
+  adminLoginRoute,
   adminRoute,
   adminDashboardRoute,
   billingRoute,

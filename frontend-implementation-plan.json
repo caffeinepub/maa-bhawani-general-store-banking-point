@@ -1,44 +1,87 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Restore UPI Payment Settings, QR Code Logic, and Persistent Admin Settings",
+  "title": "Enforce Admin Panel Password Protection & Session Lock",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Restore the 'UPI Payment Settings' card in the Admin Settings page with input field, save button, backend persistence, and pre-population of saved values",
+      "summary": "Rewrite AdminGuard to enforce synchronous session checks on every page load with 24-hour expiry and redirect to /login when invalid",
       "acceptanceCriteria": [
-        "The Admin Settings page displays a 'UPI Payment Settings' card with a text input and a 'Save UPI' button.",
-        "Entering a UPI ID and clicking 'Save UPI' persists the value to the backend.",
-        "On revisiting the Admin Settings page, the saved UPI ID is pre-filled in the input field.",
-        "A success or error toast/message is shown after saving."
+        "Navigating directly to /admin without a session redirects to /login immediately.",
+        "Refreshing the browser on any admin page without a session redirects to /login.",
+        "A valid session allows access to /admin and all sub-pages.",
+        "An expired session (older than 24 hours) is treated as no session and redirects to /login."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/AdminSettingsPage.tsx",
+          "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Add a 'UPI Payment Settings' card section below the existing Store Slogan section. Include a labeled text input field (pre-populated with the current UPI ID from useGetUpiId query), a 'Save UPI' button that calls the useSetUpiId mutation, and display success/error toast notifications. Ensure the input shows a loading state while fetching the current value and is disabled during save operations. Use the existing card/form styling patterns from the Store Slogan section."
+          "description": "Rewrite the AdminGuard component to perform a synchronous localStorage session check on every render before any content is displayed. Check for a session object with a timestamp field. If no session exists or if the session timestamp is older than 24 hours, immediately redirect to /login using navigate(). Remove any async checks that delay the redirect. Only render children if a valid, non-expired session is found. The session object must include at least: { timestamp: number, authenticated: boolean }. Perform the redirect in a useEffect that runs on mount and whenever session state changes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Re-enable hardcoded password validation on login page with error feedback and session creation only on success",
+      "acceptanceCriteria": [
+        "Submitting a wrong password shows an error and does not start a session.",
+        "Submitting the correct password creates a session and redirects to /admin.",
+        "The login page is publicly accessible at /login."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminLoginPage.tsx",
+          "operation": "create",
+          "description": "Create a new AdminLoginPage component at /login route that renders a password input form. On form submission, validate the entered password against the hardcoded admin credential (use the same password from the original AdminGuard implementation). If the password is incorrect, display an error message below the input field and do not create a session. If the password is correct, create a session object in localStorage (key: 'adminSession') with { authenticated: true, timestamp: Date.now() }, then redirect to /admin. Include a heading, password field with type='password', submit button, and error message area. Style the form to match the app's existing design using Tailwind classes."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add useGetUpiId query hook that calls actor.getUpiId() and caches the result with queryKey ['upiId']. Add useSetUpiId mutation hook that calls actor.setUpiId(upi) and invalidates the ['upiId'] query on success. Follow the existing query/mutation patterns in this file (e.g., useGetShopSlogan and useSetShopSlogan). Export both hooks."
+          "description": "Add a new public route for /login that renders the AdminLoginPage component. Ensure this route is defined before the AdminGuard-wrapped routes and is not wrapped by AdminGuard. Place the route at the same level as other public routes like HomePage and StoreDetailsPage. Import AdminLoginPage at the top of the file."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Dynamically fetch the saved UPI ID from the backend in BillTemplate and use it to generate the UPI QR code on every bill with fallback to default value",
+      "summary": "Implement 'Remember Me' checkbox with 7-day localStorage persistence or sessionStorage-only session that clears on browser close",
       "acceptanceCriteria": [
-        "BillTemplate fetches the UPI ID from the backend before rendering the QR code.",
-        "The QR code on every bill reflects the currently saved UPI ID.",
-        "If the backend returns an empty value, the QR code uses '9708075648-1@okbizaxis' as fallback.",
-        "Changing the UPI ID in Admin Settings causes the QR code on new bills to update accordingly."
+        "With 'Remember Me' checked, reopening the browser keeps the admin session active for up to 7 days.",
+        "Without 'Remember Me', reopening the browser clears the session and requires re-login.",
+        "Refreshing the page with 'Remember Me' active does not log the user out.",
+        "A logout button clears the session regardless of Remember Me setting."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BillTemplate.tsx",
+          "path": "frontend/src/pages/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Add useGetUpiId query hook call at the top of the BillTemplate component. Use the fetched UPI ID (or fallback to '9708075648-1@okbizaxis' if the value is empty or null) to dynamically construct the UPI QR code URL. Replace any hardcoded UPI ID in the QR code generation logic with the dynamic value. The QR code image should use the direct asset path 'frontend/public/assets/generated/upi-qr-code.dim_200x200.png' for the static QR image, but the actual UPI link (if generated via a URL scheme like upi://pay?pa=...) should use the live UPI ID. Ensure the component displays a loading state or placeholder while the UPI ID is being fetched."
+          "description": "Add a 'Remember Me' checkbox input below the password field in the login form. When the form is submitted successfully, check the checkbox state. If 'Remember Me' is checked, store the session object in localStorage with a 7-day expiry (timestamp + 7 * 24 * 60 * 60 * 1000). If 'Remember Me' is not checked, store the session object in sessionStorage instead (which will be cleared when the browser is closed). Update the session object to include an 'expiresAt' field calculated based on the Remember Me choice. Use a controlled checkbox input with state."
+        },
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Update the session check logic to first check localStorage for a session, then fall back to sessionStorage if not found. When validating the session, check the 'expiresAt' field if present. For localStorage sessions, use the 7-day expiry. For sessionStorage sessions (no Remember Me), validate against a 24-hour expiry from the timestamp. If either storage contains an expired session, clear it from that storage before redirecting to /login. This ensures the guard respects both Remember Me persistence and session-only behavior."
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Locate the logout button or create one if it doesn't exist in the Header component. On logout click, clear both localStorage.removeItem('adminSession') and sessionStorage.removeItem('adminSession') to ensure the session is fully cleared regardless of where it was stored. Then redirect to /login or home page. If the logout is currently handled by Internet Identity's clear() method, add the session removal calls before or after that call. Ensure the session is cleared synchronously before any navigation occurs."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Wrap all /admin/* routes with AdminGuard to enforce password protection on every admin sub-route",
+      "acceptanceCriteria": [
+        "Navigating to /admin/settings without a session redirects to /login.",
+        "Navigating to /admin/qr without a session redirects to /login.",
+        "Navigating to /admin/billing without a session redirects to /login.",
+        "All /admin/* routes are covered by AdminGuard — no admin route is accessible without authentication."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Review the route definitions for /admin, /admin/settings, /admin/qr (if it exists), /admin/billing, and any other /admin/* routes. Ensure every single admin route is wrapped with the AdminGuard component. If any admin routes are currently defined without AdminGuard wrapping, add the AdminGuard wrapper around them. If /admin/qr does not exist as a route yet, create it and wrap it with AdminGuard. The wrapping pattern should be: <AdminGuard><AdminPageComponent /></AdminGuard> for each admin route. Verify that no admin route is left exposed without the guard."
         }
       ]
     }

@@ -1,14 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Restore UPI Payment Settings in the Admin Panel, ensure all admin settings (UPI ID, Store Logo, Store Name/Slogan) persist across canister upgrades via stable variables, and make the bill QR code dynamically reflect the saved UPI ID.
+**Goal:** Enforce proper password protection and session management for the admin panel so that no admin page is accessible without valid credentials.
 
 **Planned changes:**
-- Restore the "UPI Payment Settings" card in AdminSettingsPage.tsx with a UPI ID text input and a "Save UPI" button that persists the value to the backend
-- Pre-populate the UPI input field with the currently saved UPI ID on page load
-- Show a success or error toast/message after saving the UPI ID
-- In main.mo, store the UPI ID in a `stable var` with default value `9708075648-1@okbizaxis`; ensure `getUpiId` and `setUpiId` (admin-only) methods are present
-- Verify Store Logo URL and Store Name/Slogan are also stored in `stable var` declarations in main.mo so none of these settings reset on canister upgrades
-- In BillTemplate, dynamically fetch the UPI ID from the backend via `getUpiId` and use it to generate the QR code URL, falling back to `9708075648-1@okbizaxis` if empty
+- Rewrite `AdminGuard` to synchronously check for a valid admin session (localStorage) on every page load, redirecting to `/login` immediately if no valid or unexpired session exists
+- Add 24-hour timestamp-based session expiry; expired sessions are treated as no session
+- Re-enable hardcoded password validation on the admin login page; wrong password shows an error and does not create a session
+- Add a "Remember Me" checkbox: when checked, session persists in localStorage for 7 days; when unchecked, use sessionStorage so the session is cleared on browser close
+- Wrap all admin routes (`/admin`, `/admin/settings`, `/admin/qr`, `/admin/billing`, and any other `/admin/*` sub-routes) with `AdminGuard` so none render content before the session check passes
+- Ensure a logout button clears the session regardless of "Remember Me" setting
 
-**User-visible outcome:** Admins can enter and save a UPI ID from the Admin Settings page, and every generated bill will display a QR code reflecting the currently saved UPI ID. All saved settings (UPI, logo, store name) survive app updates.
+**User-visible outcome:** Accessing any admin page without logging in (or after a session expires/browser is closed without "Remember Me") immediately redirects to `/login`. Only users who enter the correct password can access the admin panel, and the session persists across refreshes only when "Remember Me" is checked.

@@ -1,98 +1,96 @@
 {
   "kind": "build_request",
-  "title": "Restore UPI Payment Settings, QR Code Logic, and Persistent Admin Settings",
+  "title": "Enforce Admin Panel Password Protection & Session Lock",
   "projectName": "Maa Bhawani General Store",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Restore the 'UPI Payment Settings' card in the Admin Settings page (AdminSettingsPage.tsx). It must contain a labeled text input field for the UPI ID and a 'Save UPI' button. On click, the button must call the backend mutation to persist the UPI ID to the canister's stable state. The input must be pre-populated with the currently saved UPI ID on page load.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "Restore the 'UPI Payment Settings' card in the Admin Panel. It must have the input field and the 'Save UPI' button. Ensure this button successfully saves my ID to the database."
-        ]
-      },
-      "acceptanceCriteria": [
-        "The Admin Settings page displays a 'UPI Payment Settings' card with a text input and a 'Save UPI' button.",
-        "Entering a UPI ID and clicking 'Save UPI' persists the value to the backend.",
-        "On revisiting the Admin Settings page, the saved UPI ID is pre-filled in the input field.",
-        "A success or error toast/message is shown after saving."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "In the backend (main.mo), ensure the UPI ID is stored in a stable variable so it survives canister upgrades and is never reset. The `getUpiId` query and `setUpiId` update methods must be present and correctly reference this stable variable. Pre-seed the value with '9708075648-1@okbizaxis' as the default if no value has been saved yet.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "Ensure that any settings I save (Logo, UPI, Store Name) are locked in the database and not reset during app updates.",
-          "Link this UPI ID 9708075648-1@okbizaxis to generate a dynamic QR code on every bill."
-        ]
-      },
-      "acceptanceCriteria": [
-        "The UPI ID is stored in a `stable var` in main.mo.",
-        "Canister upgrades do not reset the stored UPI ID.",
-        "The default value '9708075648-1@okbizaxis' is used when no custom value has been saved.",
-        "`getUpiId` returns the current stored UPI ID.",
-        "`setUpiId` updates the stored UPI ID and is restricted to admin callers."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "In the BillTemplate component, dynamically fetch the saved UPI ID from the backend (via `getUpiId`) and use it to generate the UPI QR code displayed on every bill. The QR code URL must be constructed using the live UPI ID value, not a hardcoded string. The default fallback must be '9708075648-1@okbizaxis' if the backend returns empty.",
+      "text": "Rewrite the AdminGuard component so that on every page load (including refresh and browser reopen) it synchronously checks for a valid admin session in localStorage before rendering any admin content. If no valid session exists, immediately redirect to /login. The session must have a timestamp-based expiry (24 hours by default). Remove any logic that allows bypassing the session check.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-latest"
         ],
         "quotes": [
-          "Link this UPI ID 9708075648-1@okbizaxis to generate a dynamic QR code on every bill.",
-          "Do not delete this logic in the future."
+          "Rewrite the Admin Panel logic so that it MUST check for an active session on every single page load. If no user is logged in, redirect them instantly to the /login page."
         ]
       },
       "acceptanceCriteria": [
-        "BillTemplate fetches the UPI ID from the backend before rendering the QR code.",
-        "The QR code on every bill reflects the currently saved UPI ID.",
-        "If the backend returns an empty value, the QR code uses '9708075648-1@okbizaxis' as fallback.",
-        "Changing the UPI ID in Admin Settings causes the QR code on new bills to update accordingly."
+        "Navigating directly to /admin without a session redirects to /login immediately.",
+        "Refreshing the browser on any admin page without a session redirects to /login.",
+        "A valid session allows access to /admin and all sub-pages.",
+        "An expired session (older than 24 hours) is treated as no session and redirects to /login."
       ]
     },
     {
-      "id": "REQ-4",
-      "text": "Ensure that all persistent admin settings — Store Logo, UPI ID, and Store Name/Slogan — are stored in stable variables in the Motoko backend (main.mo) so they are never reset during canister upgrades. Verify existing stable vars for logo and store name/slogan are present and correctly preserved across upgrades.",
-      "target": "backend",
+      "id": "REQ-2",
+      "text": "Re-enable the hardcoded password check on the admin login page. The login form must validate the entered password against the stored admin credential before creating a session. If the password is incorrect, show an error message and do not create a session. Do not allow the admin panel to be accessed without successful password entry.",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-latest"
         ],
         "quotes": [
-          "Ensure that any settings I save (Logo, UPI, Store Name) are locked in the database and not reset during app updates."
+          "Re-enable the password requirement for the Admin Panel. Use the same password I set before (or let me set a new one now). No one should access /admin without entering the correct credentials."
         ]
       },
       "acceptanceCriteria": [
-        "Store Logo URL, UPI ID, and Store Name/Slogan are all stored in `stable var` declarations.",
-        "A canister upgrade does not reset any of these values.",
-        "All three settings can be independently queried and updated via dedicated backend methods."
+        "Submitting a wrong password shows an error and does not start a session.",
+        "Submitting the correct password creates a session and redirects to /admin.",
+        "The login page is publicly accessible at /login."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement a 'Remember Me' checkbox on the admin login page. When checked, persist the session in localStorage with a 7-day expiry (instead of session-only). When unchecked, clear the session on browser close by using sessionStorage so that reopening the browser requires re-authentication. If 'Remember Me' is not checked, the session must not survive a browser restart.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Ensure that even if someone refreshes the page or reopens the browser, they are asked for a password again unless they have a valid 'Remember Me' cookie."
+        ]
+      },
+      "acceptanceCriteria": [
+        "With 'Remember Me' checked, reopening the browser keeps the admin session active for up to 7 days.",
+        "Without 'Remember Me', reopening the browser clears the session and requires re-login.",
+        "Refreshing the page with 'Remember Me' active does not log the user out.",
+        "A logout button clears the session regardless of Remember Me setting."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Wrap ALL admin routes — including /admin, /admin/settings, /admin/qr, /admin/billing, and any other /admin/* sub-routes — with the AdminGuard component so that none of them are publicly accessible. No admin page or sub-page should render any content before the session check passes.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Ensure that the new 'Settings' and 'QR' pages are also behind this password wall. Do not allow any part of the Admin Panel to be public."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigating to /admin/settings without a session redirects to /login.",
+        "Navigating to /admin/qr without a session redirects to /login.",
+        "Navigating to /admin/billing without a session redirects to /login.",
+        "All /admin/* routes are covered by AdminGuard — no admin route is accessible without authentication."
       ]
     }
   ],
   "constraints": [
-    "Do not remove or overwrite the UPI QR code logic in BillTemplate in future builds.",
-    "The UPI ID '9708075648-1@okbizaxis' must be used as the default/fallback value.",
-    "Admin-only mutations (setUpiId, setStoreName, setLogo) must remain protected by role-based access control.",
-    "Do not edit files listed in frontend.immutablePaths."
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "The existing AdminGuard component at frontend/src/components/AdminGuard.tsx must be rewritten in place, not replaced with a new file.",
+    "Do not remove or alter Internet Identity (ICP) authentication logic — the admin password check is a separate layer on top of it.",
+    "The admin password must remain hardcoded in the frontend (same approach as existing AdminGuard) unless the user provides a new password."
   ],
   "nonGoals": [
-    "Activating Home Page Coming Soon features (Search, Orders, Wallet) — separate request.",
-    "Adding new admin settings beyond UPI, Logo, and Store Name.",
-    "Changing the visual theme or layout of the Admin Panel beyond restoring the UPI card."
+    "Activating Home Page features (Wallet, Search, My Orders) — that is a separate request.",
+    "Storing admin credentials in the backend canister.",
+    "Adding multi-user admin accounts or role management.",
+    "Implementing OAuth or third-party authentication for the admin panel."
   ],
   "imageRequirements": {
     "required": [],

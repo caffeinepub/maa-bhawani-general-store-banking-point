@@ -6,7 +6,7 @@ import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import AccessControl "authorization/access-control";
-import Migration "migration";
+
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Storage "blob-storage/Storage";
@@ -14,7 +14,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
 // Apply migration automatically on canister upgrade
-(with migration = Migration.run)
+
 actor {
   // State
   include MixinStorage();

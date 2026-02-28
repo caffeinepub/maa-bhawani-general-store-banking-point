@@ -1,12 +1,12 @@
 import { ShoppingCart, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCart, useIsCallerAdmin, useGetShopOpenStatus } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import CartDrawer from './CartDrawer';
 import { useNavigate, useLocation } from '@tanstack/react-router';
+import { clearAdminSession } from './AdminGuard';
 
 export default function Header() {
   const { login, clear, loginStatus, identity } = useInternetIdentity();
@@ -24,6 +24,8 @@ export default function Header() {
 
   const handleAuth = async () => {
     if (isAuthenticated) {
+      // Always clear admin session on logout
+      clearAdminSession();
       await clear();
       queryClient.clear();
       if (location.pathname.startsWith('/admin')) {
